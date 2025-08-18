@@ -1,0 +1,24 @@
+Android CI
+name: Android CI
+on:
+  push:
+    branches: [ "dev", "feature/**", "chore/**", "fix/**" ]
+  pull_request:
+    branches: [ "dev", "main" ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: 'gradle'
+      - run: chmod +x ./gradlew
+      - run: ./gradlew assembleDebug
+      - run: ./gradlew testDebugUnitTest
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
