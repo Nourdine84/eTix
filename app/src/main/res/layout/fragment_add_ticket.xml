@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/white"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Titre -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ajouter un ticket"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="#007BFF"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Magasin -->
+        <EditText
+            android:id="@+id/editTextStore"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nom du magasin"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Date -->
+        <EditText
+            android:id="@+id/editTextDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Date (ex: 2025-08-14)"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Montant -->
+        <EditText
+            android:id="@+id/editTextAmount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Montant"
+            android:inputType="numberDecimal"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Catégorie -->
+        <Spinner
+            android:id="@+id/spinnerCategory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Description -->
+        <EditText
+            android:id="@+id/editTextDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Description (optionnel)"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Bouton d'ajout rapide -->
+        <Button
+            android:id="@+id/buttonQuickAdd"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ajout rapide"
+            android:backgroundTint="#007BFF"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Enregistrer -->
+        <Button
+            android:id="@+id/buttonSave"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Enregistrer"
+            android:backgroundTint="#007BFF"
+            android:textColor="@android:color/white" />
+
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,9 @@
+<resources>
+    <string-array name="categories">
+        <item>Supermarché</item>
+        <item>Restaurant</item>
+        <item>Transport</item>
+        <item>Santé</item>
+        <item>Autre</item>
+    </string-array>
+</resources>

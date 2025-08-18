@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- Boutons filtres -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginBottom="12dp">
+
+        <Button
+            android:id="@+id/btnThisMonth"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ce mois-ci"
+            android:layout_marginEnd="8dp"
+            android:backgroundTint="@color/teal_700"
+            android:textColor="@android:color/white"/>
+
+        <Button
+            android:id="@+id/btnCustomRange"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Période"
+            android:layout_marginEnd="8dp"
+            android:backgroundTint="@color/teal_700"
+            android:textColor="@android:color/white"/>
+
+        <Button
+            android:id="@+id/btnClearFilter"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Réinitialiser"
+            android:backgroundTint="@color/teal_700"
+            android:textColor="@android:color/white"/>
+    </LinearLayout>
+
+    <!-- Bouton export -->
+    <Button
+        android:id="@+id/btnExportCsv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Exporter CSV"
+        android:layout_gravity="end"
+        android:backgroundTint="@color/teal_700"
+        android:textColor="@android:color/white"
+        android:layout_marginBottom="12dp"/>
+
+    <!-- Liste des tickets -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerTickets"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:paddingBottom="8dp"/>
+</LinearLayout>

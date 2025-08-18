@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/filter_all"
+        android:title="Tous" />
+    <item
+        android:id="@+id/filter_food"
+        android:title="Alimentation" />
+    <item
+        android:id="@+id/filter_transport"
+        android:title="Transport" />
+    <item
+        android:id="@+id/filter_health"
+        android:title="Santé" />
+    <item
+        android:id="@+id/filter_other"
+        android:title="Autres" />
+</menu>

@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">eTix</string>
+
+    <!-- (tes autres chaînes déjà présentes) -->
+    <string name="msg_ticket_added">Ticket ajouté avec succès</string>
+    <string name="msg_quick_added">Ajout rapide OK</string>
+    <string name="msg_required">Tous les champs obligatoires doivent être remplis</string>
+    <string name="msg_delete_confirm_title">Supprimer</string>
+    <string name="msg_delete_confirm_body">Confirmer la suppression de ce ticket ?</string>
+    <string name="msg_deleted">Ticket supprimé</string>
+    <string name="msg_error">Une erreur est survenue</string>
+</resources>
