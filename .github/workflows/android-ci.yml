@@ -1,24 +1,37 @@
-Android CI
-name: Android CI
+clear
+name: Android CI (PR APK)
+
 on:
-  push:
-    branches: [ "dev", "feature/**", "chore/**", "fix/**" ]
   pull_request:
     branches: [ "dev", "main" ]
+  push:
+    branches: [ "dev", "feature/**", "chore/**", "fix/**" ]
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
           cache: 'gradle'
-      - run: chmod +x ./gradlew
-      - run: ./gradlew assembleDebug
-      - run: ./gradlew testDebugUnitTest
-      - uses: actions/upload-artifact@v4
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug
+
+      - name: Run Unit Tests
+        run: ./gradlew testDebugUnitTest
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
         with:
           name: app-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
