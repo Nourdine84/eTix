@@ -1,60 +1,107 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white"
-    android:orientation="vertical"
-    android:padding="24dp"
-    android:gravity="center">
+    android:background="?attr/colorBackground"
+    tools:context=".RegisterActivity">
 
-    <TextView
-        android:id="@+id/textLogo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="eTix"
-        android:textColor="#007BFF"
-        android:textSize="32sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="24dp" />
-
-    <EditText
-        android:id="@+id/editTextEmail"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Adresse e-mail"
-        android:inputType="textEmailAddress"
-        android:layout_marginBottom="12dp"/>
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center_horizontal">
 
-    <EditText
-        android:id="@+id/editTextPassword"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Mot de passe"
-        android:inputType="textPassword"
-        android:layout_marginBottom="12dp"/>
+        <ImageView
+            android:id="@+id/imgLogo"
+            android:layout_width="120dp"
+            android:layout_height="120dp"
+            android:src="@drawable/logo_etix_e"
+            android:contentDescription="@string/app_name"
+            android:layout_marginBottom="32dp" />
 
-    <EditText
-        android:id="@+id/editTextConfirmPassword"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Confirmer le mot de passe"
-        android:inputType="textPassword"
-        android:layout_marginBottom="24dp"/>
+        <EditText
+            android:id="@+id/editTextUsername"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_username"
+            android:inputType="textPersonName"
+            android:padding="12dp"
+            android:background="@drawable/bg_input"
+            android:layout_marginBottom="16dp"
+            android:textColor="@color/white"
+            android:textColorHint="@color/text_secondary" />
 
-    <Button
-        android:id="@+id/buttonRegister"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="S'inscrire"
-        android:backgroundTint="#007BFF"
-        android:textColor="@android:color/white" />
+        <EditText
+            android:id="@+id/edtFullName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/label_full_name"
+            android:inputType="textCapWords|textPersonName"
+            android:padding="12dp"
+            android:background="@drawable/bg_input"
+            android:layout_marginBottom="16dp"
+            android:textColor="@color/white"
+            android:textColorHint="@color/text_secondary" />
 
-    <TextView
-        android:id="@+id/textLogin"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Déjà inscrit ? Se connecter"
-        android:textColor="#007BFF"
-        android:layout_marginTop="16dp"
-        android:textSize="14sp"/>
-</LinearLayout>
+        <EditText
+            android:id="@+id/edtEmail"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/label_email"
+            android:inputType="textEmailAddress"
+            android:padding="12dp"
+            android:background="@drawable/bg_input"
+            android:layout_marginBottom="16dp"
+            android:textColor="@color/white"
+            android:textColorHint="@color/text_secondary" />
+
+        <EditText
+            android:id="@+id/edtPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/label_password"
+            android:inputType="textPassword"
+            android:padding="12dp"
+            android:background="@drawable/bg_input"
+            android:layout_marginBottom="16dp"
+            android:textColor="@color/white"
+            android:textColorHint="@color/text_secondary" />
+
+        <EditText
+            android:id="@+id/edtConfirmPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/label_confirm_password"
+            android:inputType="textPassword"
+            android:padding="12dp"
+            android:background="@drawable/bg_input"
+            android:layout_marginBottom="24dp"
+            android:textColor="@color/white"
+            android:textColorHint="@color/text_secondary" />
+
+        <Button
+            android:id="@+id/btnRegister"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/action_register"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:backgroundTint="@color/etix_blue"
+            android:background="@drawable/bg_button"
+            android:layout_marginBottom="12dp"
+            style="@style/Shape" />
+
+        <Button
+            android:id="@+id/btnGoLogin"
+            style="@style/Shape"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_button_secondary"
+            android:text="@string/action_go_login"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white" />
+    </LinearLayout>
+</ScrollView>

@@ -1,50 +1,199 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/homeScrollView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="24dp"
-    android:background="@android:color/white"
-    android:gravity="center_horizontal">
+    android:background="@color/md_background"
+    android:padding="0dp">
 
-    <!-- Logo -->
-    <TextView
-        android:id="@+id/textLogo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="eTix"
-        android:textSize="32sp"
-        android:textColor="#007BFF"
-        android:textStyle="bold"
-        android:layout_marginBottom="16dp" />
-
-    <!-- Message de bienvenue -->
-    <TextView
-        android:id="@+id/textWelcome"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Bienvenue dans eTix !"
-        android:textSize="18sp"
-        android:layout_marginBottom="32dp" />
-
-    <!-- Bouton pour ajouter un ticket -->
-    <Button
-        android:id="@+id/buttonQuickAdd"
+    <LinearLayout
+        android:id="@+id/homeContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Ajouter un ticket rapidement"
-        android:backgroundTint="#007BFF"
-        android:textColor="@android:color/white"
-        android:layout_marginBottom="12dp" />
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
 
-    <!-- Rappel ou mini résumé -->
-    <TextView
-        android:id="@+id/textSummary"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Total des dépenses ce mois : 154,20 €"
-        android:textSize="16sp"
-        android:textColor="#000000"
-        android:layout_marginTop="24dp" />
+        <!-- En-tête bleu -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:background="@color/md_primary"
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:gravity="top|start"
+            android:backgroundTint="@color/md_primary"
+            android:clipToOutline="true">
 
-</LinearLayout>
+            <TextView
+                android:id="@+id/textHomeTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Accueil"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="@color/md_onPrimary" />
+
+            <!-- KPI Grid -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:orientation="horizontal"
+                android:weightSum="3"
+                android:gravity="center">
+
+                <!-- KPI 1 -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="95dp"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_kpi"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <TextView
+                        android:id="@+id/kpiTicketCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="23"
+                        android:textColor="@color/md_primary"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="tickets"
+                        android:textColor="@color/md_primary"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <!-- KPI 2 -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:background="@drawable/bg_kpi"
+                    android:padding="12dp"
+                    android:layout_marginStart="3dp"
+                    android:layout_marginEnd="3dp">
+
+                    <TextView
+                        android:id="@+id/kpiAverage"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="12,50 €"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/md_primary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="43dp"
+                        android:text="moyenne"
+                        android:textColor="@color/md_primary"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+                <!-- KPI 3 -->
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="95dp"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_kpi"
+                    android:orientation="vertical"
+                    android:padding="12dp">
+
+                    <TextView
+                        android:id="@+id/kpiTotal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="210,20 €"
+                        android:textColor="@color/md_primary"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="mois"
+                        android:textColor="@color/md_primary"
+                        android:textSize="14sp" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Bloc blanc avec montant -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="16dp"
+            android:layout_marginTop="-40dp"
+            android:background="@android:color/white"
+            android:backgroundTint="@android:color/white"
+            android:clipToOutline="true"
+            android:elevation="4dp"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <TextView
+                android:id="@+id/tvTotalMonth"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="59,34 €"
+                android:textColor="@color/md_primary"
+                android:textSize="28sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="4dp"
+                android:text="Dépense moyenne"
+                android:textColor="@color/md_onPrimaryContainer"
+                android:textSize="16sp" />
+
+            <!-- Bouton Ajouter -->
+            <Button
+                android:id="@+id/btnGoAdd"
+                style="@style/Shape"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Ajouter un ticket" />
+
+            <!-- Bouton Historique -->
+            <LinearLayout
+                android:id="@+id/btnHistoryContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_kpi"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:padding="12dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginEnd="8dp"
+                    android:src="@drawable/ic_add"
+                    android:tint="@color/md_primary" />
+
+                <TextView
+                    android:id="@+id/tvSeeHistory"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Voir historique"
+                    android:textColor="@color/md_primary"
+                    android:textSize="16sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

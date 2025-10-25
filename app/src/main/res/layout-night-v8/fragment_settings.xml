@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center_horizontal">
+
+        <!-- Titre -->
+        <TextView
+            android:id="@+id/textTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Paramètres"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorOnBackground"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Nom utilisateur -->
+        <TextView
+            android:id="@+id/textUser"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Connecté en tant que : ..."
+            android:textSize="16sp"
+            android:textStyle="italic"
+            android:textColor="?attr/colorOnBackground"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Version -->
+        <TextView
+            android:id="@+id/textVersion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Version ..."
+            android:textSize="14sp"
+            android:textColor="?attr/colorOnSurface"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Changer thème -->
+        <Button
+            android:id="@+id/btnToggleTheme"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Changer de thème"
+            android:textAllCaps="false"
+            android:layout_marginBottom="16dp"
+            style="@style/Shape"
+            android:background="@drawable/bg_button_secondary"
+            android:textColor="?attr/colorPrimary" />
+
+        <!-- Vider base -->
+        <Button
+            android:id="@+id/btnDeleteDatabase"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Vider tous les tickets"
+            android:textAllCaps="false"
+            android:layout_marginBottom="16dp"
+            style="@style/Shape"
+            android:background="@drawable/bg_button"
+            android:textColor="@android:color/white" />
+
+        <!-- Afficher crash log -->
+        <Button
+            android:id="@+id/btnShowCrash"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Afficher crash log"
+            android:textAllCaps="false"
+            android:layout_marginBottom="8dp"
+            style="@style/Shape"
+            android:background="@drawable/bg_button_secondary"
+            android:textColor="?attr/colorPrimary" />
+
+        <!-- Supprimer crash logs -->
+        <Button
+            android:id="@+id/btnClearCrash"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Supprimer logs de crash"
+            android:textAllCaps="false"
+            android:layout_marginBottom="24dp"
+            style="@style/Shape"
+            android:background="@drawable/bg_button_secondary"
+            android:textColor="?attr/colorPrimary" />
+
+        <!-- Aperçu crash log -->
+        <TextView
+            android:id="@+id/textCrashPreview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="12sp"
+            android:layout_marginBottom="24dp"
+            android:visibility="gone" />
+
+        <!-- Déconnexion -->
+        <Button
+            android:id="@+id/btnLogout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Se déconnecter"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:background="@drawable/bg_button"
+            style="@style/Shape" />
+    </LinearLayout>
+</ScrollView>

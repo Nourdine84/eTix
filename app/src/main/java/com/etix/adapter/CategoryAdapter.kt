@@ -3,40 +3,45 @@ package com.etix.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.etix.R
 import com.etix.model.CategoryTotal
 
-class CategoryAdapter(private var categories: List<CategoryTotal>) :
-    RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder>() {
+class CategoryAdapter : RecyclerView.Adapter<CategoryAdapter.ViewHolder>() {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CategoryViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_category, parent, false)
-        return CategoryViewHolder(view)
-    }
+    private var categories: List<CategoryTotal> = emptyList()
+    private var grandTotal: Double = 0.0
 
-    override fun onBindViewHolder(holder: CategoryViewHolder, position: Int) {
-        val item = categories[position]
-        holder.bind(item)
-    }
-
-    override fun getItemCount(): Int = categories.size
-
-    fun updateData(newCategories: List<CategoryTotal>) {
-        categories = newCategories
+    fun submitData(list: List<CategoryTotal>) {
+        categories = list
+        grandTotal = list.sumOf { it.total }
         notifyDataSetChanged()
     }
 
-    class CategoryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val categoryText: TextView = itemView.findViewById(R.id.textCategory)
-        private val amountText: TextView = itemView.findViewById(R.id.textAmount)
-
-        fun bind(item: CategoryTotal) {
-            categoryText.text = item.category
-            amountText.text = "${item.total} €"
-
-        }
+    inner class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
+        val tvName: TextView = v.findViewById(R.id.tvCatName)
+        val tvAmount: TextView = v.findViewById(R.id.tvCatAmount)
+        val tvPercent: TextView = v.findViewById(R.id.tvPercent)
+        val progress: ProgressBar = v.findViewById(R.id.progressPercent)
     }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val v = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_category_total, parent, false)
+        return ViewHolder(v)
+    }
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val item = categories[position]
+        val percent = if (grandTotal > 0) (item.total / grandTotal * 100).toInt() else 0
+
+        holder.tvName.text = item.name
+        holder.tvAmount.text = String.format("%.2f €", item.total)
+        holder.tvPercent.text = "$percent %"
+        holder.progress.progress = percent
+    }
+
+    override fun getItemCount() = categories.size
 }

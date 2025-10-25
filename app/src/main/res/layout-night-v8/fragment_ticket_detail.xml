@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="24dp"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <!-- Titre -->
+        <TextView
+            android:id="@+id/tvDetailTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Détail du ticket"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorOnBackground"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Magasin -->
+        <TextView
+            android:id="@+id/tvStore"
+            style="@style/EtixDetailText"
+            android:text="Magasin : Carrefour" />
+
+        <!-- Montant -->
+        <TextView
+            android:id="@+id/tvAmount"
+            style="@style/EtixDetailText"
+            android:text="Montant : 42.80 €" />
+
+        <!-- Date -->
+        <TextView
+            android:id="@+id/tvDate"
+            style="@style/EtixDetailText"
+            android:text="Date : 03/12/2025" />
+
+        <!-- Catégorie -->
+        <TextView
+            android:id="@+id/tvCategory"
+            style="@style/EtixDetailText"
+            android:text="Catégorie : Courses" />
+
+        <!-- Description -->
+        <TextView
+            android:id="@+id/tvDescription"
+            style="@style/EtixDetailText"
+            android:text="Description : Achat de produits alimentaires." />
+    </LinearLayout>
+</ScrollView>

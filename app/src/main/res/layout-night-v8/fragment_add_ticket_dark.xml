@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:padding="16dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/dark_background">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:text="@string/add_ticket"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/etix_blue_light"
+            android:layout_marginBottom="12dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <EditText
+            android:id="@+id/editStore"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_store"
+            android:background="@drawable/bg_input"
+            android:padding="12dp"
+            android:textColorHint="@color/gray_500"
+            android:textColor="@color/white" />
+
+        <EditText
+            android:id="@+id/editAmount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_amount"
+            android:background="@drawable/bg_input"
+            android:padding="12dp"
+            android:inputType="numberDecimal"
+            android:textColorHint="@color/gray_500"
+            android:textColor="@color/white"
+            android:layout_marginTop="12dp" />
+
+        <EditText
+            android:id="@+id/editDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_date"
+            android:background="@drawable/bg_input"
+            android:padding="12dp"
+            android:focusable="false"
+            android:textColorHint="@color/gray_500"
+            android:textColor="@color/white"
+            android:layout_marginTop="12dp" />
+
+        <EditText
+            android:id="@+id/editCategory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/category_icon"
+            android:background="@drawable/bg_input"
+            android:padding="12dp"
+            android:focusable="false"
+            android:textColorHint="@color/gray_500"
+            android:textColor="@color/white"
+            android:layout_marginTop="12dp" />
+
+        <EditText
+            android:id="@+id/editDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_description"
+            android:background="@drawable/bg_input"
+            android:padding="12dp"
+            android:inputType="text"
+            android:textColorHint="@color/gray_500"
+            android:textColor="@color/white"
+            android:layout_marginTop="12dp" />
+
+        <Button
+            android:id="@+id/btnSave"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_save"
+            android:layout_marginTop="20dp"
+            style="@style/Shape" />
+    </LinearLayout>
+</ScrollView>

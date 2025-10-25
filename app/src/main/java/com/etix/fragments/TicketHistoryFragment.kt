@@ -2,119 +2,163 @@ package com.etix.fragments
 
 import android.app.DatePickerDialog
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.Button
-import android.widget.Toast
+import android.widget.SearchView
+import android.widget.TextView
+import androidx.core.os.bundleOf
+import androidx.core.view.MenuHost
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.etix.R
+import com.etix.adapter.TicketAdapter
 import com.etix.data.AppDatabase
 import com.etix.data.TicketRepository
-import com.etix.model.Ticket
-import com.etix.util.CsvExporter
-import com.etix.util.DateUtils
-import com.etix.viewmodel.TicketHistoryVMFactory
 import com.etix.viewmodel.TicketHistoryViewModel
+import com.etix.viewmodel.TicketHistoryViewModel.SortMode
+import com.etix.viewmodel.factory.TicketHistoryVMFactory
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import java.util.Calendar
 
 class TicketHistoryFragment : Fragment() {
 
     private lateinit var recycler: RecyclerView
-    private lateinit var adapter: TicketAdapter
+    private lateinit var emptyView: TextView
+    private lateinit var searchView: SearchView
     private lateinit var btnThisMonth: Button
     private lateinit var btnCustomRange: Button
     private lateinit var btnClearFilter: Button
-    private lateinit var btnExportCsv: Button
 
-    private var currentList: List<Ticket> = emptyList()
+    private lateinit var adapter: TicketAdapter
 
     private val vm: TicketHistoryViewModel by viewModels {
-        val dao = AppDatabase.getDatabase(requireContext()).ticketDao()
+        val dao = AppDatabase.getInstance(requireContext()).ticketDao()
         TicketHistoryVMFactory(TicketRepository(dao))
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         val v = inflater.inflate(R.layout.fragment_ticket_history, container, false)
 
         recycler = v.findViewById(R.id.recyclerTickets)
-        recycler.layoutManager = LinearLayoutManager(requireContext())
-        adapter = TicketAdapter(emptyList())
-        recycler.adapter = adapter
-
-        btnThisMonth   = v.findViewById(R.id.btnThisMonth)
+        emptyView = v.findViewById(R.id.textEmpty)
+        searchView = v.findViewById(R.id.searchTickets)
+        btnThisMonth = v.findViewById(R.id.btnThisMonth)
         btnCustomRange = v.findViewById(R.id.btnCustomRange)
         btnClearFilter = v.findViewById(R.id.btnClearFilter)
-        btnExportCsv   = v.findViewById(R.id.btnExportCsv)
 
-        // Observe la liste depuis le ViewModel
-        vm.tickets.observe(viewLifecycleOwner) { list ->
-            currentList = list
-            adapter.updateData(list)
-        }
+        adapter = TicketAdapter(onItemClick = { _ -> }) // Click prêt si besoin
+
+        recycler.layoutManager = LinearLayoutManager(requireContext())
+        recycler.adapter = adapter
+
+        // SearchView
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(q: String?): Boolean {
+                vm.setQuery(q.orEmpty())
+                return true
+            }
+
+            override fun onQueryTextChange(newText: String?): Boolean {
+                vm.setQuery(newText.orEmpty())
+                return true
+            }
+        })
 
         // Filtres rapides
         btnThisMonth.setOnClickListener {
-            val start = DateUtils.firstDayOfCurrentMonth()
-            val end   = DateUtils.lastDayOfCurrentMonth()
+            val (start, end) = currentMonthRange()
             vm.setDateRange(start, end)
-            Toast.makeText(requireContext(), "Filtre: $start → $end", Toast.LENGTH_SHORT).show()
+        }
+
+        btnCustomRange.setOnClickListener {
+            pickCustomRange { s, e -> vm.setDateRange(s, e) }
         }
 
         btnClearFilter.setOnClickListener {
             vm.clearDateRange()
-            Toast.makeText(requireContext(), "Filtre désactivé", Toast.LENGTH_SHORT).show()
         }
 
-        // Période personnalisée (deux DatePickers)
-        btnCustomRange.setOnClickListener {
-            pickCustomRange { start, end ->
-                vm.setDateRange(start, end)
-                Toast.makeText(requireContext(), "Filtre: $start → $end", Toast.LENGTH_SHORT).show()
+        // Collect Flow
+        viewLifecycleOwner.lifecycleScope.launch {
+            vm.tickets.collectLatest { list ->
+                adapter.submitList(list)
+                toggleEmpty(list.isEmpty())
             }
         }
 
-        // Export CSV
-        btnExportCsv.setOnClickListener {
-            if (currentList.isEmpty()) {
-                Toast.makeText(requireContext(), "Aucun ticket à exporter", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-            val file = CsvExporter.exportTickets(requireContext(), currentList)
-            Toast.makeText(requireContext(), "CSV exporté: ${file.name}", Toast.LENGTH_LONG).show()
-        }
+        // Menu de tri
+        setupSortMenu()
 
         return v
     }
 
-    private fun pickCustomRange(onPicked: (String, String) -> Unit) {
+    private fun setupSortMenu() {
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.menu_history, menu)
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                when (menuItem.itemId) {
+                    R.id.sort_date_desc   -> vm.setSort(SortMode.DATE_DESC)
+                    R.id.sort_date_asc    -> vm.setSort(SortMode.DATE_ASC)
+                    R.id.sort_amount_desc -> vm.setSort(SortMode.AMOUNT_DESC)
+                    R.id.sort_amount_asc  -> vm.setSort(SortMode.AMOUNT_ASC)
+                    else -> return false
+                }
+                return true
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
+    }
+
+    private fun toggleEmpty(isEmpty: Boolean) {
+        emptyView.visibility = if (isEmpty) View.VISIBLE else View.GONE
+        recycler.visibility = if (isEmpty) View.GONE else View.VISIBLE
+    }
+
+    private fun currentMonthRange(): Pair<Long, Long> {
+        val c = Calendar.getInstance()
+        c.set(Calendar.DAY_OF_MONTH, 1)
+        c.set(Calendar.HOUR_OF_DAY, 0)
+        c.set(Calendar.MINUTE, 0)
+        c.set(Calendar.SECOND, 0)
+        c.set(Calendar.MILLISECOND, 0)
+        val start = c.timeInMillis
+
+        c.set(Calendar.DAY_OF_MONTH, c.getActualMaximum(Calendar.DAY_OF_MONTH))
+        c.set(Calendar.HOUR_OF_DAY, 23)
+        c.set(Calendar.MINUTE, 59)
+        c.set(Calendar.SECOND, 59)
+        c.set(Calendar.MILLISECOND, 999)
+        val end = c.timeInMillis
+
+        return start to end
+    }
+
+    private fun pickCustomRange(onPicked: (Long, Long) -> Unit) {
         val cal = Calendar.getInstance()
-        DatePickerDialog(
-            requireContext(),
-            { _, y, m, d ->
-                val start = "${y}-${(m + 1).toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}"
-                // deuxième picker pour la date de fin
-                DatePickerDialog(
-                    requireContext(),
-                    { _, y2, m2, d2 ->
-                        val end = "${y2}-${(m2 + 1).toString().padStart(2, '0')}-${d2.toString().padStart(2, '0')}"
-                        onPicked(start, end)
-                    },
-                    cal.get(Calendar.YEAR),
-                    cal.get(Calendar.MONTH),
-                    cal.get(Calendar.DAY_OF_MONTH)
-                ).show()
-            },
-            cal.get(Calendar.YEAR),
-            cal.get(Calendar.MONTH),
-            cal.get(Calendar.DAY_OF_MONTH)
-        ).show()
+        DatePickerDialog(requireContext(), { _, y, m, d ->
+            val s = Calendar.getInstance().apply {
+                set(y, m, d, 0, 0, 0)
+                set(Calendar.MILLISECOND, 0)
+            }.timeInMillis
+
+            DatePickerDialog(requireContext(), { _, y2, m2, d2 ->
+                val e = Calendar.getInstance().apply {
+                    set(y2, m2, d2, 23, 59, 59)
+                    set(Calendar.MILLISECOND, 999)
+                }.timeInMillis
+                onPicked(s, e)
+            }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
+        }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
     }
 }

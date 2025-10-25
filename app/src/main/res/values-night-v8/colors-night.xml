@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Bleu principal et ses variantes -->
+    <color name="etix_blue">#3399FF</color>
+    <color name="etix_blue_dark">#004C99</color>
+    <color name="etix_blue_light">#99CCFF</color>
+    <color name="blue">#007BFF</color>
+
+    <!-- Gamme bleue -->
+    <color name="blue_50">#0D47A1</color>
+    <color name="blue_100">#1976D2</color>
+    <color name="blue_200">#2196F3</color>
+    <color name="blue_300">#42A5F5</color>
+    <color name="blue_400">#64B5F6</color>
+    <color name="blue_500">#90CAF9</color>
+    <color name="blue_700">#BBDEFB</color>
+    <color name="blue_900">#E3F2FD</color>
+
+    <!-- Gris (inverse pour le mode sombre) -->
+    <color name="gray_100">#212121</color>
+    <color name="gray_300">#424242</color>
+    <color name="gray_400">#B0B0B0</color>
+    <color name="gray_500">#757575</color>
+    <color name="gray_600">#BDBDBD</color>
+    <color name="gray_700">#BDBDBD</color>
+    <color name="gray_800">#424242</color>
+    <color name="gray_900">#F5F5F5</color>
+    <color name="gray_200">#2C2C2C</color> <!-- Exemple sombre -->
+
+    <!-- Inversés pour dark mode -->
+    <color name="white">#000000</color>
+    <color name="black">#FFFFFF</color>
+
+    <!-- Thèmes et états -->
+    <color name="red_error">#EF9A9A</color>
+    <color name="green_success">#A5D6A7</color>
+
+    <!-- Fond général -->
+    <color name="background_light">#121212</color>
+    <color name="background_dark">#000000</color>
+    <color name="dark_background">#121212</color>
+
+    <!-- Ajouts recommandés -->
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#B0B0B0</color>
+    <color name="divider">#333333</color>
+    <color name="surface">#1E1E1E</color>
+    <color name="input_background">#1C1C1C</color>
+    <color name="button_background">#004C99</color>
+    <color name="button_text">#FFFFFF</color>
+    <color name="card_background">#1A1A1A</color>
+
+    <color name="md_primary">#007BFF</color>
+    <color name="md_onPrimary">#FFFFFF</color>
+
+    <color name="md_primaryContainer">#1E2B3C</color>
+    <color name="md_onPrimaryContainer">#FFFFFF</color>
+
+    <color name="md_background">#121212</color>
+    <color name="light_grey">#444444</color>
+
+</resources>

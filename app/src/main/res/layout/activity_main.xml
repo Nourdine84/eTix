@@ -1,66 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="24dp"
-    android:gravity="center"
-    android:background="@android:color/white">
+    android:background="?attr/colorBackground">
 
-    <TextView
-        android:id="@+id/textLogo"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="eTix"
-        android:textSize="32sp"
-        android:textColor="#007BFF"
-        android:textStyle="bold"
-        android:layout_marginBottom="16dp" />
+    <!-- Conteneur des fragments avec swipe horizontal -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/viewPager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/bottomNavigationView" />
 
-    <TextView
-        android:id="@+id/textWelcome"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Bienvenue !"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="4dp"/>
-
-    <TextView
-        android:id="@+id/textUserEmail"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="user@example.com"
-        android:textSize="16sp"
-        android:layout_marginBottom="32dp" />
-
-    <!-- ✅ Bouton pour ajouter un ticket -->
-    <Button
-        android:id="@+id/buttonAddTicket"
+    <!-- Barre de navigation inférieure -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigationView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Ajouter un ticket"
-        android:backgroundTint="#007BFF"
-        android:textColor="@android:color/white"
-        android:layout_marginBottom="16dp" />
+        android:layout_gravity="bottom"
+        app:menu="@menu/bottom_nav_menu"
+        app:itemIconTint="@color/bottom_nav_selector"
+        app:itemTextColor="@color/bottom_nav_selector"
+        android:background="@color/dark_background"
+        app:labelVisibilityMode="labeled" />
 
-    <!-- ✅ Bouton historique (à venir) -->
-    <Button
-        android:id="@+id/buttonViewHistory"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Historique des tickets"
-        android:backgroundTint="#E0E0E0"
-        android:textColor="#000000" />
-
-    <!-- ✅ Bouton paramètres (manquant, à ajouter) -->
-    <Button
-        android:id="@+id/buttonSettings"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Paramètres"
-        android:backgroundTint="#EEEEEE"
-        android:textColor="#000000"
-        android:layout_marginTop="16dp" />
-
-</LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

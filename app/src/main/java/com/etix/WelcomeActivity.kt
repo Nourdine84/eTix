@@ -8,13 +8,18 @@ import androidx.appcompat.app.AppCompatActivity
 class WelcomeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_welcome) // ✅ ici on charge le bon layout
+        setContentView(R.layout.activity_welcome)
 
-        val btnAddTicket = findViewById<Button>(R.id.btnAddTicket)
+        // Bouton Connexion
+        val btnLogin = findViewById<Button>(R.id.btnLogin)
+        btnLogin.setOnClickListener {
+            startActivity(Intent(this, LoginActivity::class.java))
+        }
 
-        btnAddTicket.setOnClickListener {
-            val intent = Intent(this, AddTicketActivity::class.java)
-            startActivity(intent)
+        // Bouton Inscription
+        val btnRegister = findViewById<Button>(R.id.btnRegister)
+        btnRegister.setOnClickListener {
+            startActivity(Intent(this, RegisterActivity::class.java))
         }
     }
 }

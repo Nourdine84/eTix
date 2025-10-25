@@ -1,0 +1,30 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="Theme.eTix" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Couleurs principales -->
+        <item name="colorPrimary">@color/etix_blue</item>
+        <item name="colorPrimaryVariant">@color/etix_blue_dark</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/md_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/md_onPrimaryContainer</item>
+
+        <!-- Fond général -->
+        <item name="android:windowBackground">@color/background_dark</item>
+        <item name="colorBackground">@color/background_dark</item> <!-- ✅ Ajouté -->
+        <item name="colorOnBackground">@color/md_onBackground</item>
+        <item name="android:statusBarColor">@color/md_primary</item>
+        <item name="android:navigationBarColor">@color/md_background</item>
+
+        <!-- Texte -->
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+
+        <!-- Surface (card, boutons) -->
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+
+        <!-- Boutons -->
+        <item name="materialButtonStyle">@style/Widget.eTix.Button</item>
+    </style>
+
+</resources>

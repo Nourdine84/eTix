@@ -1,8 +1,6 @@
 package com.etix.model
 
-import androidx.room.ColumnInfo
-
 data class CategoryTotal(
-    val category: String,
-    @ColumnInfo(name = "totalAmount") val totalAmount: Double
+    val name: String,    // ✅ correspond maintenant à l'alias "name" dans la requête
+    val total: Double
 )

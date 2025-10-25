@@ -1,11 +1,70 @@
-<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.ETix" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
-        <!-- Personnalise tes couleurs ici -->
-        <item name="colorPrimary">#007BFF</item>
-        <item name="colorPrimaryVariant">#0056b3</item>
-        <item name="colorOnPrimary">#FFFFFF</item>
-        <item name="colorSecondary">#03DAC5</item>
-        <item name="colorOnSecondary">#000000</item>
+
+    <style name="Theme.eTix" parent="Theme.Material3.Light.NoActionBar">
+        <!-- Couleurs personnalisées -->
+        <item name="colorPrimary">@color/md_primary</item>
+        <item name="colorOnPrimary">@color/md_onPrimary</item>
+        <item name="colorPrimaryContainer">@color/md_primaryContainer</item>
+        <item name="colorOnPrimaryContainer">@color/md_onPrimaryContainer</item>
+
+        <item name="colorSecondary">@color/md_secondary</item>
+        <item name="colorOnSecondary">@color/md_onSecondary</item>
+        <item name="colorSecondaryContainer">@color/md_secondaryContainer</item>
+        <item name="colorOnSecondaryContainer">@color/md_onSecondaryContainer</item>
+
+        <item name="colorTertiary">@color/md_tertiary</item>
+        <item name="colorOnTertiary">@color/md_onTertiary</item>
+        <item name="colorTertiaryContainer">@color/md_tertiaryContainer</item>
+        <item name="colorOnTertiaryContainer">@color/md_onTertiaryContainer</item>
+
+        <item name="android:colorBackground">@color/md_background</item>
+        <item name="colorBackground">@color/md_background</item> <!-- ✅ Ajouté -->
+        <item name="colorOnBackground">@color/md_onBackground</item>
+        <item name="colorSurface">@color/md_surface</item>
+        <item name="colorOnSurface">@color/md_onSurface</item>
+        <item name="colorSurfaceVariant">@color/md_surfaceVariant</item>
+        <item name="colorOnSurfaceVariant">@color/md_onSurfaceVariant</item>
+        <item name="colorOutline">@color/md_outline</item>
+
+        <item name="colorError">@color/md_error</item>
+        <item name="colorOnError">@color/md_onError</item>
+        <item name="colorErrorContainer">@color/md_errorContainer</item>
+        <item name="colorOnErrorContainer">@color/md_onErrorContainer</item>
+
+        <!-- Apparence composants -->
+        <item name="shapeAppearanceMediumComponent">@style/Shape.Medium</item>
+        <item name="shapeAppearanceLargeComponent">@style/Shape.Large</item>
+
+        <!-- Styles globaux personnalisés -->
+        <item name="materialButtonStyle">@style/Widget.eTix.Button</item>
+        <item name="materialCardViewStyle">@style/Widget.eTix.Card</item>
+
+        <!-- Immersion visuelle -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+        <item name="android:windowBackground">@color/md_background</item>
     </style>
+
+    <style name="Shape.Medium">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/corner_m</item>
+    </style>
+
+    <style name="Shape.Large">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">@dimen/corner_l</item>
+    </style>
+
+    <style name="Widget.eTix.Button" parent="Widget.Material3.Button">
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+    </style>
+
+    <style name="Widget.eTix.Card" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardElevation">6dp</item>
+        <item name="shapeAppearance">@style/Shape.Medium</item>
+    </style>
+
 </resources>

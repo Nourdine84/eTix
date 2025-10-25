@@ -1,40 +1,49 @@
 package com.etix.data
 
-import android.content.Context
+import androidx.lifecycle.asFlow
 import com.etix.model.CategoryTotal
 import com.etix.model.Ticket
 import kotlinx.coroutines.flow.Flow
-import androidx.room.Room
 
-class TicketRepository(context: Context) {
+class TicketRepository(private val dao: TicketDao) {
 
-    private val ticketDao: TicketDao
+    // --- Streams d'historique ---
+    fun getAllFlow(): Flow<List<Ticket>> =
+        dao.getAllFlow()
 
-    init {
-        val db = Room.databaseBuilder(
-            context.applicationContext,
-            AppDatabase::class.java,
-            "etix_db"
-        )
-            .fallbackToDestructiveMigration() // 🔧 Résout le problème "no such table"
-            .build()
+    fun getBetweenDates(start: Long, end: Long): Flow<List<Ticket>> =
+        dao.getBetweenDates(start, end)
 
-        ticketDao = db.ticketDao()
-    }
+    // --- Recherche texte (store/description) ---
+    fun searchAll(query: String): Flow<List<Ticket>> =
+        dao.searchAll(query)
 
-    fun insert(ticket: Ticket) {
-        ticketDao.insert(ticket)
-    }
+    fun searchBetween(query: String, start: Long, end: Long): Flow<List<Ticket>> =
+        dao.searchBetween(query, start, end)
 
-    fun getAllTickets(): Flow<List<Ticket>> {
-        return ticketDao.getAllTickets()
-    }
+    // --- Totaux par catégorie ---
+    // LiveData pour l’UI classique + Flow si tu préfères rester full-Flow
+    fun getTotalsByCategory() = dao.getTotalsByCategory()                 // LiveData<List<CategoryTotal>>
+    fun getCategoryTotals(): Flow<List<CategoryTotal>> =
+        dao.getTotalsByCategory().asFlow()                                // Flow<List<CategoryTotal>>
 
-    fun getTicketsBetween(startDate: Long, endDate: Long): Flow<List<Ticket>> {
-        return ticketDao.getTicketsBetween(startDate, endDate)
-    }
+    // --- Lecture unitaire ---
+    fun getByIdFlow(id: Long): Flow<Ticket?> =
+        dao.getByIdFlow(id)
 
-    fun getCategoryTotals(): Flow<List<CategoryTotal>> {
-        return ticketDao.getCategoryTotals()
-    }
+    suspend fun getById(id: Long): Ticket? =
+        dao.getById(id)
+
+    // --- CRUD ---
+    suspend fun insert(ticket: Ticket) = dao.insert(ticket)
+    suspend fun update(ticket: Ticket) = dao.update(ticket)
+    suspend fun delete(ticket: Ticket) = dao.delete(ticket)
+    suspend fun deleteAll() = dao.deleteAll()
+
+    // --- KPI ---
+    suspend fun sumBetweenDates(start: Long, end: Long): Double =
+        dao.sumBetweenDates(start, end)
+
+    suspend fun countBetweenDates(start: Long, end: Long): Int =
+        dao.countBetweenDates(start, end)
 }

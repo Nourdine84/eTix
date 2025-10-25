@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/app_nav_graph"
+    app:startDestination="@id/menu_home">
+
+    <!-- Accueil -->
+    <fragment
+        android:id="@+id/menu_home"
+        android:name="com.etix.fragments.HomeFragment"
+        android:label="@string/app_name"
+        tools:layout="@layout/fragment_home">
+
+        <!-- 👉 Action vers Ajouter un ticket -->
+        <action
+            android:id="@+id/action_home_to_add"
+            app:destination="@id/menu_add" />
+
+        <!-- 👉 Action vers Historique -->
+        <action
+            android:id="@+id/action_home_to_history"
+            app:destination="@id/menu_history" />
+    </fragment>
+
+    <!-- Ajouter un ticket -->
+    <fragment
+        android:id="@+id/menu_add"
+        android:name="com.etix.fragments.AddTicketFragment"
+        android:label="@string/app_name"
+        tools:layout="@layout/fragment_add_ticket" />
+
+    <!-- Historique -->
+    <fragment
+        android:id="@+id/menu_history"
+        android:name="com.etix.fragments.TicketHistoryFragment"
+        android:label="@string/app_name"
+        tools:layout="@layout/fragment_ticket_history">
+
+        <!-- Vers le détail -->
+        <action
+            android:id="@+id/action_history_to_detail"
+            app:destination="@id/ticketDetailFragment" />
+    </fragment>
+
+    <!-- Catégories -->
+    <fragment
+        android:id="@+id/menu_category"
+        android:name="com.etix.fragments.CategoryFragment"
+        android:label="@string/app_name"
+        tools:layout="@layout/fragment_category" />
+
+    <!-- Paramètres -->
+    <fragment
+        android:id="@+id/menu_settings"
+        android:name="com.etix.fragments.SettingsFragment"
+        android:label="@string/app_name"
+        tools:layout="@layout/fragment_settings" />
+
+    <!-- Détail ticket -->
+    <fragment
+        android:id="@+id/ticketDetailFragment"
+        android:name="com.etix.fragments.TicketDetailFragment"
+        android:label="@string/app_name"
+        tools:layout="@layout/fragment_ticket_detail">
+
+        <argument
+            android:name="ticketId"
+            app:argType="long" />
+
+        <action
+            android:id="@+id/action_detail_to_edit"
+            app:destination="@id/ticketEditFragment" />
+    </fragment>
+
+    <!-- Édition ticket -->
+    <fragment
+        android:id="@+id/ticketEditFragment"
+        android:name="com.etix.fragments.TicketEditFragment"
+        android:label="@string/app_name"
+        tools:layout="@layout/fragment_ticket_edit">
+
+        <argument
+            android:name="ticketId"
+            app:argType="long" />
+    </fragment>
+
+</navigation>

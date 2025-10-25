@@ -1,62 +1,87 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/white"
     android:orientation="vertical"
     android:padding="16dp">
 
-    <!-- Boutons filtres -->
+    <!-- ✅ Barre de titre façon iOS -->
+    <TextView
+        android:id="@+id/tvTicketHistoryTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/nav_history"
+        android:textSize="24sp"
+        android:textColor="@color/etix_blue"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="12dp" />
+
+    <!-- 🔍 Zone de recherche stylisée -->
+    <SearchView
+        android:id="@+id/searchTickets"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:queryHint="@string/search_hint"
+        android:layout_marginBottom="12dp" />
+
+    <!-- 📅 Filtres par date -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:gravity="center"
+        android:gravity="center_vertical"
         android:layout_marginBottom="12dp">
 
         <Button
             android:id="@+id/btnThisMonth"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Ce mois-ci"
-            android:layout_marginEnd="8dp"
-            android:backgroundTint="@color/teal_700"
-            android:textColor="@android:color/white"/>
+            style="@style/Shape"
+            android:layout_width="43dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:text="@string/this_month" />
 
         <Button
             android:id="@+id/btnCustomRange"
-            android:layout_width="wrap_content"
+            style="@style/Shape"
+            android:layout_width="125dp"
             android:layout_height="wrap_content"
-            android:text="Période"
-            android:layout_marginEnd="8dp"
-            android:backgroundTint="@color/teal_700"
-            android:textColor="@android:color/white"/>
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:text="@string/custom_range" />
 
         <Button
             android:id="@+id/btnClearFilter"
-            android:layout_width="wrap_content"
+            style="@style/Shape"
+            android:layout_width="81dp"
             android:layout_height="wrap_content"
-            android:text="Réinitialiser"
-            android:backgroundTint="@color/teal_700"
-            android:textColor="@android:color/white"/>
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:text="@string/clear_filter" />
     </LinearLayout>
 
-    <!-- Bouton export -->
-    <Button
-        android:id="@+id/btnExportCsv"
-        android:layout_width="wrap_content"
+    <!-- ℹ️ Placeholder si vide -->
+    <TextView
+        android:id="@+id/textEmpty"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Exporter CSV"
-        android:layout_gravity="end"
-        android:backgroundTint="@color/teal_700"
-        android:textColor="@android:color/white"
-        android:layout_marginBottom="12dp"/>
+        android:text="@string/empty_history"
+        android:gravity="center"
+        android:padding="24dp"
+        android:textColor="@color/gray_500"
+        android:visibility="gone"
+        android:textSize="16sp"
+        android:textStyle="italic" />
 
-    <!-- Liste des tickets -->
+    <!-- 📜 Liste des tickets -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerTickets"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:clipToPadding="false"
-        android:paddingBottom="8dp"/>
+        android:paddingTop="4dp"
+        android:paddingBottom="4dp" />
+
 </LinearLayout>

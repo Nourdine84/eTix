@@ -5,10 +5,18 @@ import androidx.lifecycle.ViewModelProvider
 import com.etix.data.TicketRepository
 import com.etix.viewmodel.CategoryViewModel
 
-class CategoryVMFactory(private val repository: TicketRepository) : ViewModelProvider.Factory {
+class CategoryVMFactory(
+    private val repo: TicketRepository
+) : ViewModelProvider.Factory {
 
-    @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return CategoryViewModel(repository) as T
+        return when {
+            modelClass.isAssignableFrom(CategoryViewModel::class.java) -> {
+                CategoryViewModel(repo) as T
+            }
+            else -> {
+                throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
+            }
+        }
     }
 }

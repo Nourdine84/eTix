@@ -1,55 +1,90 @@
 package com.etix.viewmodel
 
-import androidx.lifecycle.*
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.etix.data.TicketRepository
 import com.etix.model.Ticket
-import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
-data class DateRange(val start: String, val end: String)
+class TicketHistoryViewModel(
+    private val repository: TicketRepository
+) : ViewModel() {
 
-class TicketHistoryViewModel(private val repo: TicketRepository) : ViewModel() {
+    enum class SortMode { DATE_DESC, DATE_ASC, AMOUNT_DESC, AMOUNT_ASC }
 
-    private val _range = MutableLiveData<DateRange?>(null)
+    private val _tickets = MutableStateFlow<List<Ticket>>(emptyList())
+    val tickets: StateFlow<List<Ticket>> = _tickets
 
-    // On observe un flux différent selon le filtre (null => tous)
-    val tickets: LiveData<List<Ticket>> = _range.switchMap { range ->
-        if (range == null) {
-            repo.getAllTickets().asLiveData()
-        } else {
-            repo.getTicketsBetween(range.start, range.end).asLiveData()
-        }
-    }
+    // État des filtres
+    private var range: Pair<Long, Long>? = null
+    private var query: String = ""
+    private var sortMode: SortMode = SortMode.DATE_DESC
 
-    fun setDateRange(start: String, end: String) {
-        _range.value = DateRange(start, end)
-    }
+    private var loadJob: Job? = null
 
-    fun clearDateRange() {
-        _range.value = null
-    }
-
-    // Exporte la liste courante (le Fragment fournit la liste affichée)
-    fun export(tickets: List<Ticket>, onDone: (Result<java.io.File>) -> Unit) {
-        viewModelScope.launch {
-            try {
-                // l’export est géré par le Fragment via utilitaire (besoin du context)
-                // ici on ne fait rien : on laisse le Fragment appeler CsvExporter
-                // (méthode laissée pour si on veut déplacer la logique côté VM plus tard)
-                // on signale succès côté Fragment.
-            } catch (t: Throwable) {
-                onDone(Result.failure(t))
+    /** (Re)charge en appliquant query/range, puis **tri**. */
+    private fun reload() {
+        loadJob?.cancel()
+        loadJob = viewModelScope.launch {
+            val flow = when {
+                query.isNotBlank() && range != null ->
+                    repository.searchBetween("%$query%", range!!.first, range!!.second)
+                query.isNotBlank() ->
+                    repository.searchAll("%$query%")
+                range != null ->
+                    repository.getBetweenDates(range!!.first, range!!.second)
+                else ->
+                    repository.getAllFlow()
+            }
+            flow.collectLatest { list ->
+                _tickets.value = list.applySort()
             }
         }
     }
-}
 
-class TicketHistoryVMFactory(private val repo: TicketRepository) : ViewModelProvider.Factory {
-    @Suppress("UNCHECKED_CAST")
-    override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(TicketHistoryViewModel::class.java)) {
-            return TicketHistoryViewModel(repo) as T
-        }
-        throw IllegalArgumentException("Unknown ViewModel class")
+    /** Applique le tri courant à une liste. */
+    private fun List<Ticket>.applySort(): List<Ticket> = when (sortMode) {
+        SortMode.DATE_DESC    -> this.sortedByDescending { it.dateMillis }
+        SortMode.DATE_ASC     -> this.sortedBy { it.dateMillis }
+        SortMode.AMOUNT_DESC  -> this.sortedByDescending { it.amount }
+        SortMode.AMOUNT_ASC   -> this.sortedBy { it.amount }
     }
+
+    /** Change le tri et réapplique sur la liste affichée. */
+    fun setSort(mode: SortMode) {
+        sortMode = mode
+        _tickets.value = _tickets.value.applySort()
+    }
+
+    // ------- API publique identique (+ search) -------
+
+    fun refresh() {
+        range = null
+        query = ""
+        reload()
+    }
+
+    fun setDateRange(start: Long, end: Long) {
+        range = start to end
+        reload()
+    }
+
+    fun clearDateRange() {
+        range = null
+        reload()
+    }
+
+    fun setQuery(q: String) {
+        query = q
+        reload()
+    }
+
+    // CRUD
+    fun insert(ticket: Ticket) = viewModelScope.launch { repository.insert(ticket) }
+    fun delete(ticket: Ticket) = viewModelScope.launch { repository.delete(ticket) }
+    fun update(ticket: Ticket) = viewModelScope.launch { repository.update(ticket) }
 }

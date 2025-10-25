@@ -11,7 +11,7 @@ class AddTicketViewModel(private val repository: TicketRepository) : ViewModel()
     val saving = MutableLiveData(false)
     val error = MutableLiveData<String?>()
 
-    fun addTicket(ticket: Ticket) {
+    fun insertTicket(ticket: Ticket) {
         viewModelScope.launch {
             try {
                 saving.value = true

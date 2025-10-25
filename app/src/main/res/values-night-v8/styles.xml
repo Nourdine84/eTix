@@ -1,0 +1,56 @@
+<resources>
+
+    <!-- Splash screen theme (nuit) -->
+    <style name="Theme.SplashScreen" parent="Theme.Material3.DayNight.NoActionBar">
+        <item name="android:windowBackground">?attr/colorBackground</item>
+    </style>
+
+    <!-- ✅ Style bouton nuit -->
+    <style name="Shape">
+        <item name="android:background">@drawable/bg_button</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:backgroundTint">@color/md_primary</item>
+        <item name="android:textColor">@color/md_onPrimary</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- Lien texte (nuit) -->
+    <style name="LinkText">
+        <item name="android:textColor">@color/blue</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <!-- KPI styles (nuit) -->
+    <style name="KPI.Label">
+        <item name="android:textColor">@color/md_onPrimaryContainer</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textStyle">normal</item>
+    </style>
+
+    <style name="KPI.Value">
+        <item name="android:textColor">@color/md_primary</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:layout_marginTop">2dp</item>
+    </style>
+
+    <!-- Style générique KPI (optionnel) -->
+    <style name="KPI">
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/md_onPrimary</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:padding">8dp</item>
+    </style>
+
+    <!-- Texte de détail (mode nuit) -->
+    <style name="EtixDetailText">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textColor">@color/md_onSurface</item>
+        <item name="android:layout_marginBottom">12dp</item>
+    </style>
+
+</resources>

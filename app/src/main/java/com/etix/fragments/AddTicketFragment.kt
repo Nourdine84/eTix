@@ -1,25 +1,22 @@
 package com.etix.fragments
 
 import android.app.DatePickerDialog
+import android.app.Dialog
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.*
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.etix.R
+import com.etix.data.AppDatabase
 import com.etix.model.Ticket
-import com.etix.viewmodel.AddTicketViewModel
-import com.etix.viewmodel.factory.AddTicketVMFactory
-import com.etix.data.TicketRepository
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
 import java.util.*
 
 class AddTicketFragment : Fragment() {
-
-    private val viewModel: AddTicketViewModel by viewModels {
-        AddTicketVMFactory(TicketRepository(requireContext()))
-    }
 
     private lateinit var storeInput: EditText
     private lateinit var dateInput: EditText
@@ -28,99 +25,99 @@ class AddTicketFragment : Fragment() {
     private lateinit var descriptionInput: EditText
     private lateinit var buttonSave: Button
     private lateinit var buttonQuickAdd: Button
+    private lateinit var btnPickDate: Button
+
+    private var selectedMillis: Long? = null
+    private val df = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
-        val view = inflater.inflate(R.layout.fragment_add_ticket, container, false)
+        val v = inflater.inflate(R.layout.fragment_add_ticket, container, false)
 
-        storeInput = view.findViewById(R.id.editTextStore)
-        dateInput = view.findViewById(R.id.editTextDate)
-        amountInput = view.findViewById(R.id.editTextAmount)
-        categorySpinner = view.findViewById(R.id.spinnerCategory)
-        descriptionInput = view.findViewById(R.id.editTextDescription)
-        buttonSave = view.findViewById(R.id.buttonSave)
-        buttonQuickAdd = view.findViewById(R.id.buttonQuickAdd)
+        storeInput = v.findViewById(R.id.editTextStore)
+        dateInput = v.findViewById(R.id.editTextDate)
+        amountInput = v.findViewById(R.id.editTextAmount)
+        categorySpinner = v.findViewById(R.id.spinnerCategory)
+        descriptionInput = v.findViewById(R.id.editTextDescription)
+        buttonSave = v.findViewById(R.id.buttonSave)
+        buttonQuickAdd = v.findViewById(R.id.buttonQuickAdd)
+        btnPickDate = v.findViewById(R.id.btnPickDate)
 
         val categories = arrayOf("Supermarché", "Restaurant", "Transport", "Santé", "Autre")
         categorySpinner.adapter = ArrayAdapter(
-            requireContext(),
-            android.R.layout.simple_spinner_dropdown_item,
-            categories
+            requireContext(), android.R.layout.simple_spinner_dropdown_item, categories
         )
 
-        dateInput.setOnClickListener { showDatePicker() }
-        dateInput.setOnFocusChangeListener { _, hasFocus -> if (hasFocus) showDatePicker() }
+        btnPickDate.setOnClickListener { openDatePicker() }
 
-        viewModel.saving.observe(viewLifecycleOwner) {
-            buttonSave.isEnabled = !it
-            buttonQuickAdd.isEnabled = !it
-        }
+        buttonSave.setOnClickListener {
+            val store = storeInput.text.toString().trim()
+            val amount = amountInput.text.toString().replace(",", ".").toDoubleOrNull()
+            val category = categorySpinner.selectedItem?.toString().orEmpty()
+            val desc = descriptionInput.text.toString().trim()
+            val millis = selectedMillis
 
-        viewModel.error.observe(viewLifecycleOwner) { err ->
-            if (err != null) {
-                Toast.makeText(requireContext(), err, Toast.LENGTH_SHORT).show()
-            } else {
-                Toast.makeText(requireContext(), "Ticket ajouté avec succès", Toast.LENGTH_SHORT).show()
-                clearForm()
+            if (store.isEmpty() || millis == null || amount == null) {
+                showErrorPopup("Erreur", "Veuillez remplir tous les champs obligatoires.")
+                return@setOnClickListener
+            }
+
+            val ticket = Ticket(
+                store = store,
+                amount = amount,
+                category = category.ifBlank { "Autre" },
+                description = if (desc.isBlank()) null else desc,
+                dateMillis = millis
+            )
+
+            lifecycleScope.launch(Dispatchers.IO) {
+                AppDatabase.getInstance(requireContext()).ticketDao().insert(ticket)
+                withContext(Dispatchers.Main) {
+                    showSuccessPopup("Ticket enregistré avec succès ✅")
+                    clearForm()
+                }
             }
         }
 
-        buttonSave.setOnClickListener {
-            val ticket = buildTicketOrNull() ?: return@setOnClickListener
-            viewModel.addTicket(ticket)
-        }
-
         buttonQuickAdd.setOnClickListener {
+            val now = Calendar.getInstance().timeInMillis
             val ticket = Ticket(
-                store = "Test",
-                date = "2025-08-14",
+                store = "Ajout rapide",
                 amount = 9.99,
                 category = "Autre",
-                description = "Ajout rapide"
+                description = "Créé automatiquement",
+                dateMillis = now
             )
-            viewModel.addTicket(ticket)
+
+            lifecycleScope.launch(Dispatchers.IO) {
+                AppDatabase.getInstance(requireContext()).ticketDao().insert(ticket)
+                withContext(Dispatchers.Main) {
+                    showSuccessPopup("Ajout rapide effectué ✅")
+                    clearForm()
+                }
+            }
         }
 
-        return view
+        return v
     }
 
-    private fun showDatePicker() {
+    private fun openDatePicker() {
         val cal = Calendar.getInstance()
-        val dlg = DatePickerDialog(
+        DatePickerDialog(
             requireContext(),
             { _, y, m, d ->
-                val month = (m + 1).toString().padStart(2, '0')
-                val day = d.toString().padStart(2, '0')
-                dateInput.setText("$y-$month-$day")
+                val set = Calendar.getInstance().apply {
+                    set(y, m, d, 12, 0, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
+                selectedMillis = set.timeInMillis
+                dateInput.setText(df.format(set.time))
             },
             cal.get(Calendar.YEAR),
             cal.get(Calendar.MONTH),
             cal.get(Calendar.DAY_OF_MONTH)
-        )
-        dlg.show()
-    }
-
-    private fun buildTicketOrNull(): Ticket? {
-        val store = storeInput.text.toString().trim()
-        val date = dateInput.text.toString().trim()
-        val amount = amountInput.text.toString().toDoubleOrNull()
-        val category = categorySpinner.selectedItem?.toString().orEmpty()
-        val description = descriptionInput.text.toString().trim()
-
-        if (store.isEmpty() || date.isEmpty() || amount == null) {
-            Toast.makeText(requireContext(), "Tous les champs obligatoires doivent être remplis", Toast.LENGTH_SHORT).show()
-            return null
-        }
-
-        return Ticket(
-            store = store,
-            date = date,
-            amount = amount,
-            category = category,
-            description = description
-        )
+        ).show()
     }
 
     private fun clearForm() {
@@ -129,5 +126,43 @@ class AddTicketFragment : Fragment() {
         amountInput.text.clear()
         descriptionInput.text.clear()
         categorySpinner.setSelection(0)
+        selectedMillis = null
+    }
+
+    private fun showSuccessPopup(message: String) {
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.popup_success, null)
+        val dialog = Dialog(requireContext())
+        dialog.setContentView(dialogView)
+        dialog.setCancelable(true)
+
+        val textMsg = dialogView.findViewById<TextView>(R.id.textMessage)
+        val btnOk = dialogView.findViewById<Button>(R.id.btnOk)
+        textMsg.text = message
+        btnOk.setOnClickListener { dialog.dismiss() }
+
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.window?.setLayout(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        dialog.window?.setGravity(Gravity.CENTER)
+        dialog.show()
+    }
+
+    private fun showErrorPopup(title: String, message: String) {
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.popup_error, null)
+        val dialog = Dialog(requireContext())
+        dialog.setContentView(dialogView)
+        dialog.setCancelable(false)
+
+        val titleView = dialogView.findViewById<TextView>(R.id.textTitle)
+        val textMsg = dialogView.findViewById<TextView>(R.id.textMessage)
+        val btnOk = dialogView.findViewById<Button>(R.id.btnOk)
+
+        titleView.text = title
+        textMsg.text = message
+        btnOk.setOnClickListener { dialog.dismiss() }
+
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+        dialog.window?.setLayout(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        dialog.window?.setGravity(Gravity.CENTER)
+        dialog.show()
     }
 }

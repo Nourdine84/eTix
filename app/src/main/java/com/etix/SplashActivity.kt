@@ -1,20 +1,21 @@
+// 📁 com.etix.SplashActivity.kt
 package com.etix
 
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 
 class SplashActivity : AppCompatActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_splash)
 
-        // ⏳ Attente de 3 secondes avant de lancer StartActivity
-        Handler(Looper.getMainLooper()).postDelayed({
-            startActivity(Intent(this, StartActivity::class.java))
-            finish()
-        }, 3000)
+        val sharedPrefs: SharedPreferences = getSharedPreferences("eTixPrefs", MODE_PRIVATE)
+        val isLoggedIn = sharedPrefs.getBoolean("isLoggedIn", false)
+
+        val nextActivity = if (isLoggedIn) MainActivity::class.java else LoginActivity::class.java
+        startActivity(Intent(this, nextActivity))
+        finish()
     }
 }

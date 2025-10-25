@@ -1,18 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/homeContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- ✅ Conteneur pour les fragments -->
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/viewPager"
+    <!-- ✅ Le conteneur de navigation -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/nav_host"
+        android:name="androidx.navigation.fragment.NavHostFragment"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="top" />
+        app:defaultNavHost="true"
+        app:navGraph="@navigation/nav_graph" />
 
-    <!-- ✅ Barre de navigation en bas -->
+    <!-- ✅ Bottom nav reliée au NavController -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigation"
         android:layout_width="match_parent"
@@ -20,8 +23,7 @@
         android:layout_gravity="bottom"
         android:background="@android:color/white"
         app:menu="@menu/bottom_nav_menu"
-        app:labelVisibilityMode="labeled"
-        app:itemIconTint="@color/nav_item_color"
-        app:itemTextColor="@color/nav_item_color" />
+        app:labelVisibilityMode="labeled" />
+
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

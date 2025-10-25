@@ -1,13 +1,9 @@
-package com.etix.fragments
+package com.etix.adapter
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import com.etix.fragments.AddTicketFragment
-import com.etix.fragments.CategoryFragment
-import com.etix.fragments.HomeFragment
-import com.etix.fragments.SettingsFragment
-import com.etix.fragments.TicketHistoryFragment
+import com.etix.fragments.*
 
 class FragmentAdapter(activity: FragmentActivity) : FragmentStateAdapter(activity) {
 

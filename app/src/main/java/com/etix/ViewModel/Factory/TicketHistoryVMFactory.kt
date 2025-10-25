@@ -9,9 +9,9 @@ class TicketHistoryVMFactory(
     private val repository: TicketRepository
 ) : ViewModelProvider.Factory {
 
+    @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(TicketHistoryViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
             return TicketHistoryViewModel(repository) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")

@@ -6,28 +6,42 @@
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:theme="@style/Theme.ETix">
+        android:theme="@style/Theme.eTix">
 
-        <!-- Ecran de démarrage (lance l’app) -->
+        <!-- ✅ Splash screen (launcher) -->
         <activity
             android:name=".SplashActivity"
             android:exported="true"
-            android:theme="@style/Theme.ETix">
-
+            android:theme="@style/Theme.eTix">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
+        <!-- ✅ Main container (ViewPager2 + Fragments) -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="false" />
 
-        <!-- Les autres écrans (mets seulement ceux qui EXISTENT vraiment) -->
-        <activity android:name=".StartActivity" android:exported="false" />
-        <activity android:name=".LoginActivity" android:exported="false" />
-        <activity android:name=".RegisterActivity" android:exported="false" />
-        <activity android:name=".MainActivity" android:exported="false" />
-        <activity android:name=".AddTicketActivity" android:exported="false" />
+        <!-- ✅ Authentification screens -->
+        <activity
+            android:name=".LoginActivity"
+            android:exported="true" />
+        <activity
+            android:name=".RegisterActivity"
+            android:exported="true" />
+
+        <!-- ✅ Ticket details & edit (Safe Args navigation) -->
+        <activity
+            android:name=".TicketDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".TicketEditActivity"
+            android:exported="false" />
 
     </application>
+
 </manifest>

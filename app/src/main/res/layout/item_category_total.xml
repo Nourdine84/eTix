@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="2dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Nom catégorie -->
+        <TextView
+            android:id="@+id/tvCatName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Supermarché"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@color/md_primary" />
+
+        <!-- Montant + pourcentage -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            android:gravity="center_vertical"
+            android:weightSum="1">
+
+            <TextView
+                android:id="@+id/tvCatAmount"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.6"
+                android:text="125,50 €"
+                android:textSize="14sp"
+                android:textColor="@color/md_onPrimaryContainer" />
+
+            <TextView
+                android:id="@+id/tvPercent"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.4"
+                android:gravity="end"
+                android:text="28 %"
+                android:textSize="13sp"
+                android:textColor="@color/md_primary" />
+        </LinearLayout>
+
+        <!-- Barre de progression -->
+        <ProgressBar
+            android:id="@+id/progressPercent"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="8dp"
+            android:layout_marginTop="8dp"
+            android:progress="30"
+            android:max="100"
+            android:progressTint="@color/md_primary"
+            android:backgroundTint="#E0E0E0" />
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

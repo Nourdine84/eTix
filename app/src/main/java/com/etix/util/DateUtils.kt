@@ -9,10 +9,11 @@ object DateUtils {
 
     fun today(): String = fmt.format(System.currentTimeMillis())
 
-    fun firstDayOfCurrentMonth(): String {
-        val cal = Calendar.getInstance().apply { set(Calendar.DAY_OF_MONTH, 1) }
-        return fmt.format(cal.time)
+    fun toMillis(dateString: String): Long {
+        val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        return format.parse(dateString)?.time ?: 0L
     }
+
 
     fun lastDayOfCurrentMonth(): String {
         val cal = Calendar.getInstance().apply {

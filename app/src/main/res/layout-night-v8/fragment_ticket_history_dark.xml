@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/dark_background"
+    android:padding="16dp">
+
+    <!-- 🧾 Titre -->
+    <TextView
+        android:id="@+id/textTitleHistory"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/nav_history"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/etix_blue_light" />
+
+    <!-- 📅 Filtres -->
+    <LinearLayout
+        android:id="@+id/layoutFilters"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/textTitleHistory"
+        android:layout_marginTop="12dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <Button
+            android:id="@+id/btnThisMonth"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:text="@string/this_month"
+            style="@style/Shape" />
+
+        <Button
+            android:id="@+id/btnCustomRange"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="@string/custom_range"
+            style="@style/Shape" />
+    </LinearLayout>
+
+    <!-- 🔍 Recherche -->
+    <EditText
+        android:id="@+id/editSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/layoutFilters"
+        android:layout_marginTop="8dp"
+        android:hint="@string/search_hint"
+        android:background="@drawable/bg_input"
+        android:padding="10dp"
+        android:textColorHint="@color/gray_600"
+        android:textColor="@color/white" />
+
+    <!-- 🧾 Liste des tickets -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerTickets"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/editSearch"
+        android:layout_marginTop="12dp"
+        android:clipToPadding="false"
+        android:paddingBottom="80dp" />
+
+    <!-- 📭 Texte si vide -->
+    <TextView
+        android:id="@+id/textEmptyHistory"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/empty_history"
+        android:gravity="center"
+        android:textColor="@color/gray_500"
+        android:padding="24dp"
+        android:layout_below="@id/editSearch"
+        android:visibility="gone" />
+</RelativeLayout>

@@ -1,10 +1,10 @@
 package com.etix
 
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.widget.Button
 import android.widget.EditText
-import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
@@ -14,48 +14,51 @@ class RegisterActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
 
-        val emailInput = findViewById<EditText>(R.id.editTextEmail)
-        val passwordInput = findViewById<EditText>(R.id.editTextPassword)
-        val confirmPasswordInput = findViewById<EditText>(R.id.editTextConfirmPassword)
-        val registerButton = findViewById<Button>(R.id.buttonRegister)
-        val loginLink = findViewById<TextView>(R.id.textLogin)
+        val editUsername = findViewById<EditText>(R.id.editTextUsername)
+        val editFullName = findViewById<EditText>(R.id.edtFullName)
+        val editEmail = findViewById<EditText>(R.id.edtEmail)
+        val editPassword = findViewById<EditText>(R.id.edtPassword)
+        val editConfirmPassword = findViewById<EditText>(R.id.edtConfirmPassword)
 
-        registerButton.setOnClickListener {
-            val email = emailInput.text.toString()
-            val password = passwordInput.text.toString()
-            val confirmPassword = confirmPasswordInput.text.toString()
+        val btnRegister = findViewById<Button>(R.id.btnRegister)
+        val btnGoLogin = findViewById<Button>(R.id.btnGoLogin)
 
-            when {
-                email.isEmpty() || password.isEmpty() || confirmPassword.isEmpty() -> {
-                    showMessage("Veuillez remplir tous les champs.")
-                }
+        btnRegister.setOnClickListener {
+            val username = editUsername.text.toString().trim()
+            val fullName = editFullName.text.toString().trim()
+            val email = editEmail.text.toString().trim()
+            val password = editPassword.text.toString()
+            val confirmPassword = editConfirmPassword.text.toString()
 
-                password != confirmPassword -> {
-                    showMessage("Les mots de passe ne correspondent pas.")
-                }
-
-                password.length < 6 -> {
-                    showMessage("Le mot de passe doit contenir au moins 6 caractères.")
-                }
-
-                else -> {
-                    // ✅ Inscription simulée réussie → redirige vers l'accueil
-                    showMessage("Compte créé avec succès !")
-                    val intent = Intent(this, MainActivity::class.java)
-                    startActivity(intent)
-                    finish()
-                }
+            // Vérification basique
+            if (username.isEmpty() || fullName.isEmpty() || email.isEmpty() || password.isEmpty()) {
+                Toast.makeText(this, "Veuillez remplir tous les champs", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
             }
-        }
 
-        loginLink.setOnClickListener {
-            val intent = Intent(this, LoginActivity::class.java)
-            startActivity(intent)
+            if (password != confirmPassword) {
+                Toast.makeText(this, "Les mots de passe ne correspondent pas", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Sauvegarde du nom d'utilisateur (ou autre logique)
+            val sharedPrefs: SharedPreferences = getSharedPreferences("eTixPrefs", MODE_PRIVATE)
+            with(sharedPrefs.edit()) {
+                putString("username", username)
+                putBoolean("isRegistered", true)
+                apply()
+            }
+
+            Toast.makeText(this, "Inscription réussie !", Toast.LENGTH_SHORT).show()
+
+            // Redirection vers Login
+            startActivity(Intent(this, LoginActivity::class.java))
             finish()
         }
-    }
 
-    private fun showMessage(message: String) {
-        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+        btnGoLogin.setOnClickListener {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+        }
     }
 }

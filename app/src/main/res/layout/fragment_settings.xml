@@ -1,40 +1,115 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="24dp"
-    android:background="@android:color/white">
+    android:background="?attr/colorBackground">
 
-    <!-- Icône paramètres temporaire -->
-    <ImageView
-        android:id="@+id/iconSettings"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="16dp"
-        android:src="@drawable/ic_settings"
-        app:tint="#007BFF" />
-
-    <!-- Titre -->
-    <TextView
-        android:id="@+id/settingsTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Paramètres"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:textColor="#000000"
-        android:layout_gravity="center_horizontal" />
-
-    <!-- ✅ Bouton de déconnexion avec l'ID attendu -->
-    <Button
-        android:id="@+id/buttonLogout"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Se déconnecter"
-        android:backgroundTint="#007BFF"
-        android:textColor="@android:color/white"
-        android:layout_marginTop="24dp" />
-</LinearLayout>
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center_horizontal">
+
+        <!-- Titre -->
+        <TextView
+            android:id="@+id/textViewTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Paramètres"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorOnBackground"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Nom utilisateur -->
+        <TextView
+            android:id="@+id/textUser"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Connecté en tant que : ... "
+            android:textSize="16sp"
+            android:textStyle="italic"
+            android:textColor="?attr/colorOnBackground"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Version -->
+        <TextView
+            android:id="@+id/textVersion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Version 1.0"
+            android:textSize="14sp"
+            android:textColor="?attr/colorOnSurface"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Changer thème -->
+        <Button
+            android:id="@+id/btnToggleTheme"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Changer de thème"
+            android:textAllCaps="false"
+            android:layout_marginBottom="16dp"
+            style="@style/Shape"
+            android:background="@drawable/bg_button_secondary"
+            android:textColor="?attr/colorPrimary" />
+
+        <!-- Vider base -->
+        <Button
+            android:id="@+id/btnClearAll"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Vider tous les tickets"
+            android:textAllCaps="false"
+            android:layout_marginBottom="16dp"
+            style="@style/Shape"
+            android:background="@drawable/bg_button"
+            android:textColor="@android:color/white" />
+
+        <!-- Afficher crash log -->
+        <Button
+            android:id="@+id/btnShowCrash"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Afficher crash log"
+            android:textAllCaps="false"
+            android:layout_marginBottom="8dp"
+            style="@style/Shape"
+            android:background="@drawable/bg_button_secondary"
+            android:textColor="?attr/colorPrimary" />
+
+        <!-- Supprimer crash logs -->
+        <Button
+            android:id="@+id/btnClearCrash"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Supprimer logs de crash"
+            android:textAllCaps="false"
+            android:layout_marginBottom="24dp"
+            style="@style/Shape"
+            android:background="@drawable/bg_button_secondary"
+            android:textColor="?attr/colorPrimary" />
+
+        <!-- Aperçu crash log -->
+        <TextView
+            android:id="@+id/textCrashPreview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:textSize="12sp"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Déconnexion -->
+        <Button
+            android:id="@+id/btnLogout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Se déconnecter"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:background="@drawable/bg_button"
+            style="@style/Shape" />
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/dark_background"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Magasin -->
+        <TextView
+            android:id="@+id/tvStore"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Magasin"
+            android:textColor="@color/etix_blue_light"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/editTextStoreName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_store"
+            android:background="@drawable/bg_input"
+            android:textColor="@color/white"
+            android:textColorHint="@color/gray_500"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Montant -->
+        <TextView
+            android:id="@+id/tvAmount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Montant"
+            android:textColor="@color/etix_blue_light"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/editTextAmount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_amount"
+            android:background="@drawable/bg_input"
+            android:textColor="@color/white"
+            android:textColorHint="@color/gray_500"
+            android:inputType="numberDecimal"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Date -->
+        <TextView
+            android:id="@+id/tvDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Date"
+            android:textColor="@color/etix_blue_light"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btnPickDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_pick_date"
+            style="@style/Shape"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Catégorie -->
+        <TextView
+            android:id="@+id/tvCategory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Catégorie"
+            android:textColor="@color/etix_blue_light"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/editTextCategory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_category"
+            android:background="@drawable/bg_input"
+            android:textColor="@color/white"
+            android:textColorHint="@color/gray_500"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Description -->
+        <TextView
+            android:id="@+id/tvDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Description"
+            android:textColor="@color/etix_blue_light"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/editTextDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="@string/hint_description"
+            android:background="@drawable/bg_input"
+            android:textColor="@color/white"
+            android:textColorHint="@color/gray_500"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- Bouton Modifier -->
+        <Button
+            android:id="@+id/btnEdit"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_edit"
+            style="@style/Shape"
+            android:layout_marginTop="16dp" />
+
+        <!-- Bouton Supprimer -->
+        <Button
+            android:id="@+id/btnDelete"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_delete"
+            style="@style/Shape"
+            android:layout_marginTop="8dp" />
+    </LinearLayout>
+</ScrollView>
