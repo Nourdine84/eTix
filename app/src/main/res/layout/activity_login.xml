@@ -30,7 +30,7 @@
             android:hint="@string/hint_username"
             android:inputType="textPersonName"
             android:padding="12dp"
-            android:textColor="@color/white"
+            android:textColor="@color/md_background"
             android:textColorHint="@color/text_secondary" />
 
         <!-- Mot de passe -->
@@ -43,7 +43,7 @@
             android:padding="12dp"
             android:background="@drawable/bg_input"
             android:layout_marginBottom="24dp"
-            android:textColor="@color/white"
+            android:textColor="@color/md_background"
             android:textColorHint="@color/text_secondary" />
 
         <!-- Bouton connexion -->
@@ -65,7 +65,7 @@
             android:layout_height="wrap_content"
             android:text="@string/action_go_register"
             android:textAllCaps="false"
-            android:textColor="@color/etix_blue"
+            android:textColor="@color/white"
             android:background="@drawable/bg_button_secondary"
             android:layout_marginBottom="16dp"
             style="@style/Shape" />
@@ -81,6 +81,5 @@
             android:layout_marginTop="12dp"
             android:clickable="true"
             android:focusable="true" />
-
     </LinearLayout>
 </ScrollView>

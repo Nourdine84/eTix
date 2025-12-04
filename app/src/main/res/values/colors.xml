@@ -20,18 +20,18 @@
     <color name="gray_800">#424242</color>
     <color name="gray_200">#EEEEEE</color>
     <color name="gray_400">#B0B0B0</color>
-    <!-- Gris moyen -->
+    <color name="text_secondary">#B0B0B0</color> <!-- ✅ Ajouté -->
 
     <!-- Autres -->
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
     <color name="red_error">#F44336</color>
     <color name="green_success">#4CAF50</color>
+
     <!-- Couleurs principales eTix -->
     <color name="etix_blue">#007BFF</color>
     <color name="etix_blue_dark">#0056b3</color>
     <color name="etix_blue_light">#66B2FF</color>
-    <!-- Autres couleurs si besoin -->
 
     <!-- Couleur de fond général -->
     <color name="background_light">#FAFAFA</color>
@@ -50,10 +50,10 @@
     <color name="md_surfaceVariant">#E7E0EC</color>
     <color name="md_onSurfaceVariant">#49454F</color>
     <color name="md_outline">#79747E</color>
+
     <!-- Brand -->
     <color name="md_primary">#007BFF</color>
     <color name="md_onPrimary">#FFFFFF</color>
-
     <color name="md_primaryContainer">#EAF3FF</color>
     <color name="md_onPrimaryContainer">#333333</color>
 

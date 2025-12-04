@@ -16,7 +16,7 @@
         <!-- En-tête bleu -->
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="92dp"
+            android:layout_height="wrap_content"
             android:background="@drawable/bg_header_rounded"
             android:gravity="bottom"
             android:padding="24dp">
@@ -40,45 +40,92 @@
             android:padding="24dp">
 
             <!-- Magasin -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Magasin *"
+                android:textColor="@color/md_onBackground"
+                android:layout_marginBottom="4dp" />
+
             <EditText
                 android:id="@+id/editTextStore"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
                 android:background="@drawable/bg_input"
-                android:hint="Magasin"
+                android:hint="Ex: Carrefour"
                 android:padding="16dp"
-                android:textColor="@color/md_onPrimaryContainer"
+                android:textColor="@color/md_onBackground"
+                android:textColorHint="@color/gray_500"
                 android:textSize="16sp" />
 
             <!-- Date -->
-            <EditText
-                android:id="@+id/editTextDate"
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Date *"
+                android:textColor="@color/md_onBackground"
+                android:layout_marginBottom="4dp" />
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                android:background="@drawable/bg_input"
-                android:clickable="true"
-                android:focusable="false"
-                android:hint="20 juin 2024"
-                android:padding="16dp"
-                android:textColor="@color/md_onPrimaryContainer"
-                android:textSize="16sp" />
+                android:orientation="horizontal"
+                android:layout_marginBottom="12dp">
+
+                <EditText
+                    android:id="@+id/editTextDate"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_input"
+                    android:clickable="true"
+                    android:focusable="false"
+                    android:hint="JJ/MM/AAAA"
+                    android:padding="16dp"
+                    android:textColor="@color/md_onBackground"
+                    android:textColorHint="@color/gray_500"
+                    android:textSize="16sp" />
+
+                <Button
+                    android:id="@+id/btnPickDate"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="📅"
+                    android:layout_marginStart="8dp"
+                    android:backgroundTint="@color/etix_blue"
+                    android:paddingHorizontal="12dp" />
+            </LinearLayout>
 
             <!-- Montant -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Montant (€) *"
+                android:textColor="@color/md_onBackground"
+                android:layout_marginBottom="4dp" />
+
             <EditText
                 android:id="@+id/editAmount"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
                 android:background="@drawable/bg_input"
-                android:hint="Montant"
+                android:hint="0.00"
                 android:inputType="numberDecimal"
                 android:padding="16dp"
-                android:textColor="@color/md_onPrimaryContainer"
+                android:textColor="@color/md_onBackground"
+                android:textColorHint="@color/gray_500"
                 android:textSize="16sp" />
 
             <!-- Catégorie -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Catégorie *"
+                android:textColor="@color/md_onBackground"
+                android:layout_marginBottom="4dp" />
+
             <Spinner
                 android:id="@+id/spinnerCategory"
                 android:layout_width="match_parent"
@@ -88,35 +135,48 @@
                 android:padding="12dp" />
 
             <!-- Description -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Description (optionnel)"
+                android:textColor="@color/md_onBackground"
+                android:layout_marginBottom="4dp" />
+
             <EditText
                 android:id="@+id/editDescription"
                 android:layout_width="match_parent"
-                android:layout_height="120dp"
+                android:layout_height="107dp"
                 android:layout_marginBottom="24dp"
                 android:background="@drawable/bg_input"
                 android:gravity="top"
-                android:hint="Description"
+                android:hint="Notes..."
                 android:inputType="textMultiLine"
                 android:padding="16dp"
-                android:textColor="@color/md_onPrimaryContainer"
+                android:textColor="@color/md_onBackground"
+                android:textColorHint="@color/gray_500"
                 android:textSize="16sp" />
 
             <!-- Bouton "Ajouter" -->
             <Button
                 android:id="@+id/buttonSave"
-                style="@style/Shape"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Ajouter" />
+                android:text="Ajouter"
+                android:textAllCaps="false"
+                android:textStyle="bold"
+                android:backgroundTint="@color/etix_blue"
+                android:textColor="@color/white"
+                android:layout_marginBottom="12dp" />
 
             <!-- Bouton "Ajout rapide" -->
             <Button
                 android:id="@+id/buttonQuickAdd"
-                style="@style/Shape"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:text="Ajout rapide" />
+                android:text="Ajout rapide"
+                android:textAllCaps="false"
+                android:backgroundTint="@color/gray_500"
+                android:textColor="@color/white" />
 
         </LinearLayout>
     </LinearLayout>

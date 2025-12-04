@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/containerCategory"
     android:orientation="vertical"
-    android:background="?android:attr/windowBackground"
+    android:background="@color/md_background"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="16dp">
@@ -18,14 +18,14 @@
         android:textStyle="bold"
         android:layout_marginBottom="12dp" />
 
-    <!-- 💶 Total toutes catégories -->
+    <!-- 💵 Grand total -->
     <TextView
-        android:id="@+id/tvTotalByCategory"
+        android:id="@+id/textGrandTotal"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/cat_grand_total_default"
+        android:text="Total: 0 €"
+        android:textSize="16sp"
         android:textColor="@color/gray_700"
-        android:textSize="14sp"
         android:layout_marginBottom="8dp" />
 
     <!-- 📊 Liste des catégories -->
@@ -46,14 +46,4 @@
         android:gravity="center"
         android:visibility="gone"
         android:layout_marginTop="12dp" />
-
-    <!-- 💵 Grand total -->
-    <TextView
-        android:id="@+id/textGrandTotal"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Total: 0 €"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:layout_marginTop="16dp" />
 </LinearLayout>

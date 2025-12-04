@@ -25,7 +25,6 @@ class AddTicketFragment : Fragment() {
     private lateinit var descriptionInput: EditText
     private lateinit var buttonSave: Button
     private lateinit var buttonQuickAdd: Button
-    private lateinit var btnPickDate: Button
 
     private var selectedMillis: Long? = null
     private val df = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
@@ -37,19 +36,25 @@ class AddTicketFragment : Fragment() {
 
         storeInput = v.findViewById(R.id.editTextStore)
         dateInput = v.findViewById(R.id.editTextDate)
-        amountInput = v.findViewById(R.id.editTextAmount)
+        amountInput = v.findViewById(R.id.editAmount)  // CHANGÉ : editTextAmount → editAmount
         categorySpinner = v.findViewById(R.id.spinnerCategory)
-        descriptionInput = v.findViewById(R.id.editTextDescription)
+        descriptionInput = v.findViewById(R.id.editDescription)  // CHANGÉ : editTextDescription → editDescription
         buttonSave = v.findViewById(R.id.buttonSave)
         buttonQuickAdd = v.findViewById(R.id.buttonQuickAdd)
-        btnPickDate = v.findViewById(R.id.btnPickDate)
 
         val categories = arrayOf("Supermarché", "Restaurant", "Transport", "Santé", "Autre")
         categorySpinner.adapter = ArrayAdapter(
             requireContext(), android.R.layout.simple_spinner_dropdown_item, categories
         )
 
-        btnPickDate.setOnClickListener { openDatePicker() }
+        // Utilise l'EditText dateInput directement au lieu de btnPickDate
+        dateInput.setOnClickListener { openDatePicker() }
+        dateInput.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) {
+                openDatePicker()
+                dateInput.clearFocus()
+            }
+        }
 
         buttonSave.setOnClickListener {
             val store = storeInput.text.toString().trim()

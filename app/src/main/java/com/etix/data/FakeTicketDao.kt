@@ -6,6 +6,7 @@ import com.etix.model.CategoryTotal
 import com.etix.model.Ticket
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
 class FakeTicketDao : TicketDao {
@@ -16,7 +17,10 @@ class FakeTicketDao : TicketDao {
     private val totals = MutableLiveData<List<CategoryTotal>>(emptyList())
 
     private fun publish() {
+        // 🔄 Met à jour la liste des tickets
         flow.value = items.sortedByDescending { it.dateMillis }
+
+        // 🔄 Met à jour les totaux par catégorie
         totals.postValue(
             items.groupBy { it.category }
                 .map { (cat, tickets) ->
@@ -25,6 +29,10 @@ class FakeTicketDao : TicketDao {
                 .sortedByDescending { it.total }
         )
     }
+
+    // ----------------------
+    // CRUD SIMULÉ
+    // ----------------------
 
     override suspend fun insert(ticket: Ticket) {
         val id = if (ticket.id == 0L) autoId++ else ticket.id
@@ -59,18 +67,40 @@ class FakeTicketDao : TicketDao {
     override fun getAllFlow(): Flow<List<Ticket>> =
         flow
 
+    // ----------------------
+    // REQUÊTES PAR DATES
+    // ----------------------
+
     override fun getBetweenDates(start: Long, end: Long): Flow<List<Ticket>> =
         flow.map { list -> list.filter { it.dateMillis in start..end } }
 
     override suspend fun sumBetweenDates(start: Long, end: Long): Double =
-        items.filter { it.dateMillis in start..end }
-            .sumOf { it.amount }
+        items.filter { it.dateMillis in start..end }.sumOf { it.amount }
 
     override suspend fun countBetweenDates(start: Long, end: Long): Int =
         items.count { it.dateMillis in start..end }
 
+    // ----------------------
+    // TOTALS PAR CATÉGORIE
+    // ----------------------
+
     override fun getTotalsByCategory(): LiveData<List<CategoryTotal>> =
         totals
+
+    // 🆕 MÉTHODE OBLIGATOIRE DANS TicketDao
+    override fun getCategoryTotals(): Flow<List<CategoryTotal>> {
+        return flow.map { list ->
+            list.groupBy { it.category }
+                .map { (cat, tickets) ->
+                    CategoryTotal(cat, tickets.sumOf { it.amount })
+                }
+                .sortedByDescending { it.total }
+        }
+    }
+
+    // ----------------------
+    // RECHERCHE
+    // ----------------------
 
     override fun searchAll(q: String): Flow<List<Ticket>> =
         flow.map { list ->

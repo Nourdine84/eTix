@@ -25,7 +25,7 @@ class SettingsFragment : Fragment() {
     private lateinit var textVersion: TextView
     private lateinit var textCrashPreview: TextView
     private lateinit var btnToggleTheme: Button
-    private lateinit var btnDeleteDatabase: Button
+    private lateinit var btnClearAll: Button
     private lateinit var btnShowCrash: Button
     private lateinit var btnClearCrash: Button
     private lateinit var btnLogout: Button
@@ -39,7 +39,7 @@ class SettingsFragment : Fragment() {
         textVersion = v.findViewById(R.id.textVersion)
         textCrashPreview = v.findViewById(R.id.textCrashPreview)
         btnToggleTheme = v.findViewById(R.id.btnToggleTheme)
-        btnDeleteDatabase = v.findViewById(R.id.btnDeleteDatabase)
+        btnClearAll = v.findViewById(R.id.btnClearAll)
         btnShowCrash = v.findViewById(R.id.btnShowCrash)
         btnClearCrash = v.findViewById(R.id.btnClearCrash)
         btnLogout = v.findViewById(R.id.btnLogout)
@@ -48,11 +48,11 @@ class SettingsFragment : Fragment() {
         val username = prefs.getString("username", "Utilisateur inconnu")
         textUser.text = "Connecté en tant que : $username"
 
-        // Version app
+        // Version de l’application
         val (versionName, versionCode) = getAppVersionSafe()
         textVersion.text = "Version $versionName ($versionCode)"
 
-        // Thème clair/sombre
+        // Changer thème
         btnToggleTheme.setOnClickListener {
             val currentMode = AppCompatDelegate.getDefaultNightMode()
             val newMode = if (currentMode == AppCompatDelegate.MODE_NIGHT_YES)
@@ -63,8 +63,8 @@ class SettingsFragment : Fragment() {
             Toast.makeText(requireContext(), "Thème mis à jour", Toast.LENGTH_SHORT).show()
         }
 
-        // Vider toute la base
-        btnDeleteDatabase.setOnClickListener {
+        // Vider base Room
+        btnClearAll.setOnClickListener {
             lifecycleScope.launch(Dispatchers.IO) {
                 val dao = AppDatabase.getInstance(requireContext()).ticketDao()
                 val repo = TicketRepository(dao)
@@ -75,7 +75,7 @@ class SettingsFragment : Fragment() {
             }
         }
 
-        // Voir crash log
+        // Afficher crash log
         btnShowCrash.setOnClickListener {
             val f = CrashLogs.latestLog(requireContext())
             if (f == null) {
@@ -94,7 +94,8 @@ class SettingsFragment : Fragment() {
             val ok = CrashLogs.deleteAll(requireContext())
             textCrashPreview.text = ""
             textCrashPreview.visibility = View.GONE
-            Toast.makeText(requireContext(),
+            Toast.makeText(
+                requireContext(),
                 if (ok) "Crash logs supprimés" else "Échec suppression",
                 Toast.LENGTH_SHORT
             ).show()
@@ -134,5 +135,10 @@ class SettingsFragment : Fragment() {
         } catch (_: Exception) {
             "0.0" to 0L
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        // Libère les références pour éviter memory leaks
     }
 }

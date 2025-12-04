@@ -38,18 +38,24 @@ class CategoryFragment : Fragment() {
         emptyView = v.findViewById(R.id.textEmptyCategories)
         totalView = v.findViewById(R.id.textGrandTotal)
 
+        // ✅ Correction : Initialiser l'adaptateur
         adapter = CategoryAdapter()
+
         recycler.layoutManager = LinearLayoutManager(requireContext())
         recycler.adapter = adapter
 
-        observeData()
-
         return v
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        observeData()
     }
 
     private fun observeData() {
         viewLifecycleOwner.lifecycleScope.launch {
             vm.categories.collectLatest { list ->
+                // ✅ CORRECTION : Utiliser submitData() au lieu de submitList()
                 adapter.submitData(list)
 
                 val total = list.sumOf { it.total }
