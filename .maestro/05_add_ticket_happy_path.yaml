@@ -1,0 +1,52 @@
+appId: com.etix
+---
+# 1. Lancer l'app -> écran de connexion
+- launchApp
+
+- assertVisible: "Nom d’utilisateur"
+- assertVisible: "Mot de passe"
+- assertVisible: "Se connecter"
+
+# 2. Connexion nourdine_qa / Test@1234
+- tapOn: "Nom d’utilisateur"
+- inputText: "nourdine_qa"
+
+- pressKey: enter
+- inputText: "Test@1234"
+
+- hideKeyboard
+
+- tapOn: "Se connecter"
+
+# 3. Vérifier qu'on est bien sur Accueil
+- assertVisible: "Accueil"
+- assertVisible: "Ajouter"
+- assertVisible: "Historique"
+
+# 4. Aller sur l’onglet Ajouter
+- tapOn: "Ajouter"
+
+# 5. Remplir le formulaire d'ajout de ticket (sans toucher à Catégorie)
+
+# Date via le champ JJ/MM/AAAA
+- tapOn: "JJ/MM/AAAA"
+- tapOn: "OK"
+
+# Montant (champ suivant via Enter)
+- pressKey: enter
+- inputText: "42,50"
+
+- hideKeyboard
+
+# Description
+- tapOn: "Description (optionnel)"
+- inputText: "Courses Maestro"
+
+- hideKeyboard
+
+# 6. Valider l'ajout
+- tapOn: "Ajouter"
+
+# 7. Vérifier qu'on est toujours dans l'app sans crash (écran Ajouter toujours présent ou bottom nav visible)
+- assertVisible: "Ajouter"
+- assertVisible: "Historique"
