@@ -1,0 +1,26 @@
+appId: com.etix
+---
+- launchApp
+
+- assertVisible: "Nom d’utilisateur"
+- assertVisible: "Mot de passe"
+- assertVisible: "Se connecter"
+
+- tapOn: "Nom d’utilisateur"
+- inputText: "nourdine_qa"
+
+- pressKey: enter
+- inputText: "Test@1234"
+
+- hideKeyboard
+
+- tapOn: "Se connecter"
+
+- assertVisible: "Accueil"
+- assertVisible: "Ajouter"
+- assertVisible: "Historique"
+
+- tapOn: "Ajouter"
+
+# Ici on vérifie simplement qu'on est bien sur la page Ajouter
+- assertVisible: "Ajouter"

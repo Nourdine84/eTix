@@ -1,0 +1,35 @@
+appId: com.etix
+---
+- launchApp
+
+- assertVisible: "Nom d’utilisateur"
+- assertVisible: "Mot de passe"
+- assertVisible: "Se connecter"
+- assertVisible: "Créer un compte"
+
+- tapOn: "Créer un compte"
+
+- tapOn: "Nom d’utilisateur"
+- inputText: "nourdine_qa"
+
+- pressKey: enter
+- inputText: "Nourdine QA"
+
+- pressKey: enter
+- inputText: "qa+inscription@etix.app"
+
+- pressKey: enter
+- inputText: "Test@1234"
+
+- pressKey: enter
+- inputText: "Test@1234"
+
+- hideKeyboard
+
+- tapOn: "S.?inscrire"
+
+- assertVisible: "Nom d’utilisateur"
+- assertVisible: "Mot de passe"
+- assertVisible: "Se connecter"
+- assertVisible: "Créer un compte"
+- assertVisible: "Mot de passe oublié ?"

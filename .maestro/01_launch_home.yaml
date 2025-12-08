@@ -1,0 +1,4 @@
+appId: com.etix
+---
+- launchApp
+- assertVisible: "Ajouter un ticket"
