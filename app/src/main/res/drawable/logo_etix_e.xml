@@ -1,0 +1,40 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="512dp"
+    android:height="512dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+    <!-- Glow effect (fond flouté bleu) -->
+    <path
+        android:fillColor="#33007BFF"
+        android:pathData="M256,80
+                          C350,80 432,162 432,256
+                          C432,350 350,432 256,432
+                          C162,432 80,350 80,256
+                          C80,162 162,80 256,80z" />
+
+    <!-- Lettre "E" stylisée -->
+    <path
+        android:fillColor="#007BFF"
+        android:pathData="M170,140
+                          H340
+                          A20,20 0 0 1 360,160
+                          V200
+                          A20,20 0 0 1 340,220
+                          H230
+                          V250
+                          H340
+                          A20,20 0 0 1 360,270
+                          V310
+                          A20,20 0 0 1 340,330
+                          H230
+                          V360
+                          H340
+                          A20,20 0 0 1 360,380
+                          V420
+                          A20,20 0 0 1 340,440
+                          H170
+                          A20,20 0 0 1 150,420
+                          V160
+                          A20,20 0 0 1 170,140z" />
+</vector>

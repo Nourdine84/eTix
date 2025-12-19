@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Focus (champ sélectionné) -->
+    <item android:state_focused="true">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/md_primaryContainer" />
+            <stroke android:width="2dp" android:color="@color/blue" />
+            <corners android:radius="12dp" />
+            <padding android:left="12dp" android:top="12dp" android:right="12dp" android:bottom="12dp" />
+        </shape>
+    </item>
+
+    <!-- Normal (champ au repos) -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="@color/md_primaryContainer" />
+            <stroke android:width="1dp" android:color="#BDBDBD" /> <!-- gris clair -->
+            <corners android:radius="12dp" />
+            <padding android:left="12dp" android:top="12dp" android:right="12dp" android:bottom="12dp" />
+        </shape>
+    </item>
+</selector>

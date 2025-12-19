@@ -1,0 +1,11 @@
+<resources>
+    <!-- 4dp grid -->
+    <dimen name="space_0">0dp</dimen>
+    <dimen name="space_1">4dp</dimen>
+    <dimen name="space_2">8dp</dimen>
+    <dimen name="space_3">12dp</dimen>
+    <dimen name="space_4">16dp</dimen>
+    <dimen name="space_6">24dp</dimen>
+    <dimen name="corner_m">12dp</dimen>
+    <dimen name="corner_l">16dp</dimen>
+</resources>

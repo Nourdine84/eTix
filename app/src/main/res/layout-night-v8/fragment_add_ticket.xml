@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/scrollViewAdd"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/md_background"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:id="@+id/containerAdd"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Bloc bleu arrondi haut -->
+
+        <!-- Formulaire -->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="103dp"
+            android:background="@drawable/bg_header_rounded"
+            android:gravity="bottom"
+            android:padding="24dp">
+
+            <TextView
+                android:id="@+id/titleAdd"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ajouter"
+                android:textColor="@color/md_onPrimary"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="567dp"
+            android:layout_marginTop="-32dp"
+            android:orientation="vertical"
+            android:padding="24dp">
+
+            <!-- Magasin -->
+
+            <!-- Date -->
+
+            <EditText
+                android:id="@+id/editStore"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_input"
+                android:hint="Magasin"
+                android:padding="16dp"
+                android:textColor="@color/md_onPrimaryContainer"
+                android:textSize="16sp" />
+
+            <EditText
+                android:id="@+id/editDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_input"
+                android:clickable="true"
+                android:focusable="false"
+                android:hint="20 juin 2024"
+                android:padding="16dp"
+                android:textColor="@color/md_onPrimaryContainer"
+                android:textSize="16sp" />
+
+            <!-- Montant -->
+            <EditText
+                android:id="@+id/editAmount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_input"
+                android:hint="Montant"
+                android:inputType="numberDecimal"
+                android:padding="16dp"
+                android:textColor="@color/md_onPrimaryContainer"
+                android:textSize="16sp" />
+
+            <!-- Catégorie -->
+            <Spinner
+                android:id="@+id/spinnerCategory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:background="@drawable/bg_input"
+                android:padding="12dp" />
+
+            <!-- Description -->
+            <EditText
+                android:id="@+id/editDescription"
+                android:layout_width="match_parent"
+                android:layout_height="120dp"
+                android:layout_marginBottom="24dp"
+                android:background="@drawable/bg_input"
+                android:gravity="top"
+                android:hint="Description"
+                android:inputType="textMultiLine"
+                android:padding="16dp"
+                android:textColor="@color/md_onPrimaryContainer"
+                android:textSize="16sp" />
+
+            <!-- Bouton Ajouter -->
+            <Button
+                android:id="@+id/btnSaveTicket"
+                style="@style/Shape"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Ajouter" />
+
+        </LinearLayout>
+    </LinearLayout>
+</ScrollView>

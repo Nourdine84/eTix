@@ -1,0 +1,97 @@
+package com.etix.data
+
+import androidx.lifecycle.LiveData
+import androidx.room.*
+import com.etix.model.CategoryTotal
+import com.etix.model.Ticket
+import kotlinx.coroutines.flow.Flow
+
+@Dao
+interface TicketDao {
+
+    // CRUD
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(ticket: Ticket)
+
+    @Update
+    suspend fun update(ticket: Ticket)
+
+    @Delete
+    suspend fun delete(ticket: Ticket)
+
+    // Flux de base
+    @Query("SELECT * FROM tickets ORDER BY dateMillis DESC")
+    fun getAllFlow(): Flow<List<Ticket>>
+
+    @Query("""
+        SELECT * FROM tickets
+        WHERE dateMillis BETWEEN :start AND :end
+        ORDER BY dateMillis DESC
+    """)
+    fun getBetweenDates(start: Long, end: Long): Flow<List<Ticket>>
+
+    // 🔎 Recherche texte globale
+    @Query("""
+        SELECT * FROM tickets
+        WHERE (store LIKE '%' || :q || '%'
+           OR  category LIKE '%' || :q || '%'
+           OR  description LIKE '%' || :q || '%')
+        ORDER BY dateMillis DESC
+    """)
+    fun searchAll(q: String): Flow<List<Ticket>>
+
+    // 🔎 Recherche texte + période
+    @Query("""
+        SELECT * FROM tickets
+        WHERE dateMillis BETWEEN :start AND :end
+          AND (store LIKE '%' || :q || '%'
+           OR  category LIKE '%' || :q || '%'
+           OR  description LIKE '%' || :q || '%')
+        ORDER BY dateMillis DESC
+    """)
+    fun searchBetween(q: String, start: Long, end: Long): Flow<List<Ticket>>
+
+    // 📊 Totaux par catégorie (LiveData - legacy)
+    @Query("""
+        SELECT category AS name, SUM(amount) AS total
+        FROM tickets
+        GROUP BY category
+        ORDER BY total DESC
+    """)
+    fun getTotalsByCategory(): LiveData<List<CategoryTotal>>
+
+    // 📊 Totaux par catégorie (Flow - pour CategoryViewModel)
+    @Query("""
+        SELECT category AS name, SUM(amount) AS total
+        FROM tickets
+        GROUP BY category
+        ORDER BY total DESC
+    """)
+    fun getCategoryTotals(): Flow<List<CategoryTotal>>
+
+    // Lecture unitaire
+    @Query("SELECT * FROM tickets WHERE id = :id")
+    fun getByIdFlow(id: Long): Flow<Ticket?>
+
+    @Query("SELECT * FROM tickets WHERE id = :id LIMIT 1")
+    suspend fun getById(id: Long): Ticket?
+
+    // KPI
+    @Query("""
+        SELECT COALESCE(SUM(amount), 0.0)
+        FROM tickets
+        WHERE dateMillis BETWEEN :start AND :end
+    """)
+    suspend fun sumBetweenDates(start: Long, end: Long): Double
+
+    @Query("""
+        SELECT COUNT(*)
+        FROM tickets
+        WHERE dateMillis BETWEEN :start AND :end
+    """)
+    suspend fun countBetweenDates(start: Long, end: Long): Int
+
+    // Maintenance
+    @Query("DELETE FROM tickets")
+    suspend fun deleteAll()
+}

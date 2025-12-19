@@ -1,0 +1,36 @@
+package com.etix.data
+
+import android.content.Context
+import androidx.room.Database
+import androidx.room.Room
+import androidx.room.RoomDatabase
+import com.etix.model.Ticket
+
+@Database(
+    entities = [Ticket::class],
+    version = 1,
+    exportSchema = false
+)
+abstract class AppDatabase : RoomDatabase() {
+    abstract fun ticketDao(): TicketDao
+
+    companion object {
+        @Volatile private var INSTANCE: AppDatabase? = null
+
+        fun getInstance(context: Context): AppDatabase =
+            INSTANCE ?: synchronized(this) {
+                INSTANCE ?: Room.databaseBuilder(
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    "etix.db"
+                )
+                    .fallbackToDestructiveMigration()
+                    .build().also { INSTANCE = it }
+            }
+    }
+}
+
+// ✅ Fonction top-level pour appel direct depuis les Fragments
+fun getDatabase(context: Context): AppDatabase {
+    return AppDatabase.getInstance(context)
+}

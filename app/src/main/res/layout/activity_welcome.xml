@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/background_dark"
+    android:gravity="center"
+    android:padding="24dp"
+    tools:context=".WelcomeActivity">
+
+    <!-- Logo -->
+    <ImageView
+        android:id="@+id/imageLogo"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:src="@drawable/logo_etix_e"
+        android:contentDescription="@string/app_name"
+        android:layout_marginBottom="32dp" />
+
+    <!-- Titre eTix -->
+    <TextView
+        android:id="@+id/textWelcomeTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Bienvenue sur eTix"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="@color/etix_blue"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Sous-titre -->
+    <TextView
+        android:id="@+id/textWelcomeSubtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Dématérialisez vos tickets\net gardez le contrôle."
+        android:textSize="16sp"
+        android:textColor="@color/text_secondary"
+        android:gravity="center"
+        android:layout_marginBottom="40dp" />
+
+    <!-- Bouton Connexion -->
+    <Button
+        android:id="@+id/btnLogin"
+        style="@style/Shape"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Connexion"
+        android:backgroundTint="@color/etix_blue"
+        android:textColor="@color/white"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Bouton Inscription -->
+    <Button
+        android:id="@+id/btnRegister"
+        style="@style/Shape"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Créer un compte"
+        android:backgroundTint="@color/surface"
+        android:textColor="@color/etix_blue" />
+
+</LinearLayout>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="@color/dark_background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- 🔹 Titre -->
+        <TextView
+            android:id="@+id/tvEditTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Modifier un ticket"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/etix_blue_light"
+            android:layout_marginBottom="16dp" />
+
+        <!-- 🏪 Magasin -->
+        <EditText
+            android:id="@+id/editTextStoreName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Nom du magasin"
+            android:inputType="text"
+            android:background="@drawable/bg_input"
+            android:textColor="@color/white"
+            android:textColorHint="@color/gray_500"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- 💰 Montant -->
+        <EditText
+            android:id="@+id/editTextAmount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Montant"
+            android:inputType="numberDecimal"
+            android:background="@drawable/bg_input"
+            android:textColor="@color/white"
+            android:textColorHint="@color/gray_500"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- 📅 Date -->
+        <Button
+            android:id="@+id/btnPickDate"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Choisir une date"
+            android:layout_marginBottom="12dp"
+            style="@style/Shape" />
+
+        <!-- 🏷️ Catégorie -->
+        <EditText
+            android:id="@+id/editTextCategory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Catégorie"
+            android:inputType="text"
+            android:background="@drawable/bg_input"
+            android:textColor="@color/white"
+            android:textColorHint="@color/gray_500"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp" />
+
+        <!-- 📝 Description -->
+        <EditText
+            android:id="@+id/editTextDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Description"
+            android:inputType="textMultiLine"
+            android:minLines="3"
+            android:background="@drawable/bg_input"
+            android:textColor="@color/white"
+            android:textColorHint="@color/gray_500"
+            android:padding="12dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- ✅ Bouton Modifier -->
+        <Button
+            android:id="@+id/btnSaveTicket"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Modifier"
+            style="@style/Shape" />
+    </LinearLayout>
+</ScrollView>

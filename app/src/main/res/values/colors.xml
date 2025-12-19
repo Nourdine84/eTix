@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Couleurs principales eTix -->
+    <color name="blue_50">#E3F2FD</color>
+    <color name="blue_100">#BBDEFB</color>
+    <color name="blue_200">#90CAF9</color>
+    <color name="blue_300">#64B5F6</color>
+    <color name="blue_400">#42A5F5</color>
+    <color name="blue_500">#2196F3</color> <!-- PRINCIPALE -->
+    <color name="blue_700">#1976D2</color>
+    <color name="blue_900">#0D47A1</color>
+
+    <!-- Gris -->
+    <color name="gray_100">#F5F5F5</color>
+    <color name="gray_300">#E0E0E0</color>
+    <color name="gray_500">#9E9E9E</color>
+    <color name="gray_700">#616161</color>
+    <color name="gray_900">#212121</color>
+    <color name="gray_600">#757575</color>
+    <color name="gray_800">#424242</color>
+    <color name="gray_200">#EEEEEE</color>
+    <color name="gray_400">#B0B0B0</color>
+    <color name="text_secondary">#B0B0B0</color> <!-- ✅ Ajouté -->
+
+    <!-- Autres -->
+    <color name="white">#FFFFFF</color>
+    <color name="black">#000000</color>
+    <color name="red_error">#F44336</color>
+    <color name="green_success">#4CAF50</color>
+
+    <!-- Couleurs principales eTix -->
+    <color name="etix_blue">#007BFF</color>
+    <color name="etix_blue_dark">#0056b3</color>
+    <color name="etix_blue_light">#66B2FF</color>
+
+    <!-- Couleur de fond général -->
+    <color name="background_light">#FAFAFA</color>
+
+    <!-- States -->
+    <color name="md_error">#B3261E</color>
+    <color name="md_onError">#FFFFFF</color>
+    <color name="md_errorContainer">#F9DEDC</color>
+    <color name="md_onErrorContainer">#410E0B</color>
+
+    <!-- Surfaces / Neutrals -->
+    <color name="md_background">#FFFBFE</color>
+    <color name="md_onBackground">#1C1B1F</color>
+    <color name="md_surface">#FFFBFE</color>
+    <color name="md_onSurface">#1C1B1F</color>
+    <color name="md_surfaceVariant">#E7E0EC</color>
+    <color name="md_onSurfaceVariant">#49454F</color>
+    <color name="md_outline">#79747E</color>
+
+    <!-- Brand -->
+    <color name="md_primary">#007BFF</color>
+    <color name="md_onPrimary">#FFFFFF</color>
+    <color name="md_primaryContainer">#EAF3FF</color>
+    <color name="md_onPrimaryContainer">#333333</color>
+
+    <color name="light_grey">#DDDDDD</color>
+
+    <color name="md_secondary">#625B71</color>
+    <color name="md_onSecondary">#FFFFFF</color>
+    <color name="md_secondaryContainer">#E8DEF8</color>
+    <color name="md_onSecondaryContainer">#1D192B</color>
+
+    <color name="md_tertiary">#7D5260</color>
+    <color name="md_onTertiary">#FFFFFF</color>
+    <color name="md_tertiaryContainer">#FFD8E4</color>
+    <color name="md_onTertiaryContainer">#31111D</color>
+    <color name="md_kpi_bg">#EAF3FF</color>
+
+    <color name="blue">#007BFF</color>
+    <color name="background_dark">#121212</color>
+
+    <!-- night mode -->
+    <color name="dark_background">#121212</color>
+</resources>

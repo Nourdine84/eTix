@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/containerCategory"
+    android:orientation="vertical"
+    android:background="@color/md_background"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <!-- 🟦 Titre -->
+    <TextView
+        android:id="@+id/tvCategoryTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/categories"
+        android:textColor="@color/etix_blue"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="12dp" />
+
+    <!-- 💵 Grand total -->
+    <TextView
+        android:id="@+id/textGrandTotal"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Total: 0 €"
+        android:textSize="16sp"
+        android:textColor="@color/gray_700"
+        android:layout_marginBottom="8dp" />
+
+    <!-- 📊 Liste des catégories -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewCategories"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="vertical" />
+
+    <!-- 🔕 Message si vide -->
+    <TextView
+        android:id="@+id/textEmptyCategories"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/empty_categories"
+        android:textColor="@color/gray_500"
+        android:gravity="center"
+        android:visibility="gone"
+        android:layout_marginTop="12dp" />
+</LinearLayout>

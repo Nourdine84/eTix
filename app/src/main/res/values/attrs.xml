@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Attributs personnalisés globaux -->
+    <attr name="colorBackground" format="color" />
+    <attr name="colorOnSurface" format="color" />
+    <attr name="colorSurface" format="color" />
+    <attr name="colorPrimary" format="color" />
+    <attr name="colorOnPrimary" format="color" />
+    <attr name="colorPrimaryContainer" format="color" />
+    <attr name="colorOnPrimaryContainer" format="color" />
+
+    <!-- Pour les composants custom éventuels -->
+    <declare-styleable name="KPITextView">
+        <attr name="kpiValueColor" format="color" />
+        <attr name="kpiLabelColor" format="color" />
+    </declare-styleable>
+
+    <!-- Pour les vues stylisées si on crée un bouton customisé plus tard -->
+    <declare-styleable name="RoundedView">
+        <attr name="cornerRadius" format="dimension" />
+        <attr name="strokeColor" format="color" />
+        <attr name="strokeWidth" format="dimension" />
+    </declare-styleable>
+
+</resources>

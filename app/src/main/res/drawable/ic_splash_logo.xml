@@ -1,0 +1,19 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="512dp"
+    android:height="512dp"
+    android:viewportWidth="512"
+    android:viewportHeight="512">
+
+    <!-- "e" simple bleu sans glow -->
+    <path
+        android:fillColor="#007BFF"
+        android:pathData="M128,256
+                          C128,166 198,96 288,96
+                          C336,96 384,128 384,160
+                          C384,192 344,192 320,192
+                          H192
+                          C192,264 280,272 320,256
+                          C368,240 384,288 384,320
+                          C384,368 320,416 256,416
+                          C180,416 128,340 128,256z" />
+</vector>
