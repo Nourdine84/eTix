@@ -75,7 +75,7 @@
 
                 <EditText
                     android:id="@+id/editTextDate"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:background="@drawable/bg_input"
@@ -142,6 +142,7 @@
                 android:textColor="@color/md_onBackground"
                 android:layout_marginBottom="4dp" />
 
+            <!-- Bouton "Ajouter" -->
             <EditText
                 android:id="@+id/editDescription"
                 android:layout_width="match_parent"
@@ -156,7 +157,6 @@
                 android:textColorHint="@color/gray_500"
                 android:textSize="16sp" />
 
-            <!-- Bouton "Ajouter" -->
             <Button
                 android:id="@+id/buttonSave"
                 android:layout_width="match_parent"
