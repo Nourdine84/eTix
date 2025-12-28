@@ -1,11 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Splash Screen -->
-    <style name="Theme.SplashScreen" parent="Theme.Material3.DayNight.NoActionBar">
-        <item name="android:windowBackground">?attr/colorBackground</item>
-    </style>
-
-    <!-- ✅ Style bouton compatible Button classique & bouton principal -->
+    <!-- ========================================================= -->
+    <!-- 🔘 BOUTONS -->
+    <!-- ========================================================= -->
     <style name="Shape">
         <item name="android:background">@drawable/bg_button</item>
         <item name="android:backgroundTint">@color/md_primary</item>
@@ -15,14 +13,14 @@
         <item name="android:fontFamily">sans-serif-medium</item>
     </style>
 
-
-    <!-- Lien texte (optionnel) -->
     <style name="LinkText">
         <item name="android:textColor">@color/blue</item>
         <item name="android:textStyle">bold</item>
     </style>
 
-    <!-- Styles KPI utilisés dans HomeFragment -->
+    <!-- ========================================================= -->
+    <!-- 📊 KPI (HOME) -->
+    <!-- ========================================================= -->
     <style name="KPI.Label">
         <item name="android:textColor">@color/md_onPrimaryContainer</item>
         <item name="android:textSize">14sp</item>
@@ -36,6 +34,9 @@
         <item name="android:layout_marginTop">2dp</item>
     </style>
 
+    <!-- ========================================================= -->
+    <!-- 🧾 TEXTE DÉTAIL -->
+    <!-- ========================================================= -->
     <style name="EtixDetailText">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
@@ -44,17 +45,14 @@
         <item name="android:layout_marginBottom">12dp</item>
     </style>
 
+    <!-- ========================================================= -->
+    <!-- 🎬 ANIMATIONS ACTIVITY -->
+    <!-- ========================================================= -->
     <style name="ActivitySlideAnim">
         <item name="android:activityOpenEnterAnimation">@anim/slide_in_right</item>
-        <item name="android:activityOpenExitAnimation">@anim/fade_out</item>
-    </style>
-
-    <style name="ActivitySlideAnim">
-        <item name="android:activityOpenEnterAnimation">@anim/button_press_scale</item>
         <item name="android:activityOpenExitAnimation">@anim/fade_out</item>
         <item name="android:activityCloseEnterAnimation">@anim/button_press_scale</item>
         <item name="android:activityCloseExitAnimation">@anim/fade_out</item>
     </style>
-
 
 </resources>
