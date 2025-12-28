@@ -1,26 +1,101 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@android:color/white"
-    android:padding="24dp">
+    android:background="@android:color/white">
 
-    <TextView
-        android:id="@+id/tvTitle"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="eTix"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        android:textColor="#1C1C1E" />
+        android:orientation="vertical"
+        android:padding="24dp">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Vos tickets récents"
-        android:textSize="16sp"
-        android:textColor="#8E8E93"
-        android:layout_marginTop="8dp" />
+        <!-- Header -->
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="eTix"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="#1C1C1E" />
 
-</LinearLayout>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Vue d’ensemble"
+            android:textSize="16sp"
+            android:textColor="#8E8E93"
+            android:layout_marginTop="6dp" />
+
+        <!-- KPI Cards -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="24dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="#F2F2F7"
+                android:padding="16dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:text="Aujourd’hui"
+                    android:textSize="14sp"
+                    android:textColor="#8E8E93"/>
+
+                <TextView
+                    android:id="@+id/tvTodayAmount"
+                    android:text="0 €"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:textColor="#000000"/>
+            </LinearLayout>
+
+            <Space
+                android:layout_width="16dp"
+                android:layout_height="wrap_content"/>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="#F2F2F7"
+                android:padding="16dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:text="Ce mois"
+                    android:textSize="14sp"
+                    android:textColor="#8E8E93"/>
+
+                <TextView
+                    android:id="@+id/tvMonthAmount"
+                    android:text="0 €"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:textColor="#000000"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Actions -->
+        <Button
+            android:id="@+id/btnAddTicket"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Ajouter un ticket"
+            android:layout_marginTop="32dp"/>
+
+        <Button
+            android:id="@+id/btnHistory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Voir l’historique"
+            android:layout_marginTop="12dp"/>
+
+    </LinearLayout>
+</ScrollView>
