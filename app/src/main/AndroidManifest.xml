@@ -26,6 +26,10 @@
             android:name=".MainActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".ui.main.MainActivityV2"
+            android:exported="false" />
+
         <!-- ✅ Authentification screens -->
         <activity
             android:name=".LoginActivity"
@@ -41,6 +45,7 @@
         <activity
             android:name=".TicketEditActivity"
             android:exported="false" />
+
 
     </application>
 
