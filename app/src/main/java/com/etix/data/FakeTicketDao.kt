@@ -17,10 +17,8 @@ class FakeTicketDao : TicketDao {
     private val totals = MutableLiveData<List<CategoryTotal>>(emptyList())
 
     private fun publish() {
-        // 🔄 Met à jour la liste des tickets
         flow.value = items.sortedByDescending { it.dateMillis }
 
-        // 🔄 Met à jour les totaux par catégorie
         totals.postValue(
             items.groupBy { it.category }
                 .map { (cat, tickets) ->
@@ -31,7 +29,7 @@ class FakeTicketDao : TicketDao {
     }
 
     // ----------------------
-    // CRUD SIMULÉ
+    // CRUD
     // ----------------------
 
     override suspend fun insert(ticket: Ticket) {
@@ -58,17 +56,20 @@ class FakeTicketDao : TicketDao {
         publish()
     }
 
+    // ----------------------
+    // LECTURE
+    // ----------------------
+
     override suspend fun getById(id: Long): Ticket? =
         items.find { it.id == id }
 
     override fun getByIdFlow(id: Long): Flow<Ticket?> =
         flow.map { list -> list.find { it.id == id } }
 
-    override fun getAllFlow(): Flow<List<Ticket>> =
-        flow
+    override fun getAllFlow(): Flow<List<Ticket>> = flow
 
     // ----------------------
-    // REQUÊTES PAR DATES
+    // DATES
     // ----------------------
 
     override fun getBetweenDates(start: Long, end: Long): Flow<List<Ticket>> =
@@ -80,23 +81,32 @@ class FakeTicketDao : TicketDao {
     override suspend fun countBetweenDates(start: Long, end: Long): Int =
         items.count { it.dateMillis in start..end }
 
+    // 🆕 FLOWS KPI (OBLIGATOIRES)
+    override fun sumBetweenDatesFlow(start: Long, end: Long): Flow<Double> =
+        flow.map { list ->
+            list.filter { it.dateMillis in start..end }
+                .sumOf { it.amount }
+        }
+
+    override fun countBetweenDatesFlow(start: Long, end: Long): Flow<Int> =
+        flow.map { list ->
+            list.count { it.dateMillis in start..end }
+        }
+
     // ----------------------
-    // TOTALS PAR CATÉGORIE
+    // CATÉGORIES
     // ----------------------
 
-    override fun getTotalsByCategory(): LiveData<List<CategoryTotal>> =
-        totals
+    override fun getTotalsByCategory(): LiveData<List<CategoryTotal>> = totals
 
-    // 🆕 MÉTHODE OBLIGATOIRE DANS TicketDao
-    override fun getCategoryTotals(): Flow<List<CategoryTotal>> {
-        return flow.map { list ->
+    override fun getCategoryTotals(): Flow<List<CategoryTotal>> =
+        flow.map { list ->
             list.groupBy { it.category }
                 .map { (cat, tickets) ->
                     CategoryTotal(cat, tickets.sumOf { it.amount })
                 }
                 .sortedByDescending { it.total }
         }
-    }
 
     // ----------------------
     // RECHERCHE

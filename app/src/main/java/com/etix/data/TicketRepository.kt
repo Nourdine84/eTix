@@ -4,46 +4,67 @@ import androidx.lifecycle.asFlow
 import com.etix.model.CategoryTotal
 import com.etix.model.Ticket
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 
-class TicketRepository(private val dao: TicketDao) {
+class TicketRepository(
+    private val dao: TicketDao
+) {
 
-    // --- Streams d'historique ---
+    // --- Streams ---
     fun getAllFlow(): Flow<List<Ticket>> =
         dao.getAllFlow()
 
     fun getBetweenDates(start: Long, end: Long): Flow<List<Ticket>> =
         dao.getBetweenDates(start, end)
 
-    // --- Recherche texte (store/description) ---
+    // --- Search ---
     fun searchAll(query: String): Flow<List<Ticket>> =
         dao.searchAll(query)
 
     fun searchBetween(query: String, start: Long, end: Long): Flow<List<Ticket>> =
         dao.searchBetween(query, start, end)
 
-    // --- Totaux par catégorie ---
-    // LiveData pour l’UI classique + Flow si tu préfères rester full-Flow
-    fun getTotalsByCategory() = dao.getTotalsByCategory()                 // LiveData<List<CategoryTotal>>
-    fun getCategoryTotals(): Flow<List<CategoryTotal>> =
-        dao.getTotalsByCategory().asFlow()                                // Flow<List<CategoryTotal>>
+    // --- Categories ---
+    fun getTotalsByCategory() =
+        dao.getTotalsByCategory()
 
-    // --- Lecture unitaire ---
+    fun getCategoryTotals(): Flow<List<CategoryTotal>> =
+        dao.getCategoryTotals()
+
+    // --- Single ticket ---
     fun getByIdFlow(id: Long): Flow<Ticket?> =
         dao.getByIdFlow(id)
+
 
     suspend fun getById(id: Long): Ticket? =
         dao.getById(id)
 
     // --- CRUD ---
-    suspend fun insert(ticket: Ticket) = dao.insert(ticket)
-    suspend fun update(ticket: Ticket) = dao.update(ticket)
-    suspend fun delete(ticket: Ticket) = dao.delete(ticket)
-    suspend fun deleteAll() = dao.deleteAll()
+    suspend fun insert(ticket: Ticket) =
+        dao.insert(ticket)
 
-    // --- KPI ---
+    suspend fun update(ticket: Ticket) =
+        dao.update(ticket)
+
+    suspend fun delete(ticket: Ticket) =
+        dao.delete(ticket)
+
+    suspend fun deleteAll() =
+        dao.deleteAll()
+
+    // --- KPI (suspend) ---
     suspend fun sumBetweenDates(start: Long, end: Long): Double =
         dao.sumBetweenDates(start, end)
 
     suspend fun countBetweenDates(start: Long, end: Long): Int =
         dao.countBetweenDates(start, end)
+
+    // --- KPI (Flow) ---
+    fun sumBetweenDatesFlow(start: Long, end: Long): Flow<Double> = flow {
+        emit(dao.sumBetweenDates(start, end))
+    }
+
+    fun countBetweenDatesFlow(start: Long, end: Long): Flow<Int> = flow {
+        emit(dao.countBetweenDates(start, end))
+    }
 }

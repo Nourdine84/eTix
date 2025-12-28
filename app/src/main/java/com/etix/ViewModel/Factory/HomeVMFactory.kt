@@ -8,11 +8,12 @@ import com.etix.viewmodel.HomeViewModel
 class HomeVMFactory(
     private val repository: TicketRepository
 ) : ViewModelProvider.Factory {
+
     @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(HomeViewModel::class.java)) {
             return HomeViewModel(repository) as T
         }
-        throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

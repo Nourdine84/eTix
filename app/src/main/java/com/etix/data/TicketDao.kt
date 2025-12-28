@@ -9,7 +9,9 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface TicketDao {
 
+    // --------------------
     // CRUD
+    // --------------------
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(ticket: Ticket)
 
@@ -19,7 +21,9 @@ interface TicketDao {
     @Delete
     suspend fun delete(ticket: Ticket)
 
+    // --------------------
     // Flux de base
+    // --------------------
     @Query("SELECT * FROM tickets ORDER BY dateMillis DESC")
     fun getAllFlow(): Flow<List<Ticket>>
 
@@ -30,7 +34,9 @@ interface TicketDao {
     """)
     fun getBetweenDates(start: Long, end: Long): Flow<List<Ticket>>
 
-    // 🔎 Recherche texte globale
+    // --------------------
+    // Recherche texte
+    // --------------------
     @Query("""
         SELECT * FROM tickets
         WHERE (store LIKE '%' || :q || '%'
@@ -40,7 +46,6 @@ interface TicketDao {
     """)
     fun searchAll(q: String): Flow<List<Ticket>>
 
-    // 🔎 Recherche texte + période
     @Query("""
         SELECT * FROM tickets
         WHERE dateMillis BETWEEN :start AND :end
@@ -51,7 +56,9 @@ interface TicketDao {
     """)
     fun searchBetween(q: String, start: Long, end: Long): Flow<List<Ticket>>
 
-    // 📊 Totaux par catégorie (LiveData - legacy)
+    // --------------------
+    // Catégories
+    // --------------------
     @Query("""
         SELECT category AS name, SUM(amount) AS total
         FROM tickets
@@ -60,7 +67,6 @@ interface TicketDao {
     """)
     fun getTotalsByCategory(): LiveData<List<CategoryTotal>>
 
-    // 📊 Totaux par catégorie (Flow - pour CategoryViewModel)
     @Query("""
         SELECT category AS name, SUM(amount) AS total
         FROM tickets
@@ -69,14 +75,18 @@ interface TicketDao {
     """)
     fun getCategoryTotals(): Flow<List<CategoryTotal>>
 
+    // --------------------
     // Lecture unitaire
+    // --------------------
     @Query("SELECT * FROM tickets WHERE id = :id")
     fun getByIdFlow(id: Long): Flow<Ticket?>
 
     @Query("SELECT * FROM tickets WHERE id = :id LIMIT 1")
     suspend fun getById(id: Long): Ticket?
 
-    // KPI
+    // --------------------
+    // KPI — EXISTANT (on garde)
+    // --------------------
     @Query("""
         SELECT COALESCE(SUM(amount), 0.0)
         FROM tickets
@@ -91,7 +101,27 @@ interface TicketDao {
     """)
     suspend fun countBetweenDates(start: Long, end: Long): Int
 
+    // --------------------
+    // KPI — NOUVEAU (Flow pour Home V2)
+    // --------------------
+    @Query("""
+        SELECT COALESCE(SUM(amount), 0.0)
+        FROM tickets
+        WHERE dateMillis BETWEEN :start AND :end
+    """)
+    fun sumBetweenDatesFlow(start: Long, end: Long): Flow<Double>
+
+    // --------------------
     // Maintenance
+    // --------------------
     @Query("DELETE FROM tickets")
     suspend fun deleteAll()
+
+    @Query("""
+    SELECT COUNT(*)
+    FROM tickets
+    WHERE dateMillis BETWEEN :start AND :end
+""")
+    fun countBetweenDatesFlow(start: Long, end: Long): Flow<Int>
+
 }
