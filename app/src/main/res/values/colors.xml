@@ -75,4 +75,8 @@
 
     <!-- night mode -->
     <color name="dark_background">#121212</color>
+
+    <!-- Texte principal (fallback light) -->
+    <color name="text_primary">#000000</color>
+
 </resources>

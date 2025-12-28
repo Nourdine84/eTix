@@ -1,7 +1,7 @@
 package com.etix.core.log
 
 import android.util.Log
-import com.etix.core.flags.QAFlags
+import com.etix.core.log.flags.QAFlags
 
 object EtixLog {
 
