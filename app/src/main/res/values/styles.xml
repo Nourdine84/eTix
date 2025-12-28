@@ -43,4 +43,10 @@
         <item name="android:textColor">?attr/colorOnSurface</item>
         <item name="android:layout_marginBottom">12dp</item>
     </style>
+
+    <style name="ActivitySlideAnim">
+        <item name="android:activityOpenEnterAnimation">@anim/slide_in_right</item>
+        <item name="android:activityOpenExitAnimation">@anim/fade_out</item>
+    </style>
+
 </resources>

@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager2.widget.ViewPager2
 import com.etix.R
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import kotlin.math.abs
 
 class MainActivityV2 : AppCompatActivity() {
 
@@ -15,11 +16,21 @@ class MainActivityV2 : AppCompatActivity() {
         val viewPager = findViewById<ViewPager2>(R.id.viewPager)
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
 
+        // Adapter
         viewPager.adapter = MainPagerAdapter(this)
         viewPager.isUserInputEnabled = true
 
-        bottomNav.setOnItemSelectedListener {
-            viewPager.currentItem = when (it.itemId) {
+        // 🎯 Animation iOS-like (PACK 7)
+        viewPager.setPageTransformer { page, position ->
+            val absPos = abs(position)
+            page.alpha = 0.85f + (1 - absPos) * 0.15f
+            page.scaleY = 0.95f + (1 - absPos) * 0.05f
+            page.translationX = -position * page.width * 0.05f
+        }
+
+        // BottomNav → ViewPager
+        bottomNav.setOnItemSelectedListener { item ->
+            viewPager.currentItem = when (item.itemId) {
                 R.id.menu_home -> 0
                 R.id.menu_add -> 1
                 R.id.menu_history -> 2
@@ -30,7 +41,7 @@ class MainActivityV2 : AppCompatActivity() {
             true
         }
 
-
+        // ViewPager → BottomNav
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 bottomNav.menu.getItem(position).isChecked = true
