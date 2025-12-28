@@ -8,13 +8,13 @@
     <!-- ✅ Style bouton compatible Button classique & bouton principal -->
     <style name="Shape">
         <item name="android:background">@drawable/bg_button</item>
-        <item name="android:textColor">@android:color/white</item>
         <item name="android:backgroundTint">@color/md_primary</item>
         <item name="android:textColor">@color/md_onPrimary</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textSize">16sp</item>
         <item name="android:fontFamily">sans-serif-medium</item>
     </style>
+
 
     <!-- Lien texte (optionnel) -->
     <style name="LinkText">
