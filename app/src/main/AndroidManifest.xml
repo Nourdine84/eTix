@@ -42,6 +42,12 @@
             android:name=".TicketEditActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".ui.main.MainActivityV2"
+            android:exported="false"
+            android:windowAnimationStyle="@style/ActivitySlideAnim" />
+
+
     </application>
 
 </manifest>
