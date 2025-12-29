@@ -1,5 +1,4 @@
-package com.etix.features.ocr
-
-object OCRFlags {
-    const val ENABLE_OCR = false // 🔒 V2 OFF | V2.01 ON
+object OCRFeatureFlags {
+    const val ENABLE_OCR = true
+    const val QA_MOCK_OCR = false
 }

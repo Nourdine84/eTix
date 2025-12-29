@@ -1,8 +1,12 @@
 package com.etix.features.ocr.domain
 
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+
+@Parcelize
 data class OCRResult(
-    val storeName: String? = null,
-    val amount: Double? = null,
-    val dateMillis: Long? = null,
-    val category: String? = null
-)
+    val merchant: String?,
+    val amount: Double?,
+    val dateMillis: Long?,
+    val rawText: String
+) : Parcelable

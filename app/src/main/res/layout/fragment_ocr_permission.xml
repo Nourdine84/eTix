@@ -1,13 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorBackground">
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="24dp">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Autorisation caméra OCR"
-        android:layout_gravity="center"
-        android:textSize="18sp"/>
-</FrameLayout>
+        android:text="Autoriser l’accès à la caméra"
+        android:textSize="18sp"
+        android:layout_marginBottom="24dp"/>
+
+    <Button
+        android:id="@+id/btnContinue"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="Continuer"
+        style="@style/Shape"/>
+</LinearLayout>

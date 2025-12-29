@@ -10,7 +10,6 @@
         android:orientation="vertical"
         android:padding="20dp">
 
-        <!-- 🧾 Titre -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -20,17 +19,16 @@
             android:textColor="?attr/colorOnBackground"
             android:layout_marginBottom="24dp"/>
 
-        <!-- 🔍 BOUTON OCR (désactivé en V2.00) -->
+        <!-- OCR -->
         <Button
-            android:id="@+id/btnScanOCR"
+            android:id="@+id/btnScanTicket"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:text="Scanner un ticket (OCR)"
-            android:visibility="gone"
-            android:layout_marginBottom="24dp"
-            style="@style/Shape" />
+            android:layout_marginBottom="32dp"
+            style="@style/Shape"/>
 
-        <!-- 🏪 Champ magasin (stub) -->
+        <!-- MAGASIN -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -38,13 +36,16 @@
             android:textColor="?attr/colorOnBackground"
             android:layout_marginBottom="8dp"/>
 
-        <View
+        <EditText
+            android:id="@+id/inputStore"
             android:layout_width="match_parent"
             android:layout_height="48dp"
+            android:hint="Nom du magasin"
             android:background="@drawable/bg_input"
+            android:paddingHorizontal="12dp"
             android:layout_marginBottom="16dp"/>
 
-        <!-- 💶 Montant -->
+        <!-- MONTANT -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -52,17 +53,21 @@
             android:textColor="?attr/colorOnBackground"
             android:layout_marginBottom="8dp"/>
 
-        <View
+        <EditText
+            android:id="@+id/inputAmount"
             android:layout_width="match_parent"
             android:layout_height="48dp"
+            android:hint="0.00 €"
+            android:inputType="numberDecimal"
             android:background="@drawable/bg_input"
-            android:layout_marginBottom="24dp"/>
+            android:paddingHorizontal="12dp"
+            android:layout_marginBottom="32dp"/>
 
-        <!-- 💾 Bouton enregistrer -->
         <Button
+            android:id="@+id/btnSaveTicket"
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:text="Enregistrer"
-            style="@style/Shape" />
+            style="@style/Shape"/>
     </LinearLayout>
 </ScrollView>
