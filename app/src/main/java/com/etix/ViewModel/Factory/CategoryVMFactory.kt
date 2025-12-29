@@ -10,13 +10,10 @@ class CategoryVMFactory(
 ) : ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return when {
-            modelClass.isAssignableFrom(CategoryViewModel::class.java) -> {
-                CategoryViewModel(repo) as T
-            }
-            else -> {
-                throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
-            }
+        if (modelClass.isAssignableFrom(CategoryViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return CategoryViewModel(repo) as T
         }
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

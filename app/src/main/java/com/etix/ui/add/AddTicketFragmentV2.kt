@@ -1,5 +1,6 @@
 package com.etix.ui.add
 
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -38,10 +39,19 @@ class AddTicketFragmentV2 : Fragment() {
             OCRKeys.REQUEST_KEY,
             viewLifecycleOwner
         ) { _, bundle ->
-            val result = bundle.getParcelable<OCRResult>(
-                OCRKeys.RESULT_BUNDLE
-            ) ?: return@setFragmentResultListener
 
+            val result: OCRResult? =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    bundle.getParcelable(
+                        OCRKeys.RESULT_BUNDLE,
+                        OCRResult::class.java
+                    )
+                } else {
+                    @Suppress("DEPRECATION")
+                    bundle.getParcelable(OCRKeys.RESULT_BUNDLE)
+                }
+
+            result ?: return@setFragmentResultListener
             applyOCRResult(result)
         }
     }
