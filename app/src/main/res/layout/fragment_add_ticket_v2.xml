@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/colorBackground">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- 🧾 Titre -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ajouter un ticket"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorOnBackground"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- 🔍 BOUTON OCR (désactivé en V2.00) -->
+        <Button
+            android:id="@+id/btnScanOCR"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Scanner un ticket (OCR)"
+            android:visibility="gone"
+            android:layout_marginBottom="24dp"
+            style="@style/Shape" />
+
+        <!-- 🏪 Champ magasin (stub) -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Magasin"
+            android:textColor="?attr/colorOnBackground"
+            android:layout_marginBottom="8dp"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_input"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- 💶 Montant -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Montant"
+            android:textColor="?attr/colorOnBackground"
+            android:layout_marginBottom="8dp"/>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_input"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- 💾 Bouton enregistrer -->
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Enregistrer"
+            style="@style/Shape" />
+    </LinearLayout>
+</ScrollView>

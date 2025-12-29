@@ -1,0 +1,6 @@
+package com.etix.features.ocr.ui
+
+import androidx.fragment.app.Fragment
+import com.etix.R
+
+class OCRPreviewFragment : Fragment(R.layout.fragment_ocr_preview)
