@@ -7,6 +7,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import com.etix.ui.main.MainActivityV2 // ✅ Import correct
 
 class LoginActivity : AppCompatActivity() {
 
@@ -30,17 +31,18 @@ class LoginActivity : AppCompatActivity() {
 
             val sharedPrefs: SharedPreferences = getSharedPreferences("eTixPrefs", MODE_PRIVATE)
             val registeredUsername = sharedPrefs.getString("username", null)
+            val registeredPassword = sharedPrefs.getString("password", null)
 
-            if (registeredUsername == username) {
+            if (registeredUsername == username && registeredPassword == password) {
                 with(sharedPrefs.edit()) {
                     putBoolean("isLoggedIn", true)
                     apply()
                 }
                 Toast.makeText(this, "Connexion réussie", Toast.LENGTH_SHORT).show()
-                startActivity(Intent(this, MainActivity::class.java))
+                startActivity(Intent(this, MainActivityV2::class.java)) // ✅ V2 activée
                 finish()
             } else {
-                Toast.makeText(this, "Nom d’utilisateur incorrect", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Nom d’utilisateur ou mot de passe incorrect", Toast.LENGTH_SHORT).show()
             }
         }
 
