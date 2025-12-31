@@ -1,4 +1,50 @@
 ---
+name: 🐞 Bug report
+about: Signaler un bug fonctionnel ou UI (non bloquant)
+title: "[BUG] "
+labels: ["bug", "QA"]
+assignees: []
+---
+
+## 📍 Contexte
+- Version : V2.x.x
+- Plateforme : Android / iOS
+- Appareil : (ex: Pixel 7, iPhone 14)
+- OS : (ex: Android 14, iOS 17)
+
+## 🔁 Étapes pour reproduire
+1.
+2.
+3.
+
+## ❌ Résultat observé
+Décrire le comportement actuel (ce qui ne va pas).
+
+## ✅ Résultat attendu
+Décrire le comportement attendu.
+
+## 🎨 Impact UI / UX
+- [ ] UI incorrecte
+- [ ] Texte / alignement
+- [ ] Animation
+- [ ] Comportement incohérent
+- [ ] Autre :
+
+## 📎 Preuves
+- Screenshot :
+- Vidéo :
+- Log (si applicable) :
+
+## 🧪 Tests
+- [ ] Reproductible
+- [ ] Non reproductible
+- [ ] Testé sur plusieurs devices
+
+## ⚠️ Sévérité
+- [ ] P3 – mineur
+- [ ] P2 – majeur
+- [ ] P1 – critique (utiliser **Bug / Error**)
+---
 name: "🐛 Bug Report"
 about: "Signaler un bug ou un crash"
 title: "bug: "

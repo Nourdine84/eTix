@@ -1,4 +1,22 @@
 ---
+name: 📘 User Story (US)
+about: User Story fonctionnelle orientée utilisateur
+title: "[US] "
+labels: ["user-story", "v2"]
+assignees: []
+---
+
+## 🧑‍💻 En tant que
+Utilisateur / Testeur / Admin
+
+## 🎯 Je souhaite
+Décrire le besoin utilisateur
+
+## ✅ Critères d’acceptation
+- [ ] Fonctionnalité accessible
+- [ ] UI conforme
+- [ ] Aucun crash
+---
 name: 🧩 User Story
 about: Fonctionnalité utilisateur (V2.xxxx)
 labels: ["US", "v2"]
