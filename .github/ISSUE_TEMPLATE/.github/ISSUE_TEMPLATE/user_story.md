@@ -1,4 +1,35 @@
 ---
+name: User Story (US)
+about: Fonctionnalité orientée utilisateur
+title: "[US] "
+labels: ["user-story", "v2"]
+assignees: []
+---
+
+## 📖 Description
+En tant que **[type d’utilisateur]**,  
+je souhaite **[objectif]**,  
+afin de **[bénéfice]**.
+
+## ✅ Critères d’acceptation
+- [ ] Fonctionnalité accessible
+- [ ] Cas nominal validé
+- [ ] Cas d’erreur géré
+- [ ] UI conforme au design validé
+- [ ] Aucun crash
+
+## 🎯 Impact
+- Module concerné :
+- Plateforme : Android / iOS / Both
+- Version cible : V2.x.x
+
+## 🧪 Tests
+- [ ] Test manuel
+- [ ] Test automatisé (si applicable)
+
+## 📎 Notes / Références
+Lien Figma, ticket parent, discussion…
+---
 name: 📘 User Story (US)
 about: User Story fonctionnelle orientée utilisateur
 title: "[US] "

@@ -1,4 +1,27 @@
 ---
+name: Design / UI
+about: Travail UI/UX ou intégration design
+title: "[DESIGN] "
+labels: ["design", "ui", "v2"]
+assignees: []
+---
+
+## 🎨 Écran concerné
+Nom de l’écran ou du flow.
+
+## 🖼️ Description
+Décrire l’objectif du design ou de l’ajustement UI.
+
+## 📐 Références
+- Figma :
+- Screenshot :
+- Design validé : Oui / Non
+
+## ✅ Critères de validation
+- [ ] Conforme à la charte eTix
+- [ ] Responsive
+- [ ] Dark mode OK
+---
 name: 🎨 Design UI / UX
 about: Amélioration ou création d’interface utilisateur
 title: "[UI] "

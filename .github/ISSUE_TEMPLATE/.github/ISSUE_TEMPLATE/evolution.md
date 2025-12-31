@@ -1,4 +1,33 @@
 ---
+name: Evolution / Feature
+about: Amélioration ou nouvelle fonctionnalité
+title: "[EVOL] "
+labels: ["feature", "v2"]
+assignees: []
+---
+
+## 🚀 Description
+Décrire l’évolution ou la nouvelle fonctionnalité proposée.
+
+## 🔄 Comportement attendu
+- Avant :
+- Après :
+
+## 📱 Plateforme
+- [ ] Android
+- [ ] iOS
+- [ ] Both
+
+## 🎨 Impact UI/UX
+- [ ] Aucun
+- [ ] Léger
+- [ ] Important (design requis)
+
+## 🧪 Validation
+- [ ] Test manuel
+- [ ] Test auto
+- [ ] QA validé
+---
 name: 🚀 Evolution / Feature
 about: Nouvelle fonctionnalité ou amélioration prévue
 title: "[EVOL] "

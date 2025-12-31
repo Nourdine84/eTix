@@ -1,4 +1,46 @@
 ---
+name: Bug report
+about: Signaler un bug ou un dysfonctionnement
+title: "[BUG] "
+labels: ["bug", "v2"]
+assignees: []
+---
+
+## 🐞 Description du bug
+Décris clairement le problème rencontré.
+
+## 📍 Contexte
+- Écran / Feature concerné :
+- Version de l’app : V2.x.x
+- Plateforme : Android / iOS
+- Device / OS :
+
+## 🔁 Étapes pour reproduire
+1.
+2.
+3.
+
+## ❌ Résultat observé
+Que se passe-t-il actuellement ?
+
+## ✅ Résultat attendu
+Quel est le comportement attendu ?
+
+## 📎 Logs / Preuves
+- Screenshot / vidéo
+- Logcat / Crashlytics (si applicable)
+
+## 🚦 Sévérité
+- [ ] Bloquant (crash / app inutilisable)
+- [ ] Majeur
+- [ ] Mineur
+- [ ] Cosmétique
+
+## 🧪 Validation
+- [ ] Reproductible
+- [ ] Corrigé localement
+- [ ] Testé en QA
+---
 name: 🐞 Bug report
 about: Signaler un bug fonctionnel ou UI (non bloquant)
 title: "[BUG] "

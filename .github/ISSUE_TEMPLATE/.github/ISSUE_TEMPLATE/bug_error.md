@@ -1,4 +1,33 @@
 ---
+name: Bug / Error
+about: Bug fonctionnel ou erreur bloquante
+title: "[BUG] "
+labels: ["bug", "v2"]
+assignees: []
+---
+
+## 🐞 Description
+Décrire précisément le bug ou l’erreur.
+
+## 📍 Contexte
+- Écran :
+- Version :
+- Device / OS :
+
+## 🔁 Étapes pour reproduire
+1.
+2.
+3.
+
+## ❌ Résultat observé
+Décrire le comportement actuel.
+
+## ✅ Résultat attendu
+Décrire le comportement attendu.
+
+## 📎 Logs / Preuves
+Screenshot, logcat, vidéo…
+---
 name: 🧨 Bug / Error (Crash / Bloquant)
 about: Crash, erreur critique, blocage (prioritaire)
 title: "[BUG-ERROR] "

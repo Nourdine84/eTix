@@ -1,4 +1,29 @@
 ---
+name: Tech / Refactor
+about: Dette technique, refactor, clean code
+title: "[TECH] "
+labels: ["tech", "refactor", "v2"]
+assignees: []
+---
+
+## 🛠️ Description
+Décrire le problème technique ou le refactor nécessaire.
+
+## 🎯 Objectif
+- Performance
+- Lisibilité
+- Stabilité
+- Scalabilité
+
+## 🔍 Impact
+- Code impacté :
+- Risque :
+
+## 🧪 Validation
+- [ ] Build OK
+- [ ] Tests OK
+- [ ] Pas de régression
+---
 name: 🛠️ Tech Refactor
 about: Refactorisation, dette technique ou amélioration interne
 title: "[TECH] "
