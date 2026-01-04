@@ -9,11 +9,11 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.eTix">
 
-        <!-- Splash screen (launcher) -->
+        <!-- Splash screen (Launcher) -->
         <activity
             android:name=".SplashActivity"
             android:exported="true"
-            android:theme="@style/Theme.eTix">
+            android:theme="@style/Theme.eTix.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -41,7 +41,6 @@
         <activity
             android:name=".TicketEditActivity"
             android:exported="false" />
-
 
     </application>
 
