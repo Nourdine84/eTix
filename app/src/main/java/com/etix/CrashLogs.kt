@@ -1,4 +1,4 @@
-package com.etix.util
+package com.etix
 
 import android.content.Context
 import java.io.File
