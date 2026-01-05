@@ -2,7 +2,8 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorBackground">
+    android:background="?attr/colorBackground"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -11,75 +12,75 @@
         android:padding="24dp"
         android:gravity="center_horizontal">
 
-        <!-- Logo eTix -->
-        <ImageView
-            android:id="@+id/imgLogo"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:src="@drawable/logo_etix_e"
-            android:contentDescription="@string/app_name"
+        <!-- Titre -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Connexion"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="?attr/colorOnBackground"
             android:layout_marginBottom="32dp" />
 
-        <!-- Nom d'utilisateur -->
+        <!-- Champ Email -->
         <EditText
             android:id="@+id/inputUsername"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_height="56dp"
             android:background="@drawable/bg_input"
-            android:hint="@string/hint_username"
-            android:inputType="textPersonName"
-            android:padding="12dp"
-            android:textColor="@color/md_background"
-            android:textColorHint="@color/text_secondary" />
+            android:hint="Adresse email"
+            android:inputType="textEmailAddress"
+            android:padding="16dp"
+            android:textColor="?attr/colorOnSurface"
+            android:textColorHint="@color/text_secondary"
+            android:layout_marginBottom="16dp" />
 
-        <!-- Mot de passe -->
+        <!-- Champ Mot de passe -->
         <EditText
             android:id="@+id/inputPassword"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="@string/hint_password"
-            android:inputType="textPassword"
-            android:padding="12dp"
+            android:layout_height="56dp"
             android:background="@drawable/bg_input"
-            android:layout_marginBottom="24dp"
-            android:textColor="@color/md_background"
-            android:textColorHint="@color/text_secondary" />
-
-        <!-- Bouton connexion -->
-        <Button
-            android:id="@+id/btnLogin"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/btn_login"
-            android:textAllCaps="false"
-            android:textColor="@android:color/white"
-            android:background="@drawable/bg_button"
-            android:layout_marginBottom="12dp"
-            style="@style/Shape" />
-
-        <!-- Bouton aller à l'inscription -->
-        <Button
-            android:id="@+id/btnGoRegister"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/action_go_register"
-            android:textAllCaps="false"
-            android:textColor="@color/white"
-            android:background="@drawable/bg_button_secondary"
-            android:layout_marginBottom="16dp"
-            style="@style/Shape" />
+            android:hint="Mot de passe"
+            android:inputType="textPassword"
+            android:padding="16dp"
+            android:drawableEnd="@drawable/ic_eye_closed"
+            android:drawablePadding="12dp"
+            android:textColor="?attr/colorOnSurface"
+            android:textColorHint="?attr/colorOnSurfaceVariant"
+            android:layout_marginBottom="16dp" />
 
         <!-- Mot de passe oublié -->
         <TextView
             android:id="@+id/tvForgotPassword"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/action_forgot_password"
+            android:text="Mot de passe oublié ?"
             android:textColor="@color/etix_blue"
-            android:textStyle="bold"
-            android:layout_marginTop="12dp"
+            android:layout_gravity="end"
+            android:layout_marginBottom="24dp"
             android:clickable="true"
             android:focusable="true" />
+
+        <!-- Bouton Connexion -->
+        <Button
+            android:id="@+id/btnLogin"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Se connecter"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:background="@drawable/bg_button"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Lien inscription -->
+        <TextView
+            android:id="@+id/tvGoRegister"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Pas encore de compte ? Inscription"
+            android:textColor="?attr/colorOnBackground"
+            android:textSize="14sp" />
+
     </LinearLayout>
 </ScrollView>

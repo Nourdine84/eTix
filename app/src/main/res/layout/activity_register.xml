@@ -13,95 +13,106 @@
         android:padding="24dp"
         android:gravity="center_horizontal">
 
+        <!-- Logo -->
         <ImageView
             android:id="@+id/imgLogo"
             android:layout_width="120dp"
             android:layout_height="120dp"
+            android:layout_marginBottom="32dp"
             android:src="@drawable/logo_etix_e"
-            android:contentDescription="@string/app_name"
-            android:layout_marginBottom="32dp" />
+            android:contentDescription="@string/app_name" />
 
+        <!-- Username -->
         <EditText
             android:id="@+id/editTextUsername"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/bg_input"
             android:hint="@string/hint_username"
             android:inputType="textPersonName"
             android:padding="12dp"
-            android:background="@drawable/bg_input"
-            android:layout_marginBottom="16dp"
-            android:textColor="@color/white"
-            android:textColorHint="@color/text_secondary" />
+            android:textColor="?attr/colorOnSurface"
+            android:textColorHint="?attr/colorOnSurfaceVariant" />
 
+        <!-- Nom complet -->
         <EditText
             android:id="@+id/edtFullName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/bg_input"
             android:hint="@string/label_full_name"
             android:inputType="textCapWords|textPersonName"
             android:padding="12dp"
-            android:background="@drawable/bg_input"
-            android:layout_marginBottom="16dp"
-            android:textColor="@color/white"
-            android:textColorHint="@color/text_secondary" />
+            android:textColor="?attr/colorOnSurface"
+            android:textColorHint="?attr/colorOnSurfaceVariant" />
 
+        <!-- Email -->
         <EditText
             android:id="@+id/edtEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/bg_input"
             android:hint="@string/label_email"
             android:inputType="textEmailAddress"
             android:padding="12dp"
-            android:background="@drawable/bg_input"
-            android:layout_marginBottom="16dp"
-            android:textColor="@color/white"
-            android:textColorHint="@color/text_secondary" />
+            android:textColor="?attr/colorOnSurface"
+            android:textColorHint="?attr/colorOnSurfaceVariant" />
 
+        <!-- Mot de passe -->
         <EditText
             android:id="@+id/edtPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/bg_input"
             android:hint="@string/label_password"
             android:inputType="textPassword"
             android:padding="12dp"
-            android:background="@drawable/bg_input"
-            android:layout_marginBottom="16dp"
-            android:textColor="@color/white"
-            android:textColorHint="@color/text_secondary" />
+            android:drawableEnd="@drawable/ic_eye_closed"
+            android:drawablePadding="12dp"
+            android:textColor="?attr/colorOnSurface"
+            android:textColorHint="?attr/colorOnSurfaceVariant" />
 
+        <!-- Confirmation mot de passe -->
         <EditText
             android:id="@+id/edtConfirmPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            android:background="@drawable/bg_input"
             android:hint="@string/label_confirm_password"
             android:inputType="textPassword"
             android:padding="12dp"
-            android:background="@drawable/bg_input"
-            android:layout_marginBottom="24dp"
-            android:textColor="@color/white"
-            android:textColorHint="@color/text_secondary" />
+            android:drawableEnd="@drawable/ic_eye_closed"
+            android:drawablePadding="12dp"
+            android:textColor="?attr/colorOnSurface"
+            android:textColorHint="?attr/colorOnSurfaceVariant" />
 
+        <!-- Bouton inscription -->
         <Button
             android:id="@+id/btnRegister"
+            style="@style/Shape"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/bg_button"
             android:text="@string/action_register"
             android:textAllCaps="false"
-            android:textColor="@android:color/white"
-            android:backgroundTint="@color/etix_blue"
-            android:background="@drawable/bg_button"
-            android:layout_marginBottom="12dp"
-            style="@style/Shape" />
+            android:textColor="@android:color/white" />
 
+        <!-- Retour login -->
         <Button
             android:id="@+id/btnGoLogin"
             style="@style/Shape"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
             android:background="@drawable/bg_button_secondary"
             android:text="@string/action_go_login"
             android:textAllCaps="false"
             android:textColor="@android:color/white" />
+
     </LinearLayout>
 </ScrollView>
