@@ -1,86 +1,125 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/scrollLogin"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorBackground"
     android:fillViewport="true">
 
     <LinearLayout
+        android:id="@+id/containerLogin"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="24dp"
         android:gravity="center_horizontal">
 
-        <!-- Titre -->
+        <!-- Logo -->
+        <ImageView
+            android:id="@+id/imgLogo"
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/logo_etix_e" />
+
+        <!-- Title -->
         <TextView
+            android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Connexion"
-            android:textSize="28sp"
             android:textStyle="bold"
+            android:textSize="22sp"
             android:textColor="?attr/colorOnBackground"
-            android:layout_marginBottom="32dp" />
+            android:layout_marginBottom="6dp" />
 
-        <!-- Champ Email -->
+        <TextView
+            android:id="@+id/tvSubtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Accède à tes tickets en toute simplicité"
+            android:textSize="14sp"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:layout_marginBottom="24dp" />
+
+        <!-- Username -->
         <EditText
             android:id="@+id/inputUsername"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="wrap_content"
             android:background="@drawable/bg_input"
-            android:hint="Adresse email"
-            android:inputType="textEmailAddress"
-            android:padding="16dp"
+            android:hint="@string/hint_username"
+            android:inputType="textPersonName"
+            android:padding="14dp"
             android:textColor="?attr/colorOnSurface"
-            android:textColorHint="@color/text_secondary"
-            android:layout_marginBottom="16dp" />
+            android:textColorHint="?attr/colorOnSurfaceVariant"
+            android:imeOptions="actionNext"
+            android:maxLines="1"
+            android:layout_marginBottom="14dp" />
 
-        <!-- Champ Mot de passe -->
+        <!-- Password -->
         <EditText
             android:id="@+id/inputPassword"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="wrap_content"
             android:background="@drawable/bg_input"
-            android:hint="Mot de passe"
+            android:hint="@string/hint_password"
             android:inputType="textPassword"
-            android:padding="16dp"
-            android:drawableEnd="@drawable/ic_eye_closed"
-            android:drawablePadding="12dp"
+            android:padding="14dp"
             android:textColor="?attr/colorOnSurface"
             android:textColorHint="?attr/colorOnSurfaceVariant"
-            android:layout_marginBottom="16dp" />
+            android:drawableEnd="@drawable/ic_eye_closed"
+            android:drawablePadding="12dp"
+            android:imeOptions="actionDone"
+            android:maxLines="1"
+            android:layout_marginBottom="10dp" />
 
-        <!-- Mot de passe oublié -->
+        <!-- Forgot -->
         <TextView
             android:id="@+id/tvForgotPassword"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Mot de passe oublié ?"
+            android:text="@string/action_forgot_password"
+            android:textStyle="bold"
+            android:textSize="13sp"
             android:textColor="@color/etix_blue"
-            android:layout_gravity="end"
-            android:layout_marginBottom="24dp"
+            android:gravity="end"
+            android:paddingTop="4dp"
+            android:paddingBottom="18dp"
             android:clickable="true"
             android:focusable="true" />
 
-        <!-- Bouton Connexion -->
+        <!-- Login -->
         <Button
             android:id="@+id/btnLogin"
+            style="@style/Shape"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:text="Se connecter"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_login"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
             android:background="@drawable/bg_button"
-            android:layout_marginBottom="24dp" />
+            android:enabled="false"
+            android:alpha="0.65"
+            android:layout_marginBottom="16dp" />
 
-        <!-- Lien inscription -->
+        <!-- Register link -->
         <TextView
             android:id="@+id/tvGoRegister"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Pas encore de compte ? Inscription"
+            android:text="Pas de compte ? Créer un compte"
             android:textColor="?attr/colorOnBackground"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            android:padding="10dp"
+            android:clickable="true"
+            android:focusable="true" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="24dp" />
 
     </LinearLayout>
 </ScrollView>

@@ -1,109 +1,134 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/scrollRegister"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?attr/colorBackground"
-    tools:context=".RegisterActivity">
+    android:fillViewport="true">
 
     <LinearLayout
+        android:id="@+id/containerRegister"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="24dp"
         android:gravity="center_horizontal">
 
-        <!-- Logo -->
         <ImageView
             android:id="@+id/imgLogo"
-            android:layout_width="120dp"
-            android:layout_height="120dp"
-            android:layout_marginBottom="32dp"
-            android:src="@drawable/logo_etix_e"
-            android:contentDescription="@string/app_name" />
+            android:layout_width="96dp"
+            android:layout_height="96dp"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="16dp"
+            android:contentDescription="@string/app_name"
+            android:src="@drawable/logo_etix_e" />
 
-        <!-- Username -->
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Inscription"
+            android:textStyle="bold"
+            android:textSize="22sp"
+            android:textColor="?attr/colorOnBackground"
+            android:layout_marginBottom="6dp" />
+
+        <TextView
+            android:id="@+id/tvSubtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Crée ton compte en quelques secondes"
+            android:textSize="14sp"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:layout_marginBottom="24dp" />
+
         <EditText
             android:id="@+id/editTextUsername"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
             android:background="@drawable/bg_input"
             android:hint="@string/hint_username"
             android:inputType="textPersonName"
-            android:padding="12dp"
+            android:padding="14dp"
             android:textColor="?attr/colorOnSurface"
-            android:textColorHint="?attr/colorOnSurfaceVariant" />
+            android:textColorHint="?attr/colorOnSurfaceVariant"
+            android:imeOptions="actionNext"
+            android:maxLines="1"
+            android:layout_marginBottom="14dp" />
 
-        <!-- Nom complet -->
         <EditText
             android:id="@+id/edtFullName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
             android:background="@drawable/bg_input"
             android:hint="@string/label_full_name"
             android:inputType="textCapWords|textPersonName"
-            android:padding="12dp"
+            android:padding="14dp"
             android:textColor="?attr/colorOnSurface"
-            android:textColorHint="?attr/colorOnSurfaceVariant" />
+            android:textColorHint="?attr/colorOnSurfaceVariant"
+            android:imeOptions="actionNext"
+            android:maxLines="1"
+            android:layout_marginBottom="14dp" />
 
-        <!-- Email -->
         <EditText
             android:id="@+id/edtEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
             android:background="@drawable/bg_input"
             android:hint="@string/label_email"
             android:inputType="textEmailAddress"
-            android:padding="12dp"
+            android:padding="14dp"
             android:textColor="?attr/colorOnSurface"
-            android:textColorHint="?attr/colorOnSurfaceVariant" />
+            android:textColorHint="?attr/colorOnSurfaceVariant"
+            android:imeOptions="actionNext"
+            android:maxLines="1"
+            android:layout_marginBottom="14dp" />
 
-        <!-- Mot de passe -->
         <EditText
             android:id="@+id/edtPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
             android:background="@drawable/bg_input"
             android:hint="@string/label_password"
             android:inputType="textPassword"
-            android:padding="12dp"
+            android:padding="14dp"
+            android:textColor="?attr/colorOnSurface"
+            android:textColorHint="?attr/colorOnSurfaceVariant"
             android:drawableEnd="@drawable/ic_eye_closed"
             android:drawablePadding="12dp"
-            android:textColor="?attr/colorOnSurface"
-            android:textColorHint="?attr/colorOnSurfaceVariant" />
+            android:imeOptions="actionNext"
+            android:maxLines="1"
+            android:layout_marginBottom="14dp" />
 
-        <!-- Confirmation mot de passe -->
         <EditText
             android:id="@+id/edtConfirmPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
             android:background="@drawable/bg_input"
             android:hint="@string/label_confirm_password"
             android:inputType="textPassword"
-            android:padding="12dp"
+            android:padding="14dp"
+            android:textColor="?attr/colorOnSurface"
+            android:textColorHint="?attr/colorOnSurfaceVariant"
             android:drawableEnd="@drawable/ic_eye_closed"
             android:drawablePadding="12dp"
-            android:textColor="?attr/colorOnSurface"
-            android:textColorHint="?attr/colorOnSurfaceVariant" />
+            android:imeOptions="actionDone"
+            android:maxLines="1"
+            android:layout_marginBottom="20dp" />
 
-        <!-- Bouton inscription -->
         <Button
             android:id="@+id/btnRegister"
             style="@style/Shape"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
-            android:background="@drawable/bg_button"
             android:text="@string/action_register"
             android:textAllCaps="false"
-            android:textColor="@android:color/white" />
+            android:textColor="@android:color/white"
+            android:background="@drawable/bg_button"
+            android:enabled="false"
+            android:alpha="0.65"
+            android:layout_marginBottom="12dp" />
 
-        <!-- Retour login -->
         <Button
             android:id="@+id/btnGoLogin"
             style="@style/Shape"
@@ -113,6 +138,10 @@
             android:text="@string/action_go_login"
             android:textAllCaps="false"
             android:textColor="@android:color/white" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="24dp" />
 
     </LinearLayout>
 </ScrollView>
