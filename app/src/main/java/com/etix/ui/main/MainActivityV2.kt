@@ -20,14 +20,11 @@ class MainActivityV2 : AppCompatActivity() {
         viewPager = findViewById(R.id.viewPager)
         bottomNav = findViewById(R.id.bottomNav)
 
-        // Adapter
         viewPager.adapter = MainPagerAdapter(this)
+        viewPager.isUserInputEnabled = true
+        viewPager.offscreenPageLimit = 4
 
-        // UX / perf
-        viewPager.isUserInputEnabled = true          // Swipe ON
-        viewPager.offscreenPageLimit = 4             // Pas de recréation
-
-        // 🎯 Animation iOS-like (PACK 7)
+        // 🎯 Animation iOS-like
         viewPager.setPageTransformer { page, position ->
             val absPos = abs(position)
             page.alpha = 0.85f + (1 - absPos) * 0.15f
@@ -35,9 +32,8 @@ class MainActivityV2 : AppCompatActivity() {
             page.translationX = -position * page.width * 0.05f
         }
 
-        // BottomNav → ViewPager
         bottomNav.setOnItemSelectedListener { item ->
-            val targetIndex = when (item.itemId) {
+            val target = when (item.itemId) {
                 R.id.menu_home -> 0
                 R.id.menu_add -> 1
                 R.id.menu_history -> 2
@@ -45,21 +41,18 @@ class MainActivityV2 : AppCompatActivity() {
                 R.id.menu_settings -> 4
                 else -> 0
             }
-
-            if (viewPager.currentItem != targetIndex) {
-                viewPager.setCurrentItem(targetIndex, true)
+            if (viewPager.currentItem != target) {
+                viewPager.setCurrentItem(target, true)
             }
             true
         }
 
-        // ViewPager → BottomNav
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 bottomNav.menu.getItem(position).isChecked = true
             }
         })
 
-        // Back press propre : retour Home puis exit
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (viewPager.currentItem != 0) {

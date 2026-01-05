@@ -4,31 +4,20 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
-import android.view.*
-import android.widget.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
-import com.etix.LoginActivity
+import com.etix.CrashLogs
 import com.etix.R
-import com.etix.data.AppDatabase
-import com.etix.data.TicketRepository
-import com.etix.utils.CrashLogs
+import com.etix.ui.login.LoginActivity
 import com.etix.utils.SessionManager
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 class SettingsFragment : Fragment() {
-
-    private lateinit var textUser: TextView
-    private lateinit var textVersion: TextView
-    private lateinit var textCrashPreview: TextView
-    private lateinit var btnToggleTheme: Button
-    private lateinit var btnClearAll: Button
-    private lateinit var btnShowCrash: Button
-    private lateinit var btnClearCrash: Button
-    private lateinit var btnLogout: Button
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,25 +27,22 @@ class SettingsFragment : Fragment() {
 
         val v = inflater.inflate(R.layout.fragment_settings, container, false)
 
-        textUser = v.findViewById(R.id.textUser)
-        textVersion = v.findViewById(R.id.textVersion)
-        textCrashPreview = v.findViewById(R.id.textCrashPreview)
-        btnToggleTheme = v.findViewById(R.id.btnToggleTheme)
-        btnClearAll = v.findViewById(R.id.btnClearAll)
-        btnShowCrash = v.findViewById(R.id.btnShowCrash)
-        btnClearCrash = v.findViewById(R.id.btnClearCrash)
-        btnLogout = v.findViewById(R.id.btnLogout)
-
         val session = SessionManager(requireContext())
 
-        // 👤 Utilisateur connecté
+        val textUser = v.findViewById<TextView>(R.id.textUser)
+        val textVersion = v.findViewById<TextView>(R.id.textVersion)
+        val textCrashPreview = v.findViewById<TextView>(R.id.textCrashPreview)
+
+        val btnToggleTheme = v.findViewById<Button>(R.id.btnToggleTheme)
+        val btnShowCrash = v.findViewById<Button>(R.id.btnShowCrash)
+        val btnClearCrash = v.findViewById<Button>(R.id.btnClearCrash)
+        val btnLogout = v.findViewById<Button>(R.id.btnLogout)
+
         textUser.text = "Connecté en tant que : ${session.getUsername()}"
 
-        // ℹ️ Version app
         val (versionName, versionCode) = getAppVersionSafe()
         textVersion.text = "Version $versionName ($versionCode)"
 
-        // 🌗 Changer thème
         btnToggleTheme.setOnClickListener {
             val currentMode = AppCompatDelegate.getDefaultNightMode()
             val newMode =
@@ -69,19 +55,6 @@ class SettingsFragment : Fragment() {
             Toast.makeText(requireContext(), "Thème mis à jour", Toast.LENGTH_SHORT).show()
         }
 
-        // 🧹 Vider la base Room
-        btnClearAll.setOnClickListener {
-            lifecycleScope.launch(Dispatchers.IO) {
-                val dao = AppDatabase.getInstance(requireContext()).ticketDao()
-                val repo = TicketRepository(dao)
-                repo.deleteAll()
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(requireContext(), "Base vidée", Toast.LENGTH_SHORT).show()
-                }
-            }
-        }
-
-        // 🐞 Afficher dernier crash log
         btnShowCrash.setOnClickListener {
             val f = CrashLogs.latestLog(requireContext())
             if (f == null) {
@@ -95,7 +68,6 @@ class SettingsFragment : Fragment() {
             }
         }
 
-        // 🗑️ Supprimer tous les crash logs
         btnClearCrash.setOnClickListener {
             val ok = CrashLogs.deleteAll(requireContext())
             textCrashPreview.text = ""
@@ -107,10 +79,8 @@ class SettingsFragment : Fragment() {
             ).show()
         }
 
-        // 🔐 Déconnexion propre (clear session + clear backstack)
         btnLogout.setOnClickListener {
             session.logout()
-
             val intent = Intent(requireContext(), LoginActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
