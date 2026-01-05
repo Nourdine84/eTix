@@ -38,11 +38,14 @@ class SettingsFragment : Fragment() {
         val btnClearCrash = v.findViewById<Button>(R.id.btnClearCrash)
         val btnLogout = v.findViewById<Button>(R.id.btnLogout)
 
+        // 👤 Utilisateur connecté
         textUser.text = "Connecté en tant que : ${session.getUsername()}"
 
+        // ℹ️ Version app
         val (versionName, versionCode) = getAppVersionSafe()
         textVersion.text = "Version $versionName ($versionCode)"
 
+        // 🌗 Thème
         btnToggleTheme.setOnClickListener {
             val currentMode = AppCompatDelegate.getDefaultNightMode()
             val newMode =
@@ -55,6 +58,7 @@ class SettingsFragment : Fragment() {
             Toast.makeText(requireContext(), "Thème mis à jour", Toast.LENGTH_SHORT).show()
         }
 
+        // 🐞 Afficher crash log
         btnShowCrash.setOnClickListener {
             val f = CrashLogs.latestLog(requireContext())
             if (f == null) {
@@ -68,6 +72,7 @@ class SettingsFragment : Fragment() {
             }
         }
 
+        // 🗑️ Supprimer crash logs
         btnClearCrash.setOnClickListener {
             val ok = CrashLogs.deleteAll(requireContext())
             textCrashPreview.text = ""
@@ -79,10 +84,13 @@ class SettingsFragment : Fragment() {
             ).show()
         }
 
+        // 🔐 LOGOUT PROPRE (Sprint 2.2 – Étape C)
         btnLogout.setOnClickListener {
             session.logout()
-            val intent = Intent(requireContext(), LoginActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+
+            val intent = Intent(requireContext(), LoginActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
             startActivity(intent)
         }
 

@@ -4,9 +4,9 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
-import com.etix.ui.main.MainActivityV2
 import com.etix.ui.login.LoginActivity
-import com.etix.ui.register.RegisterActivity
+import com.etix.ui.main.MainActivityV2
+import com.etix.ui.register.RegisterActivity   // ✅ IMPORT MANQUANT
 import com.etix.utils.SessionManager
 
 class WelcomeActivity : AppCompatActivity() {
@@ -27,7 +27,6 @@ class WelcomeActivity : AppCompatActivity() {
             return
         }
 
-        // ⬇️ Sinon, affichage normal
         setContentView(R.layout.activity_welcome)
 
         val btnLogin = findViewById<Button>(R.id.btnLogin)

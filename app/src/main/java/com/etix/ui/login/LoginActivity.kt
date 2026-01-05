@@ -23,7 +23,7 @@ class LoginActivity : AppCompatActivity() {
 
         val session = SessionManager(this)
 
-        // ✅ Auto-skip si déjà connecté
+        // 🔒 GUARD GLOBAL
         if (session.isLoggedIn()) {
             startActivity(
                 Intent(this, MainActivityV2::class.java).apply {
@@ -42,7 +42,7 @@ class LoginActivity : AppCompatActivity() {
         val tvGoRegister = findViewById<TextView>(R.id.tvGoRegister)
         val tvForgot = findViewById<TextView>(R.id.tvForgotPassword)
 
-        // 🔘 Activation dynamique bouton
+        // 🔘 Activation dynamique du bouton
         fun updateButtonState() {
             val enabled =
                 inputUsername.text.isNotBlank() && inputPassword.text.isNotBlank()
@@ -79,6 +79,7 @@ class LoginActivity : AppCompatActivity() {
             inputPassword.setSelection(inputPassword.text.length)
         }
 
+        // 🔐 Login
         btnLogin.setOnClickListener {
             val username = inputUsername.text.toString().trim()
 
@@ -87,7 +88,6 @@ class LoginActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // ✅ Login Sprint 2.1
             session.login(username)
 
             startActivity(

@@ -20,7 +20,7 @@
             </intent-filter>
         </activity>
 
-        <!-- Main V2 (ViewPager2 + BottomNav) -->
+        <!-- Main V2 -->
         <activity
             android:name=".ui.main.MainActivityV2"
             android:exported="false"
@@ -28,20 +28,25 @@
 
         <!-- Auth -->
         <activity
-            android:name=".LoginActivity"
+            android:name=".ui.login.LoginActivity"
             android:exported="true" />
+
         <activity
-            android:name=".RegisterActivity"
+            android:name=".ui.register.RegisterActivity"
             android:exported="true" />
 
         <!-- Ticket -->
         <activity
             android:name=".TicketDetailActivity"
             android:exported="false" />
+
         <activity
             android:name=".TicketEditActivity"
             android:exported="false" />
 
+        <activity
+            android:name=".ui.onboarding.OnboardingActivity"
+            android:exported="false" />
     </application>
 
 </manifest>
