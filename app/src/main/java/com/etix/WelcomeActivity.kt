@@ -4,21 +4,39 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
-import com.etix.ui.login.LoginActivity   // ✅ IMPORT MANQUANT
+import com.etix.ui.main.MainActivityV2
+import com.etix.ui.login.LoginActivity
+import com.etix.ui.register.RegisterActivity
+import com.etix.utils.SessionManager
 
 class WelcomeActivity : AppCompatActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        val session = SessionManager(this)
+
+        // 🔐 GUARD : si déjà connecté → Main
+        if (session.isLoggedIn()) {
+            startActivity(
+                Intent(this, MainActivityV2::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                }
+            )
+            finish()
+            return
+        }
+
+        // ⬇️ Sinon, affichage normal
         setContentView(R.layout.activity_welcome)
 
-        // Bouton Connexion
         val btnLogin = findViewById<Button>(R.id.btnLogin)
+        val btnRegister = findViewById<Button>(R.id.btnRegister)
+
         btnLogin.setOnClickListener {
             startActivity(Intent(this, LoginActivity::class.java))
         }
 
-        // Bouton Inscription
-        val btnRegister = findViewById<Button>(R.id.btnRegister)
         btnRegister.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
