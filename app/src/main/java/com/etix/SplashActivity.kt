@@ -6,6 +6,7 @@ import android.os.Handler
 import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 import com.etix.ui.main.MainActivityV2
+import com.etix.utils.SessionManager
 
 class SplashActivity : AppCompatActivity() {
 
@@ -13,12 +14,11 @@ class SplashActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         // ⚠️ PAS de setContentView → splash géré par le thème
 
+        val session = SessionManager(this)
+
         Handler(Looper.getMainLooper()).postDelayed({
 
-            val isLoggedIn = getSharedPreferences("etix_prefs", MODE_PRIVATE)
-                .getBoolean("is_logged_in", false)
-
-            val nextActivity = if (isLoggedIn) {
+            val nextActivity = if (session.isLoggedIn()) {
                 MainActivityV2::class.java
             } else {
                 LoginActivity::class.java
@@ -28,6 +28,6 @@ class SplashActivity : AppCompatActivity() {
             overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out)
             finish()
 
-        }, 600) // 600ms = fluide, premium, non intrusif
+        }, 600) // fluide, premium, non intrusif
     }
 }
