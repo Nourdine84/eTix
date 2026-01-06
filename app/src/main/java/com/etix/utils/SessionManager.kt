@@ -1,6 +1,8 @@
+// 📁 com.etix.utils.SessionManager.kt
 package com.etix.utils
 
 import android.content.Context
+import androidx.appcompat.app.AppCompatDelegate
 
 class SessionManager(context: Context) {
 
@@ -11,6 +13,7 @@ class SessionManager(context: Context) {
         private const val KEY_LOGGED_IN = "logged_in"
         private const val KEY_USERNAME = "username"
         private const val KEY_FIRST_LAUNCH = "first_launch"
+        private const val KEY_THEME_MODE = "theme_mode"
     }
 
     // 🔐 AUTH
@@ -36,7 +39,7 @@ class SessionManager(context: Context) {
         return prefs.getString(KEY_USERNAME, "Utilisateur") ?: "Utilisateur"
     }
 
-    // 🚀 ONBOARDING / FIRST LAUNCH
+    // 🚀 FIRST LAUNCH / ONBOARDING
     fun isFirstLaunch(): Boolean {
         return prefs.getBoolean(KEY_FIRST_LAUNCH, true)
     }
@@ -44,6 +47,20 @@ class SessionManager(context: Context) {
     fun markFirstLaunchDone() {
         prefs.edit()
             .putBoolean(KEY_FIRST_LAUNCH, false)
+            .apply()
+    }
+
+    // 🌗 THEME (SOURCE UNIQUE)
+    fun getThemeMode(): Int {
+        return prefs.getInt(
+            KEY_THEME_MODE,
+            AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
+        )
+    }
+
+    fun setThemeMode(mode: Int) {
+        prefs.edit()
+            .putInt(KEY_THEME_MODE, mode)
             .apply()
     }
 }

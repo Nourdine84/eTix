@@ -1,3 +1,4 @@
+// 📁 com.etix.ui.login.LoginActivity.kt
 package com.etix.ui.login
 
 import android.content.Intent
@@ -10,6 +11,7 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import com.etix.R
 import com.etix.ui.main.MainActivityV2
 import com.etix.ui.register.RegisterActivity
@@ -19,9 +21,13 @@ import com.etix.utils.setOnDrawableEndClickListener
 class LoginActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
 
         val session = SessionManager(this)
+
+        // 🌗 THEME AVANT SUPER
+        AppCompatDelegate.setDefaultNightMode(session.getThemeMode())
+
+        super.onCreate(savedInstanceState)
 
         // 🔒 GUARD GLOBAL
         if (session.isLoggedIn()) {
@@ -42,7 +48,7 @@ class LoginActivity : AppCompatActivity() {
         val tvGoRegister = findViewById<TextView>(R.id.tvGoRegister)
         val tvForgot = findViewById<TextView>(R.id.tvForgotPassword)
 
-        // 🔘 Activation dynamique du bouton
+        // 🔘 Activation bouton
         fun updateButtonState() {
             val enabled =
                 inputUsername.text.isNotBlank() && inputPassword.text.isNotBlank()
@@ -61,7 +67,7 @@ class LoginActivity : AppCompatActivity() {
         inputUsername.addTextChangedListener(watcher)
         inputPassword.addTextChangedListener(watcher)
 
-        // 👁️ Toggle visibilité mot de passe
+        // 👁️ Toggle password
         var isPasswordVisible = false
         inputPassword.setOnDrawableEndClickListener {
             isPasswordVisible = !isPasswordVisible

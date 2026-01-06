@@ -54,19 +54,26 @@ class SettingsFragment : Fragment() {
         val (versionName, versionCode) = getAppVersionSafe()
         textVersion.text = "Version $versionName ($versionCode)"
 
-        // 🌗 Toggle thème (propre ViewPager2)
+        // 🌗 Toggle thème (SOURCE UNIQUE = SessionManager)
         btnToggleTheme.setOnClickListener {
+
+            val currentMode = session.getThemeMode()
+
             val newMode =
-                if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES)
+                if (currentMode == AppCompatDelegate.MODE_NIGHT_YES)
                     AppCompatDelegate.MODE_NIGHT_NO
                 else
                     AppCompatDelegate.MODE_NIGHT_YES
 
+            // 🔐 Sauvegarde centrale
+            session.setThemeMode(newMode)
+
+            // 🌗 Application immédiate
             AppCompatDelegate.setDefaultNightMode(newMode)
 
             Toast.makeText(requireContext(), "Thème appliqué", Toast.LENGTH_SHORT).show()
 
-            // Important pour ViewPager
+            // 🔄 Recréation Activity (ViewPager-safe)
             activity?.recreate()
         }
 

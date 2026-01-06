@@ -1,3 +1,4 @@
+// 📁 com.etix.SplashActivity.kt
 package com.etix
 
 import android.content.Intent
@@ -17,18 +18,15 @@ class SplashActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
-        // ✅ FORCER LE MODE THEME AVANT TOUT (évite les mélanges)
-        AppCompatDelegate.setDefaultNightMode(
-            AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM
-        )
+        val session = SessionManager(this)
+
+        // ✅ APPLY THEME BEFORE ANY UI
+        AppCompatDelegate.setDefaultNightMode(session.getThemeMode())
 
         super.onCreate(savedInstanceState)
 
-        val session = SessionManager(this)
-
         handler.postDelayed({
 
-            // 🛡️ Sécurité lifecycle
             if (isFinishing || isDestroyed) return@postDelayed
 
             val nextIntent = when {
@@ -38,12 +36,12 @@ class SplashActivity : AppCompatActivity() {
                     Intent(this, OnboardingActivity::class.java)
                 }
 
-                // 🔐 Déjà connecté
+                // 🔐 USER LOGGED
                 session.isLoggedIn() -> {
                     Intent(this, MainActivityV2::class.java)
                 }
 
-                // 🔓 Par défaut
+                // 🔓 DEFAULT
                 else -> {
                     Intent(this, LoginActivity::class.java)
                 }

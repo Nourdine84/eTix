@@ -6,13 +6,13 @@ import android.view.*
 import android.widget.Button
 import android.widget.SearchView
 import android.widget.TextView
-import androidx.core.os.bundleOf
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.etix.R
@@ -54,12 +54,22 @@ class TicketHistoryFragment : Fragment() {
         btnCustomRange = v.findViewById(R.id.btnCustomRange)
         btnClearFilter = v.findViewById(R.id.btnClearFilter)
 
-        adapter = TicketAdapter(onItemClick = { _ -> }) // Click prêt si besoin
+        adapter = TicketAdapter { ticket ->
+            // prêt pour navigation détail (Sprint suivant)
+        }
 
         recycler.layoutManager = LinearLayoutManager(requireContext())
         recycler.adapter = adapter
 
-        // SearchView
+        setupSearch()
+        setupFilters()
+        observeTickets()
+        setupSortMenu()
+
+        return v
+    }
+
+    private fun setupSearch() {
         searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
             override fun onQueryTextSubmit(q: String?): Boolean {
                 vm.setQuery(q.orEmpty())
@@ -71,8 +81,9 @@ class TicketHistoryFragment : Fragment() {
                 return true
             }
         })
+    }
 
-        // Filtres rapides
+    private fun setupFilters() {
         btnThisMonth.setOnClickListener {
             val (start, end) = currentMonthRange()
             vm.setDateRange(start, end)
@@ -85,19 +96,17 @@ class TicketHistoryFragment : Fragment() {
         btnClearFilter.setOnClickListener {
             vm.clearDateRange()
         }
+    }
 
-        // Collect Flow
+    private fun observeTickets() {
         viewLifecycleOwner.lifecycleScope.launch {
-            vm.tickets.collectLatest { list ->
-                adapter.submitList(list)
-                toggleEmpty(list.isEmpty())
+            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                vm.tickets.collectLatest { list ->
+                    adapter.submitList(list)
+                    toggleEmpty(list.isEmpty())
+                }
             }
         }
-
-        // Menu de tri
-        setupSortMenu()
-
-        return v
     }
 
     private fun setupSortMenu() {
