@@ -6,6 +6,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager2.widget.ViewPager2
 import com.etix.R
+import com.etix.adapter.FragmentAdapter
 import com.etix.ui.login.LoginActivity
 import com.etix.utils.SessionManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -33,7 +34,7 @@ class MainActivityV2 : AppCompatActivity() {
         viewPager = findViewById(R.id.viewPager)
         bottomNav = findViewById(R.id.bottomNav)
 
-        viewPager.adapter = MainPagerAdapter(this)
+        viewPager.adapter = FragmentAdapter(this)
         viewPager.isUserInputEnabled = true
         viewPager.offscreenPageLimit = 4
 

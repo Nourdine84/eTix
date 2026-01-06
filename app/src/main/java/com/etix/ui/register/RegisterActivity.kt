@@ -20,7 +20,7 @@ class RegisterActivity : AppCompatActivity() {
 
         val session = SessionManager(this)
 
-        // 🔒 Auto-skip si déjà connecté
+        // 🔒 GUARD STRICT : déjà connecté → Main
         if (session.isLoggedIn()) {
             startActivity(
                 Intent(this, MainActivityV2::class.java).apply {
@@ -42,18 +42,22 @@ class RegisterActivity : AppCompatActivity() {
         val btnRegister = findViewById<Button>(R.id.btnRegister)
         val btnGoLogin = findViewById<Button>(R.id.btnGoLogin)
 
+        // 👁️ Toggle visibilité mots de passe
         setupPasswordToggle(editPassword)
         setupPasswordToggle(editConfirmPassword)
 
         btnRegister.setOnClickListener {
             val username = editUsername.text.toString().trim()
+            val fullName = editFullName.text.toString().trim()
+            val email = editEmail.text.toString().trim()
             val password = editPassword.text.toString()
             val confirm = editConfirmPassword.text.toString()
 
+            // 🧪 Validation minimale V2
             if (
                 username.isEmpty() ||
-                editFullName.text.isBlank() ||
-                editEmail.text.isBlank() ||
+                fullName.isEmpty() ||
+                email.isEmpty() ||
                 password.isEmpty() ||
                 confirm.isEmpty()
             ) {
@@ -66,7 +70,7 @@ class RegisterActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            // ✅ Création session immédiate (ISO iOS)
+            // ✅ ISO iOS : inscription = session ouverte directe
             session.login(username)
 
             startActivity(

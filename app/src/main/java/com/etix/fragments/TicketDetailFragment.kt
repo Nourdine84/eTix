@@ -1,4 +1,3 @@
-// 📁 com.etix.fragments.TicketDetailFragment.kt
 package com.etix.fragments
 
 import android.os.Bundle
@@ -18,6 +17,7 @@ import com.etix.data.TicketRepository
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
+import java.text.SimpleDateFormat
 import java.util.*
 
 class TicketDetailFragment : Fragment() {
@@ -37,7 +37,8 @@ class TicketDetailFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
+        inflater: LayoutInflater,
+        container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
         val view = inflater.inflate(R.layout.fragment_ticket_detail, container, false)
@@ -52,28 +53,26 @@ class TicketDetailFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        lifecycleScope.launch {
+        super.onViewCreated(view, savedInstanceState)
+
+        viewLifecycleOwner.lifecycleScope.launch {
             viewModel.ticket.collectLatest { ticket ->
-                if (ticket != null) {
+                ticket ?: return@collectLatest
 
-                    // 🛠️ Correction : `storeName` → `store`
-                    tvStoreName.text = "Magasin : ${ticket.store}"
+                tvStoreName.text = "Magasin : ${ticket.store}"
 
-                    // 💶 Formatage du montant
-                    val formatter = NumberFormat.getCurrencyInstance(Locale.FRANCE)
-                    val amountFormatted = formatter.format(ticket.amount)
-                    tvAmount.text = "Montant : $amountFormatted"
+                val formatter = NumberFormat.getCurrencyInstance(Locale.FRANCE)
+                tvAmount.text = "Montant : ${formatter.format(ticket.amount)}"
 
-                    tvDate.text = "Date : ${formatDate(ticket.dateMillis)}"
-                    tvCategory.text = "Catégorie : ${ticket.category}"
-                    tvDescription.text = "Description : ${ticket.description ?: "-"}"
-                }
+                tvDate.text = "Date : ${formatDate(ticket.dateMillis)}"
+                tvCategory.text = "Catégorie : ${ticket.category}"
+                tvDescription.text = "Description : ${ticket.description ?: "-"}"
             }
         }
     }
 
     private fun formatDate(timestamp: Long): String {
-        val sdf = java.text.SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+        val sdf = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
         return sdf.format(Date(timestamp))
     }
 }

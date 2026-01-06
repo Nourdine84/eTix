@@ -1,9 +1,11 @@
+// 📁 com.etix.fragments.SettingsFragment.kt
 package com.etix.fragments
 
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,24 +21,31 @@ import com.etix.utils.SessionManager
 
 class SettingsFragment : Fragment() {
 
+    private lateinit var session: SessionManager
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        return inflater.inflate(R.layout.fragment_settings, container, false)
+    }
 
-        val v = inflater.inflate(R.layout.fragment_settings, container, false)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        val session = SessionManager(requireContext())
+        Log.d("SETTINGS", "SettingsFragment ATTACHÉ")
 
-        val textUser = v.findViewById<TextView>(R.id.textUser)
-        val textVersion = v.findViewById<TextView>(R.id.textVersion)
-        val textCrashPreview = v.findViewById<TextView>(R.id.textCrashPreview)
+        session = SessionManager(requireContext())
 
-        val btnToggleTheme = v.findViewById<Button>(R.id.btnToggleTheme)
-        val btnShowCrash = v.findViewById<Button>(R.id.btnShowCrash)
-        val btnClearCrash = v.findViewById<Button>(R.id.btnClearCrash)
-        val btnLogout = v.findViewById<Button>(R.id.btnLogout)
+        val textUser = view.findViewById<TextView>(R.id.textUser)
+        val textVersion = view.findViewById<TextView>(R.id.textVersion)
+        val textCrashPreview = view.findViewById<TextView>(R.id.textCrashPreview)
+
+        val btnToggleTheme = view.findViewById<Button>(R.id.btnToggleTheme)
+        val btnShowCrash = view.findViewById<Button>(R.id.btnShowCrash)
+        val btnClearCrash = view.findViewById<Button>(R.id.btnClearCrash)
+        val btnLogout = view.findViewById<Button>(R.id.btnLogout)
 
         // 👤 Utilisateur connecté
         textUser.text = "Connecté en tant que : ${session.getUsername()}"
@@ -45,69 +54,69 @@ class SettingsFragment : Fragment() {
         val (versionName, versionCode) = getAppVersionSafe()
         textVersion.text = "Version $versionName ($versionCode)"
 
-        // 🌗 Thème
+        // 🌗 Toggle thème (propre ViewPager2)
         btnToggleTheme.setOnClickListener {
-            val currentMode = AppCompatDelegate.getDefaultNightMode()
             val newMode =
-                if (currentMode == AppCompatDelegate.MODE_NIGHT_YES)
+                if (AppCompatDelegate.getDefaultNightMode() == AppCompatDelegate.MODE_NIGHT_YES)
                     AppCompatDelegate.MODE_NIGHT_NO
                 else
                     AppCompatDelegate.MODE_NIGHT_YES
 
             AppCompatDelegate.setDefaultNightMode(newMode)
-            Toast.makeText(requireContext(), "Thème mis à jour", Toast.LENGTH_SHORT).show()
+
+            Toast.makeText(requireContext(), "Thème appliqué", Toast.LENGTH_SHORT).show()
+
+            // Important pour ViewPager
+            activity?.recreate()
         }
 
         // 🐞 Afficher crash log
         btnShowCrash.setOnClickListener {
-            val f = CrashLogs.latestLog(requireContext())
-            if (f == null) {
-                textCrashPreview.text = ""
+            val file = CrashLogs.latestLog(requireContext())
+            if (file == null) {
                 textCrashPreview.visibility = View.GONE
                 Toast.makeText(requireContext(), "Aucun crash log", Toast.LENGTH_SHORT).show()
             } else {
-                textCrashPreview.text = CrashLogs.readFile(f).take(4000)
+                textCrashPreview.text = CrashLogs.readFile(file).take(4000)
                 textCrashPreview.visibility = View.VISIBLE
-                Toast.makeText(requireContext(), "Log: ${f.name}", Toast.LENGTH_SHORT).show()
             }
         }
 
         // 🗑️ Supprimer crash logs
         btnClearCrash.setOnClickListener {
-            val ok = CrashLogs.deleteAll(requireContext())
+            CrashLogs.deleteAll(requireContext())
             textCrashPreview.text = ""
             textCrashPreview.visibility = View.GONE
-            Toast.makeText(
-                requireContext(),
-                if (ok) "Crash logs supprimés" else "Échec suppression",
-                Toast.LENGTH_SHORT
-            ).show()
+            Toast.makeText(requireContext(), "Crash logs supprimés", Toast.LENGTH_SHORT).show()
         }
 
-        // 🔐 LOGOUT PROPRE (Sprint 2.2 – Étape C)
+        // 🔐 Logout propre (ViewPager-safe)
         btnLogout.setOnClickListener {
             session.logout()
 
-            val intent = Intent(requireContext(), LoginActivity::class.java).apply {
+            val intent = Intent(requireActivity(), LoginActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             }
             startActivity(intent)
+            requireActivity().finish()
         }
+    }
 
-        return v
+    override fun onResume() {
+        super.onResume()
+        Log.d("SETTINGS", "SettingsFragment VISIBLE")
     }
 
     private fun getAppVersionSafe(): Pair<String, Long> {
         val ctx = requireContext()
         val pm = ctx.packageManager
-        val pkg = ctx.packageName
 
         return try {
             val pInfo = if (Build.VERSION.SDK_INT >= 33) {
-                pm.getPackageInfo(pkg, PackageManager.PackageInfoFlags.of(0))
+                pm.getPackageInfo(ctx.packageName, PackageManager.PackageInfoFlags.of(0))
             } else {
                 @Suppress("DEPRECATION")
-                pm.getPackageInfo(pkg, 0)
+                pm.getPackageInfo(ctx.packageName, 0)
             }
 
             val name = pInfo.versionName ?: "0.0"
