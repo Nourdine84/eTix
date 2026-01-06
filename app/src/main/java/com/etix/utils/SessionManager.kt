@@ -36,7 +36,7 @@ class SessionManager(context: Context) {
         return prefs.getString(KEY_USERNAME, "Utilisateur") ?: "Utilisateur"
     }
 
-    // 🚀 FIRST LAUNCH (Sprint 2.2 – Étape B)
+    // 🚀 ONBOARDING / FIRST LAUNCH
     fun isFirstLaunch(): Boolean {
         return prefs.getBoolean(KEY_FIRST_LAUNCH, true)
     }
@@ -46,13 +46,4 @@ class SessionManager(context: Context) {
             .putBoolean(KEY_FIRST_LAUNCH, false)
             .apply()
     }
-
-    fun isOnboardingSeen(): Boolean {
-        return prefs.getBoolean("onboarding_seen", false)
-    }
-
-    fun setOnboardingSeen() {
-        prefs.edit().putBoolean("onboarding_seen", true).apply()
-    }
-
 }

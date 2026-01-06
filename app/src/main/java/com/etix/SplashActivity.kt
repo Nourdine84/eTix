@@ -7,8 +7,8 @@ import android.os.Looper
 import androidx.appcompat.app.AppCompatActivity
 import com.etix.ui.login.LoginActivity
 import com.etix.ui.main.MainActivityV2
+import com.etix.ui.onboarding.OnboardingActivity
 import com.etix.utils.SessionManager
-// import com.etix.ui.onboarding.OnboardingActivity // 👉 prêt pour plus tard
 
 class SplashActivity : AppCompatActivity() {
 
@@ -20,20 +20,17 @@ class SplashActivity : AppCompatActivity() {
         Handler(Looper.getMainLooper()).postDelayed({
 
             val nextIntent = when {
-
-                // 🧭 ONBOARDING (désactivé pour l’instant)
-                /*
-                !session.isOnboardingSeen() -> {
+                // 🧭 FIRST LAUNCH → ONBOARDING
+                session.isFirstLaunch() -> {
                     Intent(this, OnboardingActivity::class.java)
                 }
-                */
 
-                // 🔐 Utilisateur déjà connecté
+                // 🔐 Déjà connecté
                 session.isLoggedIn() -> {
                     Intent(this, MainActivityV2::class.java)
                 }
 
-                // 🔓 Cas par défaut
+                // 🔓 Par défaut
                 else -> {
                     Intent(this, LoginActivity::class.java)
                 }

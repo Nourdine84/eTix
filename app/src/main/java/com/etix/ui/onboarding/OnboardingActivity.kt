@@ -15,10 +15,10 @@ class OnboardingActivity : AppCompatActivity() {
         setContentView(R.layout.activity_onboarding)
 
         val session = SessionManager(this)
-        val btnStart = findViewById<Button>(R.id.btnStart)
 
-        btnStart.setOnClickListener {
-            session.setOnboardingSeen()
+        findViewById<Button>(R.id.btnStart).setOnClickListener {
+            // ✅ Onboarding terminé
+            session.markFirstLaunchDone()
 
             startActivity(
                 Intent(this, LoginActivity::class.java).apply {
