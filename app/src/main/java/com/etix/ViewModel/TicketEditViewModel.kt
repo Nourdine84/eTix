@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class TicketDetailViewModel(
+class TicketEditViewModel(
     private val repository: TicketRepository,
     private val ticketId: Long
 ) : ViewModel() {
@@ -17,39 +17,32 @@ class TicketDetailViewModel(
     val ticket: StateFlow<Ticket?> = _ticket
 
     init {
-        loadTicket()
-    }
-
-    private fun loadTicket() {
         viewModelScope.launch {
             _ticket.value = repository.getById(ticketId)
         }
     }
 
-    fun update(
+    fun updateTicket(
         store: String,
         amount: Double,
         category: String,
         description: String?,
-        dateMillis: Long
+        dateMillis: Long,
+        onDone: () -> Unit
     ) {
-        viewModelScope.launch {
-            val current = repository.getById(ticketId) ?: return@launch
-            val updated = current.copy(
-                store = store,
-                amount = amount,
-                category = category,
-                description = description,
-                dateMillis = dateMillis
-            )
-            repository.update(updated)
-        }
-    }
+        val current = _ticket.value ?: return
 
-    fun delete() {
+        val updated = current.copy(
+            store = store,
+            amount = amount,
+            category = category.ifBlank { "Autre" },
+            description = description?.ifBlank { null },
+            dateMillis = dateMillis
+        )
+
         viewModelScope.launch {
-            val current = repository.getById(ticketId) ?: return@launch
-            repository.delete(current)
+            repository.update(updated)
+            onDone()
         }
     }
 }

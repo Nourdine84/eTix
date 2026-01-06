@@ -3,19 +3,18 @@ package com.etix.viewmodel.factory
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.etix.data.TicketRepository
-import com.etix.viewmodel.TicketDetailViewModel
+import com.etix.viewmodel.TicketEditViewModel
 
-class TicketDetailVMFactory(
+class TicketEditVMFactory(
     private val repository: TicketRepository,
     private val ticketId: Long
 ) : ViewModelProvider.Factory {
 
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        if (modelClass.isAssignableFrom(TicketDetailViewModel::class.java)) {
+        if (modelClass.isAssignableFrom(TicketEditViewModel::class.java)) {
             @Suppress("UNCHECKED_CAST")
-            return TicketDetailViewModel(repository, ticketId) as T
+            return TicketEditViewModel(repository, ticketId) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
-

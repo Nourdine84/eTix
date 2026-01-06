@@ -6,21 +6,23 @@ import android.os.Bundle
 import android.view.*
 import android.widget.*
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import com.etix.R
 import com.etix.data.AppDatabase
+import com.etix.data.TicketRepository
 import com.etix.model.Ticket
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import com.etix.viewmodel.TicketEditViewModel
+import com.etix.viewmodel.factory.TicketEditVMFactory
+import kotlinx.coroutines.flow.collectLatest
 import java.text.SimpleDateFormat
 import java.util.*
 
 class TicketEditFragment : Fragment() {
 
-    private var ticketId: Long = 0L
-    private var currentTicket: Ticket? = null
+    private val args: TicketEditFragmentArgs by navArgs()
 
     private lateinit var editTextStoreName: EditText
     private lateinit var editTextAmount: EditText
@@ -32,9 +34,9 @@ class TicketEditFragment : Fragment() {
     private var selectedMillis: Long? = null
     private val df = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        ticketId = arguments?.getLong("ticketId") ?: 0L
+    private val viewModel: TicketEditViewModel by viewModels {
+        val dao = AppDatabase.getInstance(requireContext()).ticketDao()
+        TicketEditVMFactory(TicketRepository(dao), args.ticketId)
     }
 
     override fun onCreateView(
@@ -52,22 +54,19 @@ class TicketEditFragment : Fragment() {
         editTextDate.setOnClickListener { openDatePicker() }
         btnSaveTicket.setOnClickListener { saveTicket() }
 
-        loadTicket()
+        observeTicket()
         return view
     }
 
-    private fun loadTicket() {
-        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            val dao = AppDatabase.getInstance(requireContext()).ticketDao()
-            val t = dao.getById(ticketId)
-            withContext(Dispatchers.Main) {
-                if (t == null) {
+    private fun observeTicket() {
+        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+            viewModel.ticket.collectLatest { t ->
+                t ?: run {
                     showErrorPopup("Erreur", "Ticket introuvable.")
                     findNavController().navigateUp()
-                    return@withContext
+                    return@collectLatest
                 }
 
-                currentTicket = t
                 selectedMillis = t.dateMillis
 
                 editTextStoreName.setText(t.store)
@@ -91,20 +90,15 @@ class TicketEditFragment : Fragment() {
             return
         }
 
-        val updated = currentTicket?.copy(
+        viewModel.updateTicket(
             store = store,
             amount = amount,
-            category = category.ifBlank { "Autre" },
-            description = if (description.isBlank()) null else description,
+            category = category,
+            description = description,
             dateMillis = millis
-        ) ?: return
-
-        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
-            AppDatabase.getInstance(requireContext()).ticketDao().update(updated)
-            withContext(Dispatchers.Main) {
-                showSuccessPopup("Ticket mis à jour avec succès ✅")
-                findNavController().navigateUp()
-            }
+        ) {
+            showSuccessPopup("Ticket mis à jour avec succès ✅")
+            findNavController().navigateUp()
         }
     }
 
@@ -126,20 +120,10 @@ class TicketEditFragment : Fragment() {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.popup_success, null)
         val dialog = Dialog(requireContext())
         dialog.setContentView(dialogView)
-        dialog.setCancelable(true)
 
-        val msg = dialogView.findViewById<TextView>(R.id.textMessage)
-        val btnOk = dialogView.findViewById<Button>(R.id.btnOk)
+        dialogView.findViewById<TextView>(R.id.textMessage).text = message
+        dialogView.findViewById<Button>(R.id.btnOk).setOnClickListener { dialog.dismiss() }
 
-        msg.text = message
-        btnOk.setOnClickListener { dialog.dismiss() }
-
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-        dialog.window?.setLayout(
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-        dialog.window?.setGravity(Gravity.CENTER)
         dialog.show()
     }
 
@@ -147,22 +131,11 @@ class TicketEditFragment : Fragment() {
         val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.popup_error, null)
         val dialog = Dialog(requireContext())
         dialog.setContentView(dialogView)
-        dialog.setCancelable(false)
 
-        val titleView = dialogView.findViewById<TextView>(R.id.textTitle)
-        val textMsg = dialogView.findViewById<TextView>(R.id.textMessage)
-        val btnOk = dialogView.findViewById<Button>(R.id.btnOk)
+        dialogView.findViewById<TextView>(R.id.textTitle).text = title
+        dialogView.findViewById<TextView>(R.id.textMessage).text = message
+        dialogView.findViewById<Button>(R.id.btnOk).setOnClickListener { dialog.dismiss() }
 
-        titleView.text = title
-        textMsg.text = message
-        btnOk.setOnClickListener { dialog.dismiss() }
-
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-        dialog.window?.setLayout(
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-        dialog.window?.setGravity(Gravity.CENTER)
         dialog.show()
     }
 }
