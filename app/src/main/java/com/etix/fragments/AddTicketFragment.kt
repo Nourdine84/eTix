@@ -3,6 +3,7 @@ package com.etix.fragments
 import android.app.DatePickerDialog
 import android.app.Dialog
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.widget.*
 import androidx.fragment.app.Fragment
@@ -14,7 +15,6 @@ import com.etix.data.TicketRepository
 import com.etix.model.Ticket
 import com.etix.viewmodel.AddTicketViewModel
 import com.etix.viewmodel.AddTicketViewModelFactory
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -77,8 +77,19 @@ class AddTicketFragment : Fragment() {
         val desc = descriptionInput.text.toString().trim()
         val millis = selectedMillis
 
-        if (store.isEmpty() || millis == null || amount == null) {
-            showErrorPopup("Erreur", "Veuillez remplir tous les champs obligatoires.")
+        // 🔒 VALIDATION MÉTIER
+        if (store.isEmpty()) {
+            showErrorPopup("Erreur", "Le nom du magasin est requis.")
+            return
+        }
+
+        if (millis == null) {
+            showErrorPopup("Erreur", "La date est obligatoire.")
+            return
+        }
+
+        if (amount == null || amount <= 0) {
+            showErrorPopup("Erreur", "Le montant doit être supérieur à 0.")
             return
         }
 
@@ -90,6 +101,7 @@ class AddTicketFragment : Fragment() {
             dateMillis = millis
         )
 
+        Log.d("ADD_TICKET", "Insertion ticket : $ticket")
         viewModel.insertTicket(ticket)
     }
 
@@ -101,6 +113,8 @@ class AddTicketFragment : Fragment() {
             description = "Créé automatiquement",
             dateMillis = System.currentTimeMillis()
         )
+
+        Log.d("ADD_TICKET", "Quick add ticket : $ticket")
         viewModel.insertTicket(ticket)
     }
 
@@ -150,6 +164,8 @@ class AddTicketFragment : Fragment() {
     }
 
     private fun showSuccessPopup(message: String) {
+        if (!isAdded) return
+
         val dialogView = layoutInflater.inflate(R.layout.popup_success, null)
         val dialog = Dialog(requireContext())
         dialog.setContentView(dialogView)
@@ -163,6 +179,8 @@ class AddTicketFragment : Fragment() {
     }
 
     private fun showErrorPopup(title: String, message: String) {
+        if (!isAdded) return
+
         val dialogView = layoutInflater.inflate(R.layout.popup_error, null)
         val dialog = Dialog(requireContext())
         dialog.setContentView(dialogView)
