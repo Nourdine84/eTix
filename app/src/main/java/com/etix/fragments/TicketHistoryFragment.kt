@@ -2,7 +2,12 @@ package com.etix.fragments
 
 import android.app.DatePickerDialog
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.SearchView
 import android.widget.TextView
@@ -13,6 +18,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.etix.R
@@ -43,7 +49,9 @@ class TicketHistoryFragment : Fragment() {
     }
 
     override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
     ): View {
         val v = inflater.inflate(R.layout.fragment_ticket_history, container, false)
 
@@ -55,7 +63,9 @@ class TicketHistoryFragment : Fragment() {
         btnClearFilter = v.findViewById(R.id.btnClearFilter)
 
         adapter = TicketAdapter { ticket ->
-            // prêt pour navigation détail (Sprint suivant)
+            val action =
+                TicketHistoryFragmentDirections.actionHistoryToDetail(ticket.id)
+            findNavController().navigate(action)
         }
 
         recycler.layoutManager = LinearLayoutManager(requireContext())
@@ -90,7 +100,9 @@ class TicketHistoryFragment : Fragment() {
         }
 
         btnCustomRange.setOnClickListener {
-            pickCustomRange { s, e -> vm.setDateRange(s, e) }
+            pickCustomRange { s, e ->
+                vm.setDateRange(s, e)
+            }
         }
 
         btnClearFilter.setOnClickListener {
@@ -100,7 +112,7 @@ class TicketHistoryFragment : Fragment() {
 
     private fun observeTickets() {
         viewLifecycleOwner.lifecycleScope.launch {
-            viewLifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 vm.tickets.collectLatest { list ->
                     adapter.submitList(list)
                     toggleEmpty(list.isEmpty())
@@ -155,19 +167,23 @@ class TicketHistoryFragment : Fragment() {
 
     private fun pickCustomRange(onPicked: (Long, Long) -> Unit) {
         val cal = Calendar.getInstance()
+
         DatePickerDialog(requireContext(), { _, y, m, d ->
-            val s = Calendar.getInstance().apply {
+            val start = Calendar.getInstance().apply {
                 set(y, m, d, 0, 0, 0)
                 set(Calendar.MILLISECOND, 0)
             }.timeInMillis
 
             DatePickerDialog(requireContext(), { _, y2, m2, d2 ->
-                val e = Calendar.getInstance().apply {
+                val end = Calendar.getInstance().apply {
                     set(y2, m2, d2, 23, 59, 59)
                     set(Calendar.MILLISECOND, 999)
                 }.timeInMillis
-                onPicked(s, e)
+
+                onPicked(start, end)
+
             }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
+
         }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
     }
 }

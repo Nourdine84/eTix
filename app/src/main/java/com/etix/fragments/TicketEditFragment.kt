@@ -3,8 +3,12 @@ package com.etix.fragments
 import android.app.DatePickerDialog
 import android.app.Dialog
 import android.os.Bundle
-import android.view.*
-import android.widget.*
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -13,10 +17,10 @@ import androidx.navigation.fragment.navArgs
 import com.etix.R
 import com.etix.data.AppDatabase
 import com.etix.data.TicketRepository
-import com.etix.model.Ticket
 import com.etix.viewmodel.TicketEditViewModel
 import com.etix.viewmodel.factory.TicketEditVMFactory
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -33,6 +37,7 @@ class TicketEditFragment : Fragment() {
 
     private var selectedMillis: Long? = null
     private val df = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    private var saving = false
 
     private val viewModel: TicketEditViewModel by viewModels {
         val dao = AppDatabase.getInstance(requireContext()).ticketDao()
@@ -42,6 +47,7 @@ class TicketEditFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
+
         val view = inflater.inflate(R.layout.fragment_ticket_edit, container, false)
 
         editTextStoreName = view.findViewById(R.id.editTextStoreName)
@@ -59,16 +65,15 @@ class TicketEditFragment : Fragment() {
     }
 
     private fun observeTicket() {
-        viewLifecycleOwner.lifecycleScope.launchWhenStarted {
+        viewLifecycleOwner.lifecycleScope.launch {
             viewModel.ticket.collectLatest { t ->
-                t ?: run {
+                if (t == null) {
                     showErrorPopup("Erreur", "Ticket introuvable.")
                     findNavController().navigateUp()
                     return@collectLatest
                 }
 
                 selectedMillis = t.dateMillis
-
                 editTextStoreName.setText(t.store)
                 editTextAmount.setText(t.amount.toString())
                 editTextCategory.setText(t.category)
@@ -79,25 +84,39 @@ class TicketEditFragment : Fragment() {
     }
 
     private fun saveTicket() {
+        if (saving) return
+
         val store = editTextStoreName.text.toString().trim()
         val amount = editTextAmount.text.toString().replace(",", ".").toDoubleOrNull()
         val category = editTextCategory.text.toString().trim()
         val description = editTextDescription.text.toString().trim()
         val millis = selectedMillis
 
-        if (store.isEmpty() || amount == null || millis == null) {
-            showErrorPopup("Erreur", "Tous les champs doivent être remplis.")
+        if (store.isEmpty()) {
+            showErrorPopup("Erreur", "Le nom du magasin est obligatoire.")
             return
         }
+        if (amount == null || amount <= 0) {
+            showErrorPopup("Erreur", "Montant invalide.")
+            return
+        }
+        if (millis == null) {
+            showErrorPopup("Erreur", "Veuillez choisir une date.")
+            return
+        }
+
+        saving = true
+        btnSaveTicket.isEnabled = false
 
         viewModel.updateTicket(
             store = store,
             amount = amount,
-            category = category,
+            category = category.ifBlank { "Autre" },
             description = description,
             dateMillis = millis
         ) {
             showSuccessPopup("Ticket mis à jour avec succès ✅")
+            saving = false
             findNavController().navigateUp()
         }
     }
@@ -117,24 +136,34 @@ class TicketEditFragment : Fragment() {
     }
 
     private fun showSuccessPopup(message: String) {
-        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.popup_success, null)
+        val dialogView = layoutInflater.inflate(R.layout.popup_success, null)
         val dialog = Dialog(requireContext())
         dialog.setContentView(dialogView)
 
         dialogView.findViewById<TextView>(R.id.textMessage).text = message
         dialogView.findViewById<Button>(R.id.btnOk).setOnClickListener { dialog.dismiss() }
 
+        dialog.setOnDismissListener {
+            saving = false
+            btnSaveTicket.isEnabled = true
+        }
+
         dialog.show()
     }
 
     private fun showErrorPopup(title: String, message: String) {
-        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.popup_error, null)
+        val dialogView = layoutInflater.inflate(R.layout.popup_error, null)
         val dialog = Dialog(requireContext())
         dialog.setContentView(dialogView)
 
         dialogView.findViewById<TextView>(R.id.textTitle).text = title
         dialogView.findViewById<TextView>(R.id.textMessage).text = message
         dialogView.findViewById<Button>(R.id.btnOk).setOnClickListener { dialog.dismiss() }
+
+        dialog.setOnDismissListener {
+            saving = false
+            btnSaveTicket.isEnabled = true
+        }
 
         dialog.show()
     }
