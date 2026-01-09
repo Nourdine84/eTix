@@ -12,6 +12,7 @@ import com.etix.model.Ticket
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
+
     abstract fun ticketDao(): TicketDao
 
     companion object {
@@ -25,12 +26,8 @@ abstract class AppDatabase : RoomDatabase() {
                     "etix.db"
                 )
                     .fallbackToDestructiveMigration()
-                    .build().also { INSTANCE = it }
+                    .build()
+                    .also { INSTANCE = it }
             }
     }
-}
-
-// ✅ Fonction top-level pour appel direct depuis les Fragments
-fun getDatabase(context: Context): AppDatabase {
-    return AppDatabase.getInstance(context)
 }

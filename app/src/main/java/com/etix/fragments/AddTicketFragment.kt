@@ -8,7 +8,6 @@ import android.view.*
 import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import com.etix.R
 import com.etix.data.AppDatabase
 import com.etix.data.TicketRepository
@@ -51,8 +50,8 @@ class AddTicketFragment : Fragment() {
         buttonQuickAdd = v.findViewById(R.id.buttonQuickAdd)
 
         val categories = arrayOf("Supermarché", "Restaurant", "Transport", "Santé", "Autre")
-        categorySpinner.adapter =
-            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, categories)
+        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, categories)
+        categorySpinner.adapter = adapter
 
         dateInput.setOnClickListener { openDatePicker() }
         dateInput.setOnFocusChangeListener { _, hasFocus ->
@@ -70,6 +69,24 @@ class AddTicketFragment : Fragment() {
         return v
     }
 
+    private fun openDatePicker() {
+        val cal = Calendar.getInstance()
+        DatePickerDialog(
+            requireContext(),
+            { _, y, m, d ->
+                val set = Calendar.getInstance().apply {
+                    set(y, m, d, 12, 0, 0)
+                    set(Calendar.MILLISECOND, 0)
+                }
+                selectedMillis = set.timeInMillis
+                dateInput.setText(df.format(set.time))
+            },
+            cal.get(Calendar.YEAR),
+            cal.get(Calendar.MONTH),
+            cal.get(Calendar.DAY_OF_MONTH)
+        ).show()
+    }
+
     private fun saveTicket() {
         val store = storeInput.text.toString().trim()
         val amount = amountInput.text.toString().replace(",", ".").toDoubleOrNull()
@@ -77,17 +94,14 @@ class AddTicketFragment : Fragment() {
         val desc = descriptionInput.text.toString().trim()
         val millis = selectedMillis
 
-        // 🔒 VALIDATION MÉTIER
         if (store.isEmpty()) {
             showErrorPopup("Erreur", "Le nom du magasin est requis.")
             return
         }
-
         if (millis == null) {
             showErrorPopup("Erreur", "La date est obligatoire.")
             return
         }
-
         if (amount == null || amount <= 0) {
             showErrorPopup("Erreur", "Le montant doit être supérieur à 0.")
             return
@@ -101,7 +115,6 @@ class AddTicketFragment : Fragment() {
             dateMillis = millis
         )
 
-        Log.d("ADD_TICKET", "Insertion ticket : $ticket")
         viewModel.insertTicket(ticket)
     }
 
@@ -113,8 +126,6 @@ class AddTicketFragment : Fragment() {
             description = "Créé automatiquement",
             dateMillis = System.currentTimeMillis()
         )
-
-        Log.d("ADD_TICKET", "Quick add ticket : $ticket")
         viewModel.insertTicket(ticket)
     }
 
@@ -136,24 +147,6 @@ class AddTicketFragment : Fragment() {
         }
     }
 
-    private fun openDatePicker() {
-        val cal = Calendar.getInstance()
-        DatePickerDialog(
-            requireContext(),
-            { _, y, m, d ->
-                val set = Calendar.getInstance().apply {
-                    set(y, m, d, 12, 0, 0)
-                    set(Calendar.MILLISECOND, 0)
-                }
-                selectedMillis = set.timeInMillis
-                dateInput.setText(df.format(set.time))
-            },
-            cal.get(Calendar.YEAR),
-            cal.get(Calendar.MONTH),
-            cal.get(Calendar.DAY_OF_MONTH)
-        ).show()
-    }
-
     private fun clearForm() {
         storeInput.text.clear()
         dateInput.text.clear()
@@ -165,30 +158,24 @@ class AddTicketFragment : Fragment() {
 
     private fun showSuccessPopup(message: String) {
         if (!isAdded) return
-
         val dialogView = layoutInflater.inflate(R.layout.popup_success, null)
         val dialog = Dialog(requireContext())
         dialog.setContentView(dialogView)
         dialog.setCancelable(true)
-
         dialogView.findViewById<TextView>(R.id.textMessage).text = message
         dialogView.findViewById<Button>(R.id.btnOk).setOnClickListener { dialog.dismiss() }
-
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         dialog.show()
     }
 
     private fun showErrorPopup(title: String, message: String) {
         if (!isAdded) return
-
         val dialogView = layoutInflater.inflate(R.layout.popup_error, null)
         val dialog = Dialog(requireContext())
         dialog.setContentView(dialogView)
-
         dialogView.findViewById<TextView>(R.id.textTitle).text = title
         dialogView.findViewById<TextView>(R.id.textMessage).text = message
         dialogView.findViewById<Button>(R.id.btnOk).setOnClickListener { dialog.dismiss() }
-
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
         dialog.show()
     }

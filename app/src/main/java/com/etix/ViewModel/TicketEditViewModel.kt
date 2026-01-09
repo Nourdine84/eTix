@@ -4,8 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.etix.data.TicketRepository
 import com.etix.model.Ticket
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class TicketEditViewModel(
@@ -13,36 +14,46 @@ class TicketEditViewModel(
     private val ticketId: Long
 ) : ViewModel() {
 
-    private val _ticket = MutableStateFlow<Ticket?>(null)
-    val ticket: StateFlow<Ticket?> = _ticket
+    // ✅ Ticket observé en Flow/StateFlow
+    val ticket: StateFlow<Ticket?> =
+        repository.getByIdFlow(ticketId)
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = null
+            )
 
-    init {
-        viewModelScope.launch {
-            _ticket.value = repository.getById(ticketId)
-        }
-    }
-
+    // ✅ Mise à jour (onDone OPTIONNEL → corrige "No value passed for parameter 'onDone'")
     fun updateTicket(
         store: String,
         amount: Double,
         category: String,
         description: String?,
         dateMillis: Long,
-        onDone: () -> Unit
+        onDone: () -> Unit = {}
     ) {
-        val current = _ticket.value ?: return
-
-        val updated = current.copy(
-            store = store,
-            amount = amount,
-            category = category.ifBlank { "Autre" },
-            description = description?.ifBlank { null },
-            dateMillis = dateMillis
-        )
-
         viewModelScope.launch {
+            val current = ticket.value ?: return@launch
+
+            val updated = current.copy(
+                store = store,
+                amount = amount,
+                category = category,
+                description = description,
+                dateMillis = dateMillis
+            )
+
             repository.update(updated)
             onDone()
+        }
+    }
+
+    fun deleteTicket(onDone: () -> Unit = {}) {
+        viewModelScope.launch {
+            ticket.value?.let {
+                repository.delete(it)
+                onDone()
+            }
         }
     }
 }

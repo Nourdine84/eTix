@@ -1,7 +1,6 @@
 // 📁 com.etix.ui.main.MainActivityV2.kt
 package com.etix.ui.main
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
@@ -9,10 +8,8 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.viewpager2.widget.ViewPager2
 import com.etix.R
 import com.etix.adapter.FragmentAdapter
-import com.etix.ui.login.LoginActivity
 import com.etix.utils.SessionManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import kotlin.math.abs
 
 class MainActivityV2 : AppCompatActivity() {
 
@@ -22,60 +19,40 @@ class MainActivityV2 : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
 
-        // 🌗 APPLIQUER LE THEME AVANT TOUT
         session = SessionManager(this)
         AppCompatDelegate.setDefaultNightMode(session.getThemeMode())
 
         super.onCreate(savedInstanceState)
-
-        // 🔐 GUARD SESSION
-        if (!session.isLoggedIn()) {
-            redirectToLogin()
-            return
-        }
-
-        setContentView(R.layout.activity_main_v2)
+        setContentView(R.layout.activity_main)
 
         viewPager = findViewById(R.id.viewPager)
         bottomNav = findViewById(R.id.bottomNav)
 
+        // 🔹 ViewPager
         viewPager.adapter = FragmentAdapter(this)
-        viewPager.isUserInputEnabled = true
         viewPager.offscreenPageLimit = 4
+        viewPager.isUserInputEnabled = true
 
-        // 🎞️ Animation légère (tech)
-        viewPager.setPageTransformer { page, position ->
-            val absPos = abs(position)
-            page.alpha = 0.85f + (1 - absPos) * 0.15f
-            page.scaleY = 0.95f + (1 - absPos) * 0.05f
-            page.translationX = -position * page.width * 0.05f
-        }
-
-        // 🔽 BottomNav → ViewPager
+        // 🔹 BottomNav → ViewPager
         bottomNav.setOnItemSelectedListener { item ->
-            val index = when (item.itemId) {
-                R.id.menu_home -> 0
-                R.id.menu_add -> 1
-                R.id.menu_history -> 2
-                R.id.menu_category -> 3
-                R.id.menu_settings -> 4
-                else -> 0
-            }
-
-            if (viewPager.currentItem != index) {
-                viewPager.setCurrentItem(index, true)
+            when (item.itemId) {
+                R.id.menu_home -> viewPager.currentItem = 0
+                R.id.menu_add -> viewPager.currentItem = 1
+                R.id.menu_history -> viewPager.currentItem = 2
+                R.id.menu_category -> viewPager.currentItem = 3
+                R.id.menu_settings -> viewPager.currentItem = 4
             }
             true
         }
 
-        // 🔄 ViewPager → BottomNav
+        // 🔹 ViewPager → BottomNav
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 bottomNav.menu.getItem(position).isChecked = true
             }
         })
 
-        // 🔙 Back press ISO
+        // 🔙 Back = retour Home
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (viewPager.currentItem != 0) {
@@ -86,21 +63,5 @@ class MainActivityV2 : AppCompatActivity() {
                 }
             }
         })
-    }
-
-    override fun onResume() {
-        super.onResume()
-        if (!session.isLoggedIn()) {
-            redirectToLogin()
-        }
-    }
-
-    private fun redirectToLogin() {
-        startActivity(
-            Intent(this, LoginActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            }
-        )
-        finish()
     }
 }

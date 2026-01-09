@@ -6,6 +6,19 @@
     android:layout_height="match_parent"
     android:background="?attr/colorBackground">
 
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/nav_host_fragment_container"
+        android:name="androidx.navigation.fragment.NavHostFragment"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        app:defaultNavHost="true"
+        app:navGraph="@navigation/nav_graph"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+
     <!-- Conteneur des fragments avec swipe horizontal -->
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewPager"

@@ -13,37 +13,52 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class TicketAdapter(
-    private val onItemClick: ((Ticket) -> Unit)? = null
-) : ListAdapter<Ticket, TicketAdapter.VH>(DiffCb) {
+    private val onClick: (Ticket) -> Unit
+) : ListAdapter<Ticket, TicketAdapter.TicketViewHolder>(DiffCallback) {
 
-    object DiffCb : DiffUtil.ItemCallback<Ticket>() {
-        override fun areItemsTheSame(oldItem: Ticket, newItem: Ticket) = oldItem.id == newItem.id
-        override fun areContentsTheSame(oldItem: Ticket, newItem: Ticket) = oldItem == newItem
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TicketViewHolder {
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_ticket, parent, false)
+        return TicketViewHolder(view)
     }
 
-    class VH(v: View) : RecyclerView.ViewHolder(v) {
-        val tvStore: TextView = v.findViewById(R.id.tvStore)
-        val tvAmount: TextView = v.findViewById(R.id.tvAmount)
-        val tvDate: TextView = v.findViewById(R.id.tvDate)
-        val tvCategory: TextView = v.findViewById(R.id.tvCategory)
+    override fun onBindViewHolder(holder: TicketViewHolder, position: Int) {
+        holder.bind(getItem(position))
     }
 
-    private val df = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+    inner class TicketViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): VH {
-        val v = LayoutInflater.from(parent.context).inflate(R.layout.item_ticket, parent, false)
-        return VH(v)
-    }
+        private val tvStore: TextView = itemView.findViewById(R.id.tvStore)
+        private val tvAmount: TextView = itemView.findViewById(R.id.tvAmount)
+        private val tvDate: TextView = itemView.findViewById(R.id.tvDate)
+        private val tvCategory: TextView = itemView.findViewById(R.id.tvCategory)
 
-    override fun onBindViewHolder(holder: VH, position: Int) {
-        val t = getItem(position)
-        holder.tvStore.text = t.store
-        holder.tvAmount.text = String.format(Locale.getDefault(), "%.2f €", t.amount)
-        holder.tvDate.text = df.format(Date(t.dateMillis))
-        holder.tvCategory.text = t.category
+        fun bind(ticket: Ticket) {
+            tvStore.text = ticket.store
+            tvCategory.text = ticket.category
+            tvAmount.text = String.format(Locale.FRANCE, "%.2f €", ticket.amount)
+            tvDate.text = formatDate(ticket.dateMillis)
 
-        holder.itemView.setOnClickListener {
-            onItemClick?.invoke(t)
+            itemView.setOnClickListener {
+                onClick(ticket)
+            }
         }
+    }
+
+    companion object {
+        private val DiffCallback = object : DiffUtil.ItemCallback<Ticket>() {
+            override fun areItemsTheSame(oldItem: Ticket, newItem: Ticket): Boolean {
+                return oldItem.id == newItem.id
+            }
+
+            override fun areContentsTheSame(oldItem: Ticket, newItem: Ticket): Boolean {
+                return oldItem == newItem
+            }
+        }
+    }
+
+    private fun formatDate(millis: Long): String {
+        val sdf = SimpleDateFormat("dd/MM/yyyy", Locale.FRANCE)
+        return sdf.format(Date(millis))
     }
 }

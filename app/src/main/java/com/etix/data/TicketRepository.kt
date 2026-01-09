@@ -1,45 +1,52 @@
 package com.etix.data
 
-import androidx.lifecycle.asFlow
 import com.etix.model.CategoryTotal
 import com.etix.model.Ticket
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 
 class TicketRepository(
     private val dao: TicketDao
 ) {
 
-    // --- Streams ---
+    // --------------------
+    // Streams
+    // --------------------
     fun getAllFlow(): Flow<List<Ticket>> =
         dao.getAllFlow()
 
     fun getBetweenDates(start: Long, end: Long): Flow<List<Ticket>> =
         dao.getBetweenDates(start, end)
 
-    // --- Search ---
+    // --------------------
+    // Search
+    // --------------------
     fun searchAll(query: String): Flow<List<Ticket>> =
         dao.searchAll(query)
 
     fun searchBetween(query: String, start: Long, end: Long): Flow<List<Ticket>> =
         dao.searchBetween(query, start, end)
 
-    // --- Categories ---
+    // --------------------
+    // Categories
+    // --------------------
     fun getTotalsByCategory() =
         dao.getTotalsByCategory()
 
     fun getCategoryTotals(): Flow<List<CategoryTotal>> =
         dao.getCategoryTotals()
 
-    // --- Single ticket ---
+    // --------------------
+    // Single ticket
+    // --------------------
     fun getByIdFlow(id: Long): Flow<Ticket?> =
         dao.getByIdFlow(id)
-
 
     suspend fun getById(id: Long): Ticket? =
         dao.getById(id)
 
-    // --- CRUD ---
+    // --------------------
+    // CRUD
+    // --------------------
     suspend fun insert(ticket: Ticket) =
         dao.insert(ticket)
 
@@ -52,19 +59,21 @@ class TicketRepository(
     suspend fun deleteAll() =
         dao.deleteAll()
 
-    // --- KPI (suspend) ---
+    // --------------------
+    // KPI (suspend)
+    // --------------------
     suspend fun sumBetweenDates(start: Long, end: Long): Double =
         dao.sumBetweenDates(start, end)
 
     suspend fun countBetweenDates(start: Long, end: Long): Int =
         dao.countBetweenDates(start, end)
 
-    // --- KPI (Flow) ---
-    fun sumBetweenDatesFlow(start: Long, end: Long): Flow<Double> = flow {
-        emit(dao.sumBetweenDates(start, end))
-    }
+    // --------------------
+    // KPI (Flow — Room natif)
+    // --------------------
+    fun sumBetweenDatesFlow(start: Long, end: Long): Flow<Double> =
+        dao.sumBetweenDatesFlow(start, end)
 
-    fun countBetweenDatesFlow(start: Long, end: Long): Flow<Int> = flow {
-        emit(dao.countBetweenDates(start, end))
-    }
+    fun countBetweenDatesFlow(start: Long, end: Long): Flow<Int> =
+        dao.countBetweenDatesFlow(start, end)
 }

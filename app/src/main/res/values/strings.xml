@@ -131,4 +131,4 @@
     <string name="success">Ticket enregistré avec succès</string>
         <!-- ... autres chaînes ... -->
         <string name="cat_grand_total_value">Total : %.2f €</string>
-    </resources>
+</resources>

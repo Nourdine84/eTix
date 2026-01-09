@@ -6,6 +6,7 @@ import com.etix.data.TicketRepository
 import com.etix.model.Ticket
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
 class TicketDetailViewModel(
@@ -17,12 +18,14 @@ class TicketDetailViewModel(
     val ticket: StateFlow<Ticket?> = _ticket
 
     init {
-        loadTicket()
+        observeTicket()
     }
 
-    private fun loadTicket() {
+    private fun observeTicket() {
         viewModelScope.launch {
-            _ticket.value = repository.getById(ticketId)
+            repository.getByIdFlow(ticketId).collectLatest { ticket ->
+                _ticket.value = ticket
+            }
         }
     }
 
@@ -34,7 +37,8 @@ class TicketDetailViewModel(
         dateMillis: Long
     ) {
         viewModelScope.launch {
-            val current = repository.getById(ticketId) ?: return@launch
+            val current = _ticket.value ?: return@launch
+
             val updated = current.copy(
                 store = store,
                 amount = amount,
@@ -42,13 +46,14 @@ class TicketDetailViewModel(
                 description = description,
                 dateMillis = dateMillis
             )
+
             repository.update(updated)
         }
     }
 
     fun delete() {
         viewModelScope.launch {
-            val current = repository.getById(ticketId) ?: return@launch
+            val current = _ticket.value ?: return@launch
             repository.delete(current)
         }
     }

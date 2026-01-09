@@ -36,9 +36,6 @@
             android:exported="true" />
 
         <!-- Ticket -->
-        <activity
-            android:name=".TicketDetailActivity"
-            android:exported="false" />
 
         <activity
             android:name=".TicketEditActivity"

@@ -5,9 +5,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.viewpager2.widget.ViewPager2
 import com.etix.adapter.FragmentAdapter
 import com.etix.databinding.ActivityMainBinding
-import com.google.android.material.bottomnavigation.BottomNavigationView
 
-class MainActivity : AppCompatActivity() {
+class MainActivity_OLD : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
 

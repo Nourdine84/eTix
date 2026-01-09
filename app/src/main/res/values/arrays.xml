@@ -1,5 +1,5 @@
 <resources>
-    <string-array name="categories">
+    <string-array name="category_options">
         <item>Supermarché</item>
         <item>Restaurant</item>
         <item>Transport</item>

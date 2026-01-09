@@ -10,9 +10,9 @@ class TicketEditVMFactory(
     private val ticketId: Long
 ) : ViewModelProvider.Factory {
 
+    @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         if (modelClass.isAssignableFrom(TicketEditViewModel::class.java)) {
-            @Suppress("UNCHECKED_CAST")
             return TicketEditViewModel(repository, ticketId) as T
         }
         throw IllegalArgumentException("Unknown ViewModel class")
