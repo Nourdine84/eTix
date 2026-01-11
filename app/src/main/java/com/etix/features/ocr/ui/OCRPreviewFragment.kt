@@ -22,7 +22,9 @@ class OCRPreviewFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val rawText = arguments?.getString("raw_text") ?: return
+
+        val rawText = arguments?.getString(OCRKeys.RAW_TEXT) ?: return
+
         val result = OCRProcessor.process(rawText)
 
         view.findViewById<View>(R.id.btnConfirm).setOnClickListener {

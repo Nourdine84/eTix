@@ -1,28 +1,24 @@
-package com.etix.adapter
+// 📁 com.etix.fragments.FragmentAdapter.kt
+package com.etix.fragments
 
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
 import androidx.viewpager2.adapter.FragmentStateAdapter
-import com.etix.fragments.AddTicketFragment
-import com.etix.fragments.CategoryFragment
-import com.etix.fragments.HomeFragment
-import com.etix.fragments.SettingsFragment
-import com.etix.fragments.TicketHistoryFragment
+import com.etix.ui.home.HomeFragmentV2
+import com.etix.ui.add.AddTicketFragmentV2
 
-class FragmentAdapter(
-    activity: AppCompatActivity
-) : FragmentStateAdapter(activity) {
+class FragmentAdapter(activity: FragmentActivity) : FragmentStateAdapter(activity) {
 
     override fun getItemCount(): Int = 5
 
     override fun createFragment(position: Int): Fragment {
         return when (position) {
-            0 -> HomeFragment()
-            1 -> AddTicketFragment()
+            0 -> HomeFragmentV2()
+            1 -> AddTicketFragmentV2()
             2 -> TicketHistoryFragment()
             3 -> CategoryFragment()
             4 -> SettingsFragment()
-            else -> HomeFragment()
+            else -> HomeFragmentV2()
         }
     }
 }

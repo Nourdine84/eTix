@@ -1,4 +1,3 @@
-// 📁 com.etix.ui.main.MainActivityV2.kt
 package com.etix.ui.main
 
 import android.os.Bundle
@@ -7,7 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.viewpager2.widget.ViewPager2
 import com.etix.R
-import com.etix.adapter.FragmentAdapter
+import com.etix.fragments.FragmentAdapter
 import com.etix.utils.SessionManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
@@ -26,14 +25,12 @@ class MainActivityV2 : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         viewPager = findViewById(R.id.viewPager)
-        bottomNav = findViewById(R.id.bottomNav)
+        bottomNav = findViewById(R.id.bottomNavigationView) // ✅ FIX
 
-        // 🔹 ViewPager
         viewPager.adapter = FragmentAdapter(this)
         viewPager.offscreenPageLimit = 4
         viewPager.isUserInputEnabled = true
 
-        // 🔹 BottomNav → ViewPager
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
                 R.id.menu_home -> viewPager.currentItem = 0
@@ -45,14 +42,12 @@ class MainActivityV2 : AppCompatActivity() {
             true
         }
 
-        // 🔹 ViewPager → BottomNav
         viewPager.registerOnPageChangeCallback(object : ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 bottomNav.menu.getItem(position).isChecked = true
             }
         })
 
-        // 🔙 Back = retour Home
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (viewPager.currentItem != 0) {

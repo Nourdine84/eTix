@@ -1,18 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/app_nav_graph"
     app:startDestination="@id/menu_home">
 
-    <!-- ========================= -->
     <!-- HOME -->
-    <!-- ========================= -->
     <fragment
         android:id="@+id/menu_home"
         android:name="com.etix.ui.home.HomeFragmentV2"
-        android:label="@string/app_name"
-        tools:layout="@layout/fragment_home_v2">
+        android:label="@string/app_name">
 
         <action
             android:id="@+id/action_home_to_add"
@@ -23,91 +19,83 @@
             app:destination="@id/menu_history" />
     </fragment>
 
-    <!-- ========================= -->
-    <!-- ADD TICKET V2 -->
-    <!-- ========================= -->
+    <!-- ADD -->
     <fragment
         android:id="@+id/menu_add"
         android:name="com.etix.ui.add.AddTicketFragmentV2"
-        android:label="Ajouter un ticket"
-        tools:layout="@layout/fragment_add_ticket_v2">
+        android:label="Ajouter un ticket">
 
         <action
             android:id="@+id/action_addTicket_to_ocrPermission"
             app:destination="@id/ocrPermissionFragment" />
     </fragment>
 
-    <!-- ========================= -->
-    <!-- OCR FLOW -->
-    <!-- ========================= -->
+    <!-- OCR PERMISSION -->
     <fragment
         android:id="@+id/ocrPermissionFragment"
         android:name="com.etix.features.ocr.ui.OCRPermissionFragment"
-        android:label="OCR Permission"
-        tools:layout="@layout/fragment_ocr_permission">
+        android:label="OCR Permission">
 
         <action
             android:id="@+id/action_ocrPermission_to_ocrScanner"
             app:destination="@id/ocrScannerFragment" />
     </fragment>
 
+    <!-- OCR SCANNER -->
     <fragment
         android:id="@+id/ocrScannerFragment"
         android:name="com.etix.features.ocr.ui.OCRScannerFragment"
-        android:label="OCR Scanner"
-        tools:layout="@layout/fragment_ocr_scanner">
+        android:label="OCR Scanner">
 
         <action
             android:id="@+id/action_ocrScanner_to_ocrPreview"
             app:destination="@id/ocrPreviewFragment" />
     </fragment>
 
+    <!-- OCR PREVIEW -->
     <fragment
         android:id="@+id/ocrPreviewFragment"
         android:name="com.etix.features.ocr.ui.OCRPreviewFragment"
-        android:label="OCR Preview"
-        tools:layout="@layout/fragment_ocr_preview" />
+        android:label="OCR Preview" />
 
-    <!-- ========================= -->
-    <!-- HISTORIQUE -->
-    <!-- ========================= -->
+    <!-- ARGUMENT OCR -->
+    <fragment
+        android:id="@+id/ocrPreviewFragment"
+        android:name="com.etix.features.ocr.ui.OCRPreviewFragment">
+
+        <argument
+            android:name="ocrText"
+            app:argType="string" />
+    </fragment>
+
+
+    <!-- HISTORY -->
     <fragment
         android:id="@+id/menu_history"
         android:name="com.etix.fragments.TicketHistoryFragment"
-        android:label="@string/app_name"
-        tools:layout="@layout/fragment_ticket_history">
+        android:label="Historique">
 
         <action
             android:id="@+id/action_history_to_detail"
             app:destination="@id/ticketDetailFragment" />
     </fragment>
 
-    <!-- ========================= -->
     <!-- CATEGORY -->
-    <!-- ========================= -->
     <fragment
         android:id="@+id/menu_category"
         android:name="com.etix.fragments.CategoryFragment"
-        android:label="@string/app_name"
-        tools:layout="@layout/fragment_category" />
+        android:label="Catégories" />
 
-    <!-- ========================= -->
     <!-- SETTINGS -->
-    <!-- ========================= -->
     <fragment
         android:id="@+id/menu_settings"
         android:name="com.etix.fragments.SettingsFragment"
-        android:label="@string/app_name"
-        tools:layout="@layout/fragment_settings" />
+        android:label="Paramètres" />
 
-    <!-- ========================= -->
     <!-- DETAIL -->
-    <!-- ========================= -->
     <fragment
         android:id="@+id/ticketDetailFragment"
-        android:name="com.etix.fragments.TicketDetailFragment"
-        android:label="@string/app_name"
-        tools:layout="@layout/fragment_ticket_detail">
+        android:name="com.etix.fragments.TicketDetailFragment">
 
         <argument
             android:name="ticketId"
@@ -118,14 +106,10 @@
             app:destination="@id/ticketEditFragment" />
     </fragment>
 
-    <!-- ========================= -->
     <!-- EDIT -->
-    <!-- ========================= -->
     <fragment
         android:id="@+id/ticketEditFragment"
-        android:name="com.etix.fragments.TicketEditFragment"
-        android:label="@string/app_name"
-        tools:layout="@layout/fragment_ticket_edit">
+        android:name="com.etix.fragments.TicketEditFragment">
 
         <argument
             android:name="ticketId"

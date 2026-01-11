@@ -59,6 +59,8 @@ class AddTicketFragmentV2 : Fragment() {
     private fun applyOCRResult(result: OCRResult) {
         binding.inputStore.setText(result.merchant ?: "")
         binding.inputAmount.setText(result.amount?.toString() ?: "")
+        // ⛔ category & description volontairement ignorés
+        // 👉 seront branchés lors de l’injection du nouveau design
     }
 
     override fun onDestroyView() {
