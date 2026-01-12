@@ -1,10 +1,12 @@
 package com.etix.features.ocr.domain
 
+import com.etix.features.ocr.model.OCRResult
+
 object OCRMapper {
 
     fun map(rawText: String): OCRResult {
         // 🔥 Version simple ISO V2.01
-        // (on enrichira plus tard)
+        // L’OCR intelligent est dans OCRProcessor
 
         val merchant = extractMerchant(rawText)
         val amount = extractAmount(rawText)
@@ -18,7 +20,10 @@ object OCRMapper {
     }
 
     private fun extractMerchant(text: String): String? {
-        return text.lines().firstOrNull()?.take(40)
+        return text
+            .lines()
+            .firstOrNull()
+            ?.take(40)
     }
 
     private fun extractAmount(text: String): Double? {

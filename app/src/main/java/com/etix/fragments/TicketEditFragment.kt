@@ -46,6 +46,7 @@ class TicketEditFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+
         val view = inflater.inflate(R.layout.fragment_ticket_edit, container, false)
 
         editStore = view.findViewById(R.id.editStore)
@@ -58,7 +59,8 @@ class TicketEditFragment : Fragment() {
 
         observeTicket()
         setupDatePicker()
-        setupActions()
+        setupSave()
+        setupDelete()
 
         return view
     }
@@ -73,13 +75,8 @@ class TicketEditFragment : Fragment() {
                     editAmount.setText(ticket.amount.toString())
                     editDescription.setText(ticket.description ?: "")
                     selectedDateMillis = ticket.dateMillis
-                    btnPickDate.text = formatDate(ticket.dateMillis)
 
-                    // Sélection catégorie (simple)
-                    val index = (0 until spinnerCategory.count)
-                        .firstOrNull { spinnerCategory.getItemAtPosition(it).toString() == ticket.category }
-                        ?: 0
-                    spinnerCategory.setSelection(index)
+                    btnPickDate.text = formatDate(ticket.dateMillis)
                 }
             }
         }
@@ -105,8 +102,7 @@ class TicketEditFragment : Fragment() {
         }
     }
 
-    private fun setupActions() {
-
+    private fun setupSave() {
         btnSave.setOnClickListener {
             val amount = editAmount.text.toString().toDoubleOrNull()
             if (amount == null) {
@@ -124,7 +120,9 @@ class TicketEditFragment : Fragment() {
                 findNavController().navigateUp()
             }
         }
+    }
 
+    private fun setupDelete() {
         btnDelete.setOnClickListener {
             viewModel.deleteTicket()
             findNavController().navigateUp()

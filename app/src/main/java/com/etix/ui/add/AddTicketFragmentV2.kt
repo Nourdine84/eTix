@@ -11,7 +11,7 @@ import androidx.navigation.fragment.findNavController
 import com.etix.R
 import com.etix.databinding.FragmentAddTicketV2Binding
 import com.etix.features.ocr.OCRKeys
-import com.etix.features.ocr.domain.OCRResult
+import com.etix.features.ocr.model.OCRResult
 
 class AddTicketFragmentV2 : Fragment() {
 
@@ -57,10 +57,21 @@ class AddTicketFragmentV2 : Fragment() {
     }
 
     private fun applyOCRResult(result: OCRResult) {
-        binding.inputStore.setText(result.merchant ?: "")
-        binding.inputAmount.setText(result.amount?.toString() ?: "")
-        // ⛔ category & description volontairement ignorés
-        // 👉 seront branchés lors de l’injection du nouveau design
+
+        // 🏪 Magasin
+        result.merchant?.let {
+            binding.inputStore.setText(it)
+        }
+
+        // 💰 Montant
+        result.amount?.let {
+            binding.inputAmount.setText(it.toString())
+        }
+
+        // ⛔ Date / Catégorie / Description
+        // 👉 volontairement NON branchés
+        // 👉 le design V2 ne les expose pas encore
+        // 👉 OCR intelligent prêt, UI suivra
     }
 
     override fun onDestroyView() {

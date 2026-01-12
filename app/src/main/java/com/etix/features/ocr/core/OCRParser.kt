@@ -1,15 +1,12 @@
 package com.etix.features.ocr.core
 
-import com.etix.features.ocr.domain.OCRResult
+import com.etix.features.ocr.engine.OCRProcessor
+import com.etix.features.ocr.model.OCRResult
 
 object OCRParser {
 
     fun parse(rawText: String): OCRResult {
-        return OCRResult(
-            merchant = null,
-            amount = null,
-            dateMillis = null,
-            rawText = rawText
-        )
+        // ✅ Source de vérité : OCRProcessor
+        return OCRProcessor.process(rawText)
     }
 }

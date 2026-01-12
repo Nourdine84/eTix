@@ -18,23 +18,6 @@
         app:layout_constraintEnd_toEndOf="parent"/>
 
     <!-- ========================= -->
-    <!-- NAV HOST (OVERLAY / INVISIBLE) -->
-    <!-- Sert aux écrans Detail / Edit / OCR -->
-    <!-- ========================= -->
-    <androidx.fragment.app.FragmentContainerView
-        android:id="@+id/nav_host_fragment_container"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        app:defaultNavHost="true"
-        app:navGraph="@navigation/nav_graph"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/bottomNav"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:name="androidx.navigation.fragment.NavHostFragment" />
-
-
-    <!-- ========================= -->
     <!-- BOTTOM NAV -->
     <!-- ========================= -->
     <com.google.android.material.bottomnavigation.BottomNavigationView

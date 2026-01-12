@@ -1,9 +1,8 @@
 package com.etix.features.ocr.engine
 
-import com.etix.features.ocr.domain.OCRResult
-import java.time.LocalDate
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
+import com.etix.features.ocr.domain.OCRConfidence
+import com.etix.features.ocr.domain.OCRDebug
+import com.etix.features.ocr.model.OCRResult
 import java.util.Locale
 import java.util.regex.Pattern
 
@@ -12,13 +11,20 @@ object OCRProcessor {
     fun process(rawText: String): OCRResult {
 
         val lines = rawText
-            .split("\n")
+            .lines()
             .map { it.trim() }
             .filter { it.isNotBlank() }
 
         val merchant = extractMerchant(lines)
-        val amount = extractAmount(lines)
-        val dateMillis = extractDateMillis(lines)
+        val amount = extractBestAmount(lines)
+        val dateMillis = OCRDateExtractor.extract(lines)
+
+        OCRDebug.log("Merchant: $merchant")
+        OCRDebug.log("Amount: $amount")
+        OCRDebug.log("DateMillis: $dateMillis")
+        OCRDebug.log("Confidence: ${
+            OCRConfidence.compute(merchant, amount, dateMillis)
+        }")
 
         return OCRResult(
             merchant = merchant,
@@ -28,62 +34,50 @@ object OCRProcessor {
         )
     }
 
-    // -----------------------------
-    // 💰 MONTANT
-    // -----------------------------
-    private fun extractAmount(lines: List<String>): Double? {
-        val regex = Pattern.compile(
-            "(\\d{1,3}[,.]\\d{2})\\s?(€|eur)?",
-            Pattern.CASE_INSENSITIVE
-        )
-
-        for (line in lines.reversed()) {
-            val matcher = regex.matcher(line.replace(" ", ""))
-            if (matcher.find()) {
-                return matcher.group(1)
-                    ?.replace(",", ".")
-                    ?.toDoubleOrNull()
-            }
-        }
-        return null
-    }
-
-    // -----------------------------
-    // 🏪 COMMERÇANT
-    // -----------------------------
+    // ─────────────────────────────
+    // 🏪 MERCHANT
+    // ─────────────────────────────
     private fun extractMerchant(lines: List<String>): String? {
         return lines.firstOrNull {
-            it.length >= 3 &&
+            it.length in 4..40 &&
                     it == it.uppercase(Locale.getDefault()) &&
                     !it.any(Char::isDigit)
-        } ?: lines.firstOrNull { !it.any(Char::isDigit) }
+        } ?: lines.firstOrNull {
+            !it.any(Char::isDigit) && it.length in 4..40
+        }
     }
 
-    // -----------------------------
-    // 📅 DATE → Long (millis)
-    // -----------------------------
-    private fun extractDateMillis(lines: List<String>): Long? {
-        val formats = listOf(
-            "dd/MM/yyyy",
-            "dd-MM-yyyy",
-            "dd.MM.yyyy"
-        )
+    // ─────────────────────────────
+    // 💰 AMOUNT — NIVEAU 2
+    // ─────────────────────────────
+    private fun extractBestAmount(lines: List<String>): Double? {
+
+        val candidates = mutableListOf<Double>()
+        val regex = Pattern.compile("(\\d+[,.]\\d{2})")
 
         for (line in lines) {
-            for (pattern in formats) {
-                try {
-                    val localDate = LocalDate.parse(
-                        line,
-                        DateTimeFormatter.ofPattern(pattern)
-                    )
-                    return localDate
-                        .atStartOfDay(ZoneId.systemDefault())
-                        .toInstant()
-                        .toEpochMilli()
-                } catch (_: Exception) {
+
+            if (line.contains("TOTAL", true) || line.contains("TTC", true)) {
+                regex.matcher(line.replace(" ", "")).let {
+                    if (it.find()) {
+                        return it.group(1)
+                            ?.replace(",", ".")
+                            ?.toDoubleOrNull()
+                    }
+                }
+            }
+
+            regex.matcher(line.replace(" ", "")).let {
+                if (it.find()) {
+                    it.group(1)
+                        ?.replace(",", ".")
+                        ?.toDoubleOrNull()
+                        ?.takeIf { v -> v > 0.5 }
+                        ?.let { v -> candidates.add(v) }
                 }
             }
         }
-        return null
+
+        return candidates.maxOrNull()
     }
 }
