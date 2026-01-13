@@ -10,3 +10,5 @@ data class OCRResult(
     val dateMillis: Long?,
     val rawText: String
 ) : Parcelable
+
+

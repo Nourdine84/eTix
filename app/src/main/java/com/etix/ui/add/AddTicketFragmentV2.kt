@@ -5,8 +5,8 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.setFragmentResultListener
 import androidx.navigation.fragment.findNavController
 import com.etix.R
 import com.etix.databinding.FragmentAddTicketV2Binding
@@ -29,12 +29,14 @@ class AddTicketFragmentV2 : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
+        // 📸 Lancer OCR
         binding.btnScanTicket.setOnClickListener {
             findNavController().navigate(
                 R.id.action_addTicket_to_ocrPermission
             )
         }
 
+        // 📥 Réception résultat OCR
         parentFragmentManager.setFragmentResultListener(
             OCRKeys.REQUEST_KEY,
             viewLifecycleOwner
@@ -56,34 +58,28 @@ class AddTicketFragmentV2 : Fragment() {
         }
     }
 
+    /**
+     * OCR V2 – CLEAN
+     * - Remplit uniquement les champs existants
+     * - Aucun badge
+     * - Aucune couleur
+     * - Aucun drawable
+     */
     private fun applyOCRResult(result: OCRResult) {
 
-        // 🏷️ Badge OCR visible
-        binding.textOCRBadge.visibility = View.VISIBLE
-
-        // 🎨 Couleur selon confiance (simple V1)
-        val confidenceColor = when {
-            result.merchant != null && result.amount != null ->
-                R.color.ocr_confidence_high
-            result.merchant != null || result.amount != null ->
-                R.color.ocr_confidence_medium
-            else ->
-                R.color.ocr_confidence_low
-        }
-
-        binding.textOCRBadge.setBackgroundColor(
-            ContextCompat.getColor(requireContext(), confidenceColor)
-        )
-
         // 🏪 Magasin
-        result.merchant?.let {
-            binding.inputStore.setText(it)
-        }
+        result.merchant
+            ?.takeIf { it.isNotBlank() }
+            ?.let { binding.inputStore.setText(it) }
 
         // 💰 Montant
-        result.amount?.let {
-            binding.inputAmount.setText(it.toString())
-        }
+        result.amount
+            ?.let { binding.inputAmount.setText(it.toString()) }
+
+        // ⛔ Date / Catégorie / Description
+        // 👉 volontairement NON branchés
+        // 👉 OCR V2 = extraction simple
+        // 👉 UI V3 arrivera ensuite
     }
 
     override fun onDestroyView() {
