@@ -18,6 +18,7 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -48,14 +49,28 @@ android {
         unitTests.isIncludeAndroidResources = true
     }
 
-    // ✅ LINT BASELINE (DÉBLOQUE LE BUILD)
+    // ✅ LINT BASELINE
     lint {
         baseline = file("lint-baseline.xml")
-        abortOnError = true // on garde la rigueur
+        abortOnError = true
     }
 }
 
+/**
+ * 🔴 CORRECTION CRITIQUE
+ * 👉 Empêche KAPT (Room) de traiter les tests unitaires JVM
+ * 👉 Évite le crash: processingEnv must not be null
+ */
+tasks.withType<org.jetbrains.kotlin.gradle.internal.KaptWithoutKotlincTask>()
+    .configureEach {
+        onlyIf {
+            !name.contains("Test", ignoreCase = true)
+        }
+    }
+
 kapt {
+    correctErrorTypes = true
+
     arguments {
         arg("room.schemaLocation", "$projectDir/schemas")
         arg("room.incremental", "true")
@@ -75,7 +90,7 @@ dependencies {
     implementation("androidx.fragment:fragment-ktx:1.8.2")
     implementation("androidx.core:core-splashscreen:1.0.1")
 
-    // --- Navigation (VERSION UNIQUE) ---
+    // --- Navigation ---
     implementation("androidx.navigation:navigation-fragment-ktx:2.7.7")
     implementation("androidx.navigation:navigation-ui-ktx:2.7.7")
 
@@ -92,10 +107,19 @@ dependencies {
     // --- Coroutines ---
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 
-    // --- Tests ---
+    // --- Tests (JVM purs) ---
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.robolectric:robolectric:4.11.1")
 
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+
+    // 🔍 ML Kit – Text Recognition (OCR)
+    implementation("com.google.mlkit:text-recognition:16.0.0")
+
+    // 📷 CameraX
+    implementation("androidx.camera:camera-core:1.3.4")
+    implementation("androidx.camera:camera-camera2:1.3.4")
+    implementation("androidx.camera:camera-lifecycle:1.3.4")
+    implementation("androidx.camera:camera-view:1.3.4")
 }

@@ -79,4 +79,12 @@
     <!-- Texte principal (fallback light) -->
     <color name="text_primary">#000000</color>
 
+    <!-- OCR confidence feedback -->
+    <color name="ocr_high">#2E7D32</color>   <!-- vert -->
+    <color name="ocr_medium">#ED6C02</color> <!-- orange -->
+    <color name="ocr_low">#D32F2F</color>    <!-- rouge -->
+    <color name="ocr_confidence_high">#DFF5E3</color>     <!-- vert doux -->
+    <color name="ocr_confidence_medium">#FFF4CC</color>   <!-- jaune doux -->
+    <color name="ocr_confidence_low">#FDE2E2</color>      <!-- rouge doux -->
+
 </resources>

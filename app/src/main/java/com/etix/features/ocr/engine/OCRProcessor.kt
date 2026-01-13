@@ -1,8 +1,8 @@
 package com.etix.features.ocr.engine
 
-import com.etix.features.ocr.domain.OCRConfidence
 import com.etix.features.ocr.domain.OCRDebug
 import com.etix.features.ocr.model.OCRResult
+import com.etix.features.ocr.domain.OCRConfidence
 import java.util.Locale
 import java.util.regex.Pattern
 
@@ -17,14 +17,16 @@ object OCRProcessor {
 
         val merchant = extractMerchant(lines)
         val amount = extractBestAmount(lines)
-        val dateMillis = OCRDateExtractor.extract(lines)
+        val dateMillis = OCRDateExtractor.extractDateMillis(lines)
 
-        OCRDebug.log("Merchant: $merchant")
-        OCRDebug.log("Amount: $amount")
-        OCRDebug.log("DateMillis: $dateMillis")
-        OCRDebug.log("Confidence: ${
-            OCRConfidence.compute(merchant, amount, dateMillis)
-        }")
+        OCRDebug.d("OCRProcessor", "Merchant = $merchant")
+        OCRDebug.d("OCRProcessor", "Amount = $amount")
+        OCRDebug.d("OCRProcessor", "DateMillis = $dateMillis")
+
+        val confidence = OCRConfidence.compute(merchant, amount, dateMillis)
+
+        OCRDebug.d("OCRProcessor", "Confidence = $confidence")
+
 
         return OCRResult(
             merchant = merchant,
@@ -48,7 +50,7 @@ object OCRProcessor {
     }
 
     // ─────────────────────────────
-    // 💰 AMOUNT — NIVEAU 2
+    // 💰 AMOUNT — OCR NIVEAU 2
     // ─────────────────────────────
     private fun extractBestAmount(lines: List<String>): Double? {
 
@@ -57,24 +59,24 @@ object OCRProcessor {
 
         for (line in lines) {
 
+            // priorité TOTAL / TTC
             if (line.contains("TOTAL", true) || line.contains("TTC", true)) {
-                regex.matcher(line.replace(" ", "")).let {
-                    if (it.find()) {
-                        return it.group(1)
-                            ?.replace(",", ".")
-                            ?.toDoubleOrNull()
-                    }
+                val m = regex.matcher(line.replace(" ", ""))
+                if (m.find()) {
+                    return m.group(1)
+                        ?.replace(",", ".")
+                        ?.toDoubleOrNull()
                 }
             }
 
-            regex.matcher(line.replace(" ", "")).let {
-                if (it.find()) {
-                    it.group(1)
-                        ?.replace(",", ".")
-                        ?.toDoubleOrNull()
-                        ?.takeIf { v -> v > 0.5 }
-                        ?.let { v -> candidates.add(v) }
-                }
+            // fallback : toutes les valeurs valides
+            val m = regex.matcher(line.replace(" ", ""))
+            if (m.find()) {
+                m.group(1)
+                    ?.replace(",", ".")
+                    ?.toDoubleOrNull()
+                    ?.takeIf { it > 0.5 }
+                    ?.let { candidates.add(it) }
             }
         }
 

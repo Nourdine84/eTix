@@ -1,73 +1,93 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/scrollViewAdd"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="?attr/colorBackground">
+    android:background="@color/md_background"
+    android:fillViewport="true">
 
     <LinearLayout
+        android:id="@+id/containerAdd"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="20dp">
+        android:orientation="vertical">
 
+        <!-- En-tête -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_header_rounded"
+            android:gravity="bottom"
+            android:padding="24dp">
+
+            <TextView
+                android:id="@+id/titleAdd"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Ajouter"
+                android:textColor="@color/md_onPrimary"
+                android:textSize="24sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- 🏷️ BADGE OCR -->
         <TextView
+            android:id="@+id/textOCRBadge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Ajouter un ticket"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="?attr/colorOnBackground"
-            android:layout_marginBottom="24dp"/>
-
-        <!-- OCR -->
-        <Button
-            android:id="@+id/btnScanTicket"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:text="Scanner un ticket (OCR)"
-            android:layout_marginBottom="32dp"
-            style="@style/Shape"/>
-
-        <!-- MAGASIN -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Magasin"
-            android:textColor="?attr/colorOnBackground"
-            android:layout_marginBottom="8dp"/>
-
-        <EditText
-            android:id="@+id/inputStore"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:hint="Nom du magasin"
-            android:background="@drawable/bg_input"
+            android:layout_margin="16dp"
             android:paddingHorizontal="12dp"
-            android:layout_marginBottom="16dp"/>
+            android:paddingVertical="6dp"
+            android:text="OCR détecté"
+            android:textColor="@android:color/white"
+            android:textSize="12sp"
+            android:visibility="gone"
+            android:background="@drawable/bg_ocr_badge" />
 
-        <!-- MONTANT -->
-        <TextView
-            android:layout_width="wrap_content"
+        <!-- Formulaire -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Montant"
-            android:textColor="?attr/colorOnBackground"
-            android:layout_marginBottom="8dp"/>
+            android:layout_marginTop="-16dp"
+            android:orientation="vertical"
+            android:padding="24dp">
 
-        <EditText
-            android:id="@+id/inputAmount"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:hint="0.00 €"
-            android:inputType="numberDecimal"
-            android:background="@drawable/bg_input"
-            android:paddingHorizontal="12dp"
-            android:layout_marginBottom="32dp"/>
+            <!-- Magasin -->
+            <EditText
+                android:id="@+id/inputStore"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_input"
+                android:hint="Magasin"
+                android:padding="16dp"
+                android:textColor="@color/md_onBackground"
+                android:textColorHint="@color/gray_500" />
 
-        <Button
-            android:id="@+id/btnSaveTicket"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:text="Enregistrer"
-            style="@style/Shape"/>
+            <!-- Montant -->
+            <EditText
+                android:id="@+id/inputAmount"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_input"
+                android:hint="Montant"
+                android:inputType="numberDecimal"
+                android:padding="16dp"
+                android:textColor="@color/md_onBackground"
+                android:textColorHint="@color/gray_500" />
+
+            <!-- Bouton scan -->
+            <Button
+                android:id="@+id/btnScanTicket"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:text="Scanner un ticket"
+                android:textAllCaps="false"
+                android:backgroundTint="@color/etix_blue"
+                android:textColor="@color/white" />
+
+        </LinearLayout>
     </LinearLayout>
 </ScrollView>

@@ -156,7 +156,7 @@
                 android:textColorHint="@color/gray_500"
                 android:textSize="16sp" />
 
-            <!-- Bouton "Ajouter" -->
+            <!-- Bouton Ajouter -->
             <Button
                 android:id="@+id/buttonSave"
                 android:layout_width="match_parent"
@@ -168,7 +168,7 @@
                 android:textColor="@color/white"
                 android:layout_marginBottom="12dp" />
 
-            <!-- Bouton "Ajout rapide" -->
+            <!-- Bouton Ajout rapide -->
             <Button
                 android:id="@+id/buttonQuickAdd"
                 android:layout_width="match_parent"

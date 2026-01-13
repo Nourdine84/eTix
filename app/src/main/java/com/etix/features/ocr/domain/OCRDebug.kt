@@ -1,15 +1,14 @@
 package com.etix.features.ocr.domain
 
-import android.util.Log
-
+/**
+ * Debug OCR activable/désactivable facilement.
+ * Pas de dépendance Android (Logcat), donc safe pour unit tests.
+ */
 object OCRDebug {
 
-    private const val TAG = "OCR_DEBUG"
-    var enabled = false
+    var enabled: Boolean = false
 
-    fun log(message: String) {
-        if (enabled) {
-            Log.d(TAG, message)
-        }
+    fun d(tag: String, msg: String) {
+        if (enabled) println("[$tag] $msg")
     }
 }
