@@ -9,8 +9,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
 import com.etix.databinding.FragmentAddTicketV2Binding
 import com.etix.features.ocr.OCRKeys
+import com.etix.features.ocr.domain.OCRTicketDraftMapper
 import com.etix.features.ocr.model.OCRResult
-import com.etix.features.ocr.ui.OCRPermissionBottomSheet
 
 class AddTicketFragmentV2 : Fragment() {
 
@@ -28,15 +28,7 @@ class AddTicketFragmentV2 : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-        // ✅ Lancer OCR via BottomSheet (PAS de NavController)
-        binding.btnScanTicket.setOnClickListener {
-            OCRPermissionBottomSheet().show(
-                parentFragmentManager,
-                "OCRPermission"
-            )
-        }
-
-        // ✅ Réception du résultat OCR
+        // 📥 Réception résultat OCR
         parentFragmentManager.setFragmentResultListener(
             OCRKeys.REQUEST_KEY,
             viewLifecycleOwner
@@ -54,29 +46,37 @@ class AddTicketFragmentV2 : Fragment() {
                 }
 
             result ?: return@setFragmentResultListener
+
             applyOCRResult(result)
         }
     }
 
     /**
-     * OCR V3 – CLEAN & SAFE
-     * - Aucun NavController
+     * OCR V3 – CLEAN & STABLE
+     * - Transformation OCR → TicketDraft (domain)
+     * - Pré-remplissage SAFE des champs
      * - Aucun badge
-     * - Aucun drawable
-     * - Remplissage minimal
+     * - Aucune couleur
+     * - Aucune navigation
      */
     private fun applyOCRResult(result: OCRResult) {
 
+        val draft = OCRTicketDraftMapper.toDraft(
+            rawText = result.rawText ?: return
+        )
+
         // 🏪 Magasin
-        result.merchant
-            ?.takeIf { it.isNotBlank() }
-            ?.let { binding.inputStore.setText(it) }
+        draft.storeName?.let { storeName ->
+            binding.inputStore.setText(storeName.toString())
+        }
 
         // 💰 Montant
-        result.amount
-            ?.let { binding.inputAmount.setText(it.toString()) }
+        draft.amount?.let { amount ->
+            binding.inputAmount.setText(amount.toString())
+        }
 
-        // ⛔ Le reste viendra plus tard (V4+)
+        // ⛔ Date / Catégorie / Description
+        // 👉 volontairement NON branchés (V3 scope validé)
     }
 
     override fun onDestroyView() {

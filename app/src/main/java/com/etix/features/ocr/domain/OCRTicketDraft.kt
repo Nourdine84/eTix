@@ -3,6 +3,8 @@ package com.etix.features.ocr.domain
 import java.text.SimpleDateFormat
 import java.util.Locale
 import kotlin.math.abs
+import com.etix.features.ocr.domain.OCRSmartAnalyzer
+
 
 /**
  * TicketDraft = données OCR prêtes à pré-remplir un formulaire.
