@@ -88,6 +88,16 @@
                 android:backgroundTint="@color/etix_blue"
                 android:textColor="@color/white" />
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnSaveTicket"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Enregistrer"
+                android:layout_marginTop="24dp"
+                android:layout_marginBottom="24dp"
+                style="@style/Shape"/>
+
+
         </LinearLayout>
     </LinearLayout>
 </ScrollView>

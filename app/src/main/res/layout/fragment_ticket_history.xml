@@ -28,26 +28,28 @@
         android:queryHint="@string/search_hint" />
 
     <!-- 📅 Filtres par date -->
+
+    <!-- ℹ️ Placeholder si vide -->
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:layout_width="395dp"
+        android:layout_height="85dp"
+        android:layout_marginBottom="12dp"
         android:gravity="center_vertical"
-        android:layout_marginBottom="12dp">
+        android:orientation="horizontal">
 
         <Button
             android:id="@+id/btnThisMonth"
             style="@style/Shape"
-            android:layout_width="89dp"
-            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_height="74dp"
             android:layout_weight="1"
             android:text="@string/this_month" />
 
         <Button
             android:id="@+id/btnCustomRange"
             style="@style/Shape"
-            android:layout_width="165dp"
-            android:layout_height="match_parent"
+            android:layout_width="157dp"
+            android:layout_height="66dp"
             android:layout_marginStart="8dp"
             android:layout_weight="1"
             android:text="@string/custom_range" />
@@ -55,14 +57,13 @@
         <Button
             android:id="@+id/btnClearFilter"
             style="@style/Shape"
-            android:layout_width="106dp"
+            android:layout_width="117dp"
             android:layout_height="71dp"
             android:layout_marginStart="8dp"
             android:layout_weight="1"
             android:text="@string/clear_filter" />
     </LinearLayout>
 
-    <!-- ℹ️ Placeholder si vide -->
     <TextView
         android:id="@+id/textEmpty"
         android:layout_width="match_parent"

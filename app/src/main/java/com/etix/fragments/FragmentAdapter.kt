@@ -1,4 +1,3 @@
-// 📁 com.etix.fragments.FragmentAdapter.kt
 package com.etix.fragments
 
 import androidx.fragment.app.Fragment
