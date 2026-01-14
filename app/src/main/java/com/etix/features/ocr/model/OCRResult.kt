@@ -5,10 +5,8 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class OCRResult(
-    val merchant: String?,
-    val amount: Double?,
-    val dateMillis: Long?,
-    val rawText: String
+    val merchant: String? = null,
+    val amount: Double? = null,
+    val dateMillis: Long? = null,
+    val rawText: String? = null
 ) : Parcelable
-
-

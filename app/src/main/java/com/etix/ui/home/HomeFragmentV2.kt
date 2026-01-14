@@ -7,16 +7,16 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.fragment.findNavController
 import com.etix.R
 import com.etix.data.AppDatabase
 import com.etix.data.TicketRepository
+import com.etix.ui.main.MainActivityV2
 import com.etix.viewmodel.HomeViewModel
 import com.etix.viewmodel.factory.HomeVMFactory
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
-import java.util.*
+import java.util.Locale
 
 class HomeFragmentV2 : Fragment(R.layout.fragment_home_v2) {
 
@@ -31,6 +31,9 @@ class HomeFragmentV2 : Fragment(R.layout.fragment_home_v2) {
 
         val tvToday = view.findViewById<TextView>(R.id.tvTodayAmount)
         val tvMonth = view.findViewById<TextView>(R.id.tvMonthAmount)
+        val btnAdd = view.findViewById<Button>(R.id.btnAddTicket)
+        val btnHistory = view.findViewById<Button>(R.id.btnHistory)
+
         val formatter = NumberFormat.getCurrencyInstance(Locale.FRANCE)
 
         lifecycleScope.launch {
@@ -40,12 +43,13 @@ class HomeFragmentV2 : Fragment(R.layout.fragment_home_v2) {
             }
         }
 
-        view.findViewById<Button>(R.id.btnAddTicket).setOnClickListener {
-            findNavController().navigate(R.id.menu_add)
+        // ✅ Navigation via ViewPager (PAS de NavController)
+        btnAdd.setOnClickListener {
+            (requireActivity() as MainActivityV2).goToPage(1)
         }
 
-        view.findViewById<Button>(R.id.btnHistory).setOnClickListener {
-            findNavController().navigate(R.id.menu_history)
+        btnHistory.setOnClickListener {
+            (requireActivity() as MainActivityV2).goToPage(2)
         }
     }
 }

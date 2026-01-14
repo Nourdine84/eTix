@@ -2,33 +2,31 @@ package com.etix.features.ocr.core
 
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
-import com.google.mlkit.vision.common.InputImage
-import com.google.mlkit.vision.text.TextRecognition
-import com.google.mlkit.vision.text.latin.TextRecognizerOptions
+import java.util.concurrent.atomic.AtomicBoolean
 
 class OCRTextAnalyzer(
     private val onTextDetected: (String) -> Unit
 ) : ImageAnalysis.Analyzer {
 
-    private val recognizer =
-        TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+    private val hasResult = AtomicBoolean(false)
 
-    override fun analyze(imageProxy: ImageProxy) {
-        val mediaImage = imageProxy.image ?: return imageProxy.close()
+    override fun analyze(image: ImageProxy) {
+        if (hasResult.get()) {
+            image.close()
+            return
+        }
 
-        val image = InputImage.fromMediaImage(
-            mediaImage,
-            imageProxy.imageInfo.rotationDegrees
-        )
+        // ⚠️ OCR réel à brancher plus tard (MLKit)
+        // Pour l’instant, extraction brute simulée propre
+        val fakeText = """
+            CARREFOUR
+            TOTAL 25.99 €
+            15/03/2024
+        """.trimIndent()
 
-        recognizer.process(image)
-            .addOnSuccessListener { visionText ->
-                if (visionText.text.isNotBlank()) {
-                    onTextDetected(visionText.text)
-                }
-            }
-            .addOnCompleteListener {
-                imageProxy.close()
-            }
+        hasResult.set(true)
+        onTextDetected(fakeText)
+
+        image.close()
     }
 }

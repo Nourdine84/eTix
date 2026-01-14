@@ -1,8 +1,7 @@
 package com.etix.features.ocr
 
 object OCRKeys {
-    const val REQUEST_KEY = "ocr_request_key"
-    const val RESULT_BUNDLE = "ocr_result"
-
-    // 🔥 important : clé unique et claire
-    const val RAW_TEXT = "ocr_raw_text"}
+    const val REQUEST_KEY = "OCR_REQUEST_KEY"
+    const val RESULT_BUNDLE = "OCR_RESULT"
+    const val RAW_TEXT = "OCR_RAW_TEXT"
+}

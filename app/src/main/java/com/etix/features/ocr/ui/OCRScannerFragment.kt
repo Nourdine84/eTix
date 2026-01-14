@@ -1,72 +1,70 @@
 package com.etix.features.ocr.ui
 
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
+import androidx.fragment.app.setFragmentResult
 import com.etix.R
 import com.etix.features.ocr.OCRKeys
 import com.etix.features.ocr.core.OCRTextAnalyzer
+import com.etix.features.ocr.model.OCRResult
 import java.util.concurrent.Executors
 
-class OCRScannerFragment : Fragment() {
+class OCRScannerFragment : Fragment(R.layout.fragment_ocr_scanner) {
 
     private val cameraExecutor = Executors.newSingleThreadExecutor()
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        return inflater.inflate(R.layout.fragment_ocr_scanner, container, false)
-    }
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        startCamera(view)
+        startCamera()
     }
 
-    private fun startCamera(view: View) {
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(requireContext())
+    private fun startCamera() {
+        val providerFuture = ProcessCameraProvider.getInstance(requireContext())
 
-        cameraProviderFuture.addListener({
-            val cameraProvider = cameraProviderFuture.get()
+        providerFuture.addListener({
+            val provider = providerFuture.get()
 
             val preview = Preview.Builder().build()
 
-            val analyzer = ImageAnalysis.Builder()
-                .build()
-                .also {
-                    it.setAnalyzer(cameraExecutor, OCRTextAnalyzer { rawText ->
-                        navigateToPreview(rawText)
-                    })
-                }
+            val analyzer = ImageAnalysis.Builder().build().also {
+                it.setAnalyzer(cameraExecutor, OCRTextAnalyzer { rawText ->
+                    deliverResult(rawText)
+                })
+            }
 
-            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
-
-            cameraProvider.unbindAll()
-            cameraProvider.bindToLifecycle(
+            provider.unbindAll()
+            provider.bindToLifecycle(
                 viewLifecycleOwner,
-                cameraSelector,
+                CameraSelector.DEFAULT_BACK_CAMERA,
                 preview,
                 analyzer
             )
+
         }, ContextCompat.getMainExecutor(requireContext()))
     }
 
-    private fun navigateToPreview(rawText: String) {
-        findNavController().navigate(
-            R.id.action_ocrScanner_to_ocrPreview,
+    private fun deliverResult(rawText: String) {
+
+        val result = OCRResult(
+            merchant = "CARREFOUR",
+            amount = 25.99,
+            dateMillis = System.currentTimeMillis(),
+            rawText = rawText
+        )
+
+        setFragmentResult(
+            OCRKeys.REQUEST_KEY,
             Bundle().apply {
-                putString(OCRKeys.RAW_TEXT, rawText)
+                putParcelable(OCRKeys.RESULT_BUNDLE, result)
             }
         )
+
+        parentFragmentManager.popBackStack()
     }
 
     override fun onDestroy() {

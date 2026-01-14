@@ -7,11 +7,10 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResultListener
-import androidx.navigation.fragment.findNavController
-import com.etix.R
 import com.etix.databinding.FragmentAddTicketV2Binding
 import com.etix.features.ocr.OCRKeys
 import com.etix.features.ocr.model.OCRResult
+import com.etix.features.ocr.ui.OCRPermissionBottomSheet
 
 class AddTicketFragmentV2 : Fragment() {
 
@@ -29,14 +28,15 @@ class AddTicketFragmentV2 : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
 
-        // 📸 Lancer OCR
+        // ✅ Lancer OCR via BottomSheet (PAS de NavController)
         binding.btnScanTicket.setOnClickListener {
-            findNavController().navigate(
-                R.id.action_addTicket_to_ocrPermission
+            OCRPermissionBottomSheet().show(
+                parentFragmentManager,
+                "OCRPermission"
             )
         }
 
-        // 📥 Réception résultat OCR
+        // ✅ Réception du résultat OCR
         parentFragmentManager.setFragmentResultListener(
             OCRKeys.REQUEST_KEY,
             viewLifecycleOwner
@@ -59,11 +59,11 @@ class AddTicketFragmentV2 : Fragment() {
     }
 
     /**
-     * OCR V2 – CLEAN
-     * - Remplit uniquement les champs existants
+     * OCR V3 – CLEAN & SAFE
+     * - Aucun NavController
      * - Aucun badge
-     * - Aucune couleur
      * - Aucun drawable
+     * - Remplissage minimal
      */
     private fun applyOCRResult(result: OCRResult) {
 
@@ -76,10 +76,7 @@ class AddTicketFragmentV2 : Fragment() {
         result.amount
             ?.let { binding.inputAmount.setText(it.toString()) }
 
-        // ⛔ Date / Catégorie / Description
-        // 👉 volontairement NON branchés
-        // 👉 OCR V2 = extraction simple
-        // 👉 UI V3 arrivera ensuite
+        // ⛔ Le reste viendra plus tard (V4+)
     }
 
     override fun onDestroyView() {

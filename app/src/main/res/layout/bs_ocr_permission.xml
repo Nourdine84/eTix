@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Scanner un ticket"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:paddingBottom="12dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Autoriser l’accès à la caméra pour scanner votre ticket."
+        android:paddingBottom="24dp"/>
+
+    <Button
+        android:id="@+id/btnStartOCR"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Démarrer le scan"/>
+</LinearLayout>

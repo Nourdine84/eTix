@@ -22,10 +22,10 @@ class MainActivityV2 : AppCompatActivity() {
         AppCompatDelegate.setDefaultNightMode(session.getThemeMode())
 
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.activity_main_v2)
 
         viewPager = findViewById(R.id.viewPager)
-        bottomNav = findViewById(R.id.bottomNavigationView) // ✅ FIX
+        bottomNav = findViewById(R.id.bottomNav)
 
         viewPager.adapter = FragmentAdapter(this)
         viewPager.offscreenPageLimit = 4
@@ -58,5 +58,10 @@ class MainActivityV2 : AppCompatActivity() {
                 }
             }
         })
+    }
+
+    // ✅ API centrale de navigation ViewPager
+    fun goToPage(index: Int) {
+        viewPager.currentItem = index
     }
 }
