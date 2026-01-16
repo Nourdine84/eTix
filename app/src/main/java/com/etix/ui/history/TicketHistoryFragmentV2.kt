@@ -1,43 +1,102 @@
 package com.etix.ui.history
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.etix.R
 import com.etix.data.AppDatabase
 import com.etix.data.TicketRepository
-import com.etix.viewmodel.TicketHistoryViewModel
-import com.etix.viewmodel.factory.TicketHistoryVMFactory
-import kotlinx.coroutines.flow.collectLatest
+import com.etix.databinding.FragmentTicketHistoryV2Binding
+import com.etix.utils.CsvExporter
 import kotlinx.coroutines.launch
 
-class TicketHistoryFragmentV2 : Fragment(R.layout.fragment_ticket_history) {
+class TicketHistoryFragmentV2 : Fragment() {
 
+    private var _binding: FragmentTicketHistoryV2Binding? = null
+    private val binding get() = _binding!!
+
+    private lateinit var viewModel: TicketHistoryViewModel
     private lateinit var adapter: TicketHistoryAdapter
 
-    private val viewModel: TicketHistoryViewModel by viewModels {
-        val dao = AppDatabase.getInstance(requireContext()).ticketDao()
-        val repo = TicketRepository(dao)
-        TicketHistoryVMFactory(repo)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = FragmentTicketHistoryV2Binding.inflate(inflater, container, false)
+        return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
 
-        val recycler = view.findViewById<RecyclerView>(R.id.recyclerTickets)
-        adapter = TicketHistoryAdapter(emptyList())
+        val dao = AppDatabase.getInstance(requireContext()).ticketDao()
+        val repository = TicketRepository(dao)
+        viewModel = TicketHistoryViewModel(repository)
 
-        recycler.layoutManager = LinearLayoutManager(requireContext())
-        recycler.adapter = adapter
+        adapter = TicketHistoryAdapter()
+        binding.recyclerHistory.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerHistory.adapter = adapter
 
         lifecycleScope.launch {
-            viewModel.tickets.collectLatest { list ->
+            viewModel.tickets.collect { list ->
                 adapter.submitList(list)
+                binding.emptyState.visibility =
+                    if (list.isEmpty()) View.VISIBLE else View.GONE
             }
         }
+
+        // 🔍 Recherche (FIXED)
+        binding.inputSearch.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {
+                viewModel.setQuery(s?.toString().orEmpty())
+            }
+
+            override fun beforeTextChanged(
+                s: CharSequence?, start: Int, count: Int, after: Int
+            ) {}
+
+            override fun onTextChanged(
+                s: CharSequence?, start: Int, before: Int, count: Int
+            ) {}
+        })
+
+        // 📤 EXPORT CSV
+        binding.btnExportCsv.setOnClickListener {
+            exportCsv()
+        }
+    }
+
+    private fun exportCsv() {
+        lifecycleScope.launch {
+            val tickets = viewModel.tickets.value
+
+            if (tickets.isEmpty()) {
+                Toast.makeText(
+                    requireContext(),
+                    "Aucun ticket à exporter",
+                    Toast.LENGTH_SHORT
+                ).show()
+                return@launch
+            }
+
+            val file = CsvExporter.export(requireContext(), tickets)
+
+            Toast.makeText(
+                requireContext(),
+                "CSV exporté : ${file.name}",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

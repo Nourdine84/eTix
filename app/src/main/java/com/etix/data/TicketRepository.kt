@@ -69,7 +69,7 @@ class TicketRepository(
         dao.countBetweenDates(start, end)
 
     // --------------------
-    // KPI (Flow — Room natif)
+    // KPI (Flow)
     // --------------------
     fun sumBetweenDatesFlow(start: Long, end: Long): Flow<Double> =
         dao.sumBetweenDatesFlow(start, end)

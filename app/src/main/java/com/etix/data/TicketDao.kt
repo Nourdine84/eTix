@@ -85,7 +85,7 @@ interface TicketDao {
     suspend fun getById(id: Long): Ticket?
 
     // --------------------
-    // KPI — EXISTANT (on garde)
+    // KPI
     // --------------------
     @Query("""
         SELECT COALESCE(SUM(amount), 0.0)
@@ -101,9 +101,6 @@ interface TicketDao {
     """)
     suspend fun countBetweenDates(start: Long, end: Long): Int
 
-    // --------------------
-    // KPI — NOUVEAU (Flow pour Home V2)
-    // --------------------
     @Query("""
         SELECT COALESCE(SUM(amount), 0.0)
         FROM tickets
@@ -111,17 +108,16 @@ interface TicketDao {
     """)
     fun sumBetweenDatesFlow(start: Long, end: Long): Flow<Double>
 
+    @Query("""
+        SELECT COUNT(*)
+        FROM tickets
+        WHERE dateMillis BETWEEN :start AND :end
+    """)
+    fun countBetweenDatesFlow(start: Long, end: Long): Flow<Int>
+
     // --------------------
     // Maintenance
     // --------------------
     @Query("DELETE FROM tickets")
     suspend fun deleteAll()
-
-    @Query("""
-    SELECT COUNT(*)
-    FROM tickets
-    WHERE dateMillis BETWEEN :start AND :end
-""")
-    fun countBetweenDatesFlow(start: Long, end: Long): Flow<Int>
-
 }

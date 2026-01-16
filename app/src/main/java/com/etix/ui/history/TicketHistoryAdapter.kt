@@ -7,45 +7,46 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.etix.R
 import com.etix.model.Ticket
-import java.text.NumberFormat
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
-class TicketHistoryAdapter(
-    private var items: List<Ticket>
-) : RecyclerView.Adapter<TicketHistoryAdapter.ViewHolder>() {
+class TicketHistoryAdapter : RecyclerView.Adapter<TicketHistoryAdapter.TicketViewHolder>() {
 
-    private val formatter = NumberFormat.getCurrencyInstance(Locale.FRANCE)
+    private val items = mutableListOf<Ticket>()
     private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.FRANCE)
 
-    fun submitList(newItems: List<Ticket>) {
-        items = newItems
+    fun submitList(list: List<Ticket>) {
+        items.clear()
+        items.addAll(list)
         notifyDataSetChanged()
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int
+    ): TicketViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_ticket_history, parent, false)
-        return ViewHolder(view)
+        return TicketViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: TicketViewHolder, position: Int) {
+        holder.bind(items[position])
     }
 
     override fun getItemCount(): Int = items.size
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.bind(items[position])
-    }
+    inner class TicketViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
-    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-        private val tvStore = view
-            .findViewById<TextView>(R.id.tvStore)
-        private val tvAmount = view.findViewById<TextView>(R.id.tvAmount)
-        private val tvDate = view.findViewById<TextView>(R.id.tvDate)
+        private val tvStore: TextView = itemView.findViewById(R.id.tvStore)
+        private val tvAmount: TextView = itemView.findViewById(R.id.tvAmount)
+        private val tvDate: TextView = itemView.findViewById(R.id.tvDate)
 
         fun bind(ticket: Ticket) {
             tvStore.text = ticket.store
-            tvAmount.text = NumberFormat.getCurrencyInstance(Locale.FRANCE).format(ticket.amount)
-            tvDate.text = SimpleDateFormat("dd/MM/yyyy", Locale.FRANCE)
-                .format(Date(ticket.dateMillis))
+            tvAmount.text = String.format(Locale.FRANCE, "%.2f €", ticket.amount)
+            tvDate.text = dateFormat.format(Date(ticket.dateMillis))
         }
     }
 }

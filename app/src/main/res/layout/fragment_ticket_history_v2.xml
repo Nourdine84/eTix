@@ -1,19 +1,35 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+    android:layout_height="match_parent">
+
+    <EditText
+        android:id="@+id/inputSearch"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Rechercher"
+        android:layout_margin="12dp"/>
+
+    <Button
+        android:id="@+id/btnExportCsv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Exporter CSV"
+        android:layout_marginHorizontal="12dp"/>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerTickets"
+        android:id="@+id/recyclerHistory"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="12dp"/>
 
     <TextView
-        android:id="@+id/textEmpty"
+        android:id="@+id/emptyState"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:text="Aucun ticket"
-        android:visibility="gone" />
-
+        android:gravity="center"
+        android:visibility="gone"/>
 </LinearLayout>
