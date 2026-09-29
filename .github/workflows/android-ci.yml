@@ -34,6 +34,7 @@ jobs:
         run: mkdir -p ~/.android && echo "$QA_KEYSTORE_B64" | base64 -d > ~/.android/debug.keystore
 
       - name: Restore debug keystore from cache
+        id: kscache
         if: env.QA_KEYSTORE_B64 == ''
         uses: actions/cache@v4
         with:
@@ -60,6 +61,8 @@ jobs:
           echo "name=$NAME" >> "$GITHUB_OUTPUT"
           echo "::notice title=APK QA::fichier=$NAME%0Apackage=$PKG%0Alabel=$LABEL%0AversionName=$VER%0Acert SHA-256=$CERT"
           DCERT=$("$BT/apksigner" verify --print-certs app/build/outputs/apk/debug/app-debug.apk | grep -oP 'SHA-256 digest: \K.*' | head -1)
+          KS=$(ls -la ~/.android/debug.keystore 2>&1 | tr '\n' ' ')
+          echo "::notice title=Keystore::cache-hit=${{ steps.kscache.outputs.cache-hit }}%0Asecret=${{ env.QA_KEYSTORE_B64 != '' }}%0AANDROID_USER_HOME=${ANDROID_USER_HOME:-unset}%0AANDROID_SDK_HOME=${ANDROID_SDK_HOME:-unset}%0A~/.android/debug.keystore: $KS%0Afound: $(find / -name debug.keystore -not -path '/proc/*' 2>/dev/null | tr '\n' ' ')"
           echo "::notice title=APK debug::package=com.etix (même que l'app installée)%0Acert SHA-256=$DCERT"
 
       # APK publiés dès que le build passe, même si les tests échouent ensuite
