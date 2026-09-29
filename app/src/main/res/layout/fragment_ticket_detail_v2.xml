@@ -71,6 +71,7 @@
             app:strokeWidth="0dp">
 
             <LinearLayout
+                android:id="@+id/dateRow"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center_vertical"
@@ -78,6 +79,7 @@
                 android:padding="20dp">
 
                 <LinearLayout
+                    android:id="@+id/dateLeft"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
@@ -100,6 +102,7 @@
                 </LinearLayout>
 
                 <View
+                    android:id="@+id/dateDivider"
                     android:layout_width="1dp"
                     android:layout_height="44dp"
                     android:layout_marginStart="20dp"
@@ -107,6 +110,7 @@
                     android:background="@color/v2_divider" />
 
                 <LinearLayout
+                    android:id="@+id/dateRight"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -134,6 +138,7 @@
 
         <!-- Magasin / Catégorie -->
         <LinearLayout
+            android:id="@+id/infoRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"

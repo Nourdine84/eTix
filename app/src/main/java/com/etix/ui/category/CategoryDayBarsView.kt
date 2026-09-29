@@ -15,8 +15,8 @@ import java.util.Locale
 
 /**
  * « Évolution journalière » — iOS CategoryBarChartView : une barre par jour (22 × max 120, écart 10, rayon 6),
- * libellé jj/MM dessous. Adaptation Android : largeur réelle (placée dans un HorizontalScrollView), car iOS déborde
- * de l'écran au-delà d'environ 12 jours.
+ * libellé jj/MM dessous. Adaptations Android : colonne élargie au libellé (sinon « 26/09 28/09 » se chevauchent et
+ * le dernier est rogné) et largeur réelle dans un HorizontalScrollView (iOS déborde au-delà d'environ 12 jours).
  */
 class CategoryDayBarsView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null
@@ -45,22 +45,25 @@ class CategoryDayBarsView @JvmOverloads constructor(
         requestLayout(); invalidate()
     }
 
+    /** Largeur d'une colonne : barre ou libellé (« 29/09 » dépasse 22 dp, surtout en grande police) + écart. */
+    private fun slot(): Float = maxOf(barW, label.measureText("00/00")) + gap
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        val w = (paddingLeft + paddingRight + data.size * barW + (data.size - 1).coerceAtLeast(0) * gap).toInt()
+        val w = (paddingLeft + paddingRight + data.size * slot()).toInt()
         val h = (paddingTop + paddingBottom + maxH + labelGap - label.ascent() + label.descent()).toInt()
         setMeasuredDimension(resolveSize(w, widthMeasureSpec), h)
     }
 
     override fun onDraw(canvas: Canvas) {
         val max = data.maxOfOrNull { it.second }?.takeIf { it > 0 } ?: 1.0
-        var x = paddingLeft.toFloat()
+        val s = slot()
         val base = paddingTop + maxH
-        for ((day, v) in data) {
+        data.forEachIndexed { i, (day, v) ->
+            val cx = paddingLeft + i * s + s / 2   // barre et libellé centrés dans leur colonne : aucun chevauchement
             val h = (v / max * maxH).toFloat().coerceAtLeast(if (v > 0) 2 * d else 0f)
-            r.set(x, base - h, x + barW, base)
+            r.set(cx - barW / 2, base - h, cx + barW / 2, base)
             canvas.drawRoundRect(r, 6 * d, 6 * d, bar)
-            canvas.drawText(fmt.format(Date(day)), x + barW / 2, base + labelGap - label.ascent(), label)
-            x += barW + gap
+            canvas.drawText(fmt.format(Date(day)), cx, base + labelGap - label.ascent(), label)
         }
     }
 }
