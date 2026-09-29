@@ -64,7 +64,10 @@
             android:paddingStart="4dp"
             android:paddingEnd="4dp"
             android:text="Aujourd’hui"
-            android:textSize="13sp" />
+            android:textSize="13sp"
+            app:autoSizeMaxTextSize="13sp"
+            app:autoSizeMinTextSize="8sp"
+            app:autoSizeTextType="uniform" />
 
         <Button
             android:id="@+id/btnCatDetailMonth"
@@ -76,7 +79,10 @@
             android:paddingStart="4dp"
             android:paddingEnd="4dp"
             android:text="Ce mois"
-            android:textSize="13sp" />
+            android:textSize="13sp"
+            app:autoSizeMaxTextSize="13sp"
+            app:autoSizeMinTextSize="8sp"
+            app:autoSizeTextType="uniform" />
 
         <Button
             android:id="@+id/btnCatDetailYear"
@@ -88,7 +94,10 @@
             android:paddingStart="4dp"
             android:paddingEnd="4dp"
             android:text="Cette année"
-            android:textSize="13sp" />
+            android:textSize="13sp"
+            app:autoSizeMaxTextSize="13sp"
+            app:autoSizeMinTextSize="8sp"
+            app:autoSizeTextType="uniform" />
     </com.google.android.material.button.MaterialButtonToggleGroup>
 
     <androidx.core.widget.NestedScrollView

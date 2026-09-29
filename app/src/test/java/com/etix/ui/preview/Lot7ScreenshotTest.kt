@@ -106,6 +106,9 @@ class Lot7ScreenshotTest {
         a.findViewById<View>(R.id.btnBudgets).performClick(); idle()
         val overlay = a.findViewById<android.view.ViewGroup>(R.id.overlayContainer)
         waitFor { (overlay.findViewById<android.view.ViewGroup>(R.id.budgetRows)?.childCount ?: 0) > 0 }
+        // Fin de l'animation d'entrée (glissement) avant la capture
+        org.robolectric.shadows.ShadowLooper.idleMainLooper(1, java.util.concurrent.TimeUnit.SECONDS); idle()
+        assertTrue(overlay.findViewById<View>(R.id.tvBudgetsTitle).isShown)
         capture(a, "l7_03_reglage_budgets_$suffix")
 
         assertEquals(seeded.sortedBy { it.id }, runBlocking { dao.getAllFlow().first() }.sortedBy { it.id })

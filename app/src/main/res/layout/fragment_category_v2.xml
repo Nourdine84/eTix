@@ -24,9 +24,13 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:maxLines="1"
             android:text="Catégories"
             android:textColor="@color/v2_text_primary"
             android:textSize="34sp"
+            app:autoSizeMaxTextSize="34sp"
+            app:autoSizeMinTextSize="20sp"
+            app:autoSizeTextType="uniform"
             android:textStyle="bold"
             android:accessibilityHeading="true"
             tools:targetApi="p" />
@@ -63,7 +67,10 @@
             android:paddingStart="4dp"
             android:paddingEnd="4dp"
             android:text="Aujourd’hui"
-            android:textSize="13sp" />
+            android:textSize="13sp"
+            app:autoSizeMaxTextSize="13sp"
+            app:autoSizeMinTextSize="8sp"
+            app:autoSizeTextType="uniform" />
 
         <Button
             android:id="@+id/btnCatMonth"
@@ -75,7 +82,10 @@
             android:paddingStart="4dp"
             android:paddingEnd="4dp"
             android:text="Ce mois"
-            android:textSize="13sp" />
+            android:textSize="13sp"
+            app:autoSizeMaxTextSize="13sp"
+            app:autoSizeMinTextSize="8sp"
+            app:autoSizeTextType="uniform" />
 
         <Button
             android:id="@+id/btnCatYear"
@@ -87,7 +97,10 @@
             android:paddingStart="4dp"
             android:paddingEnd="4dp"
             android:text="Cette année"
-            android:textSize="13sp" />
+            android:textSize="13sp"
+            app:autoSizeMaxTextSize="13sp"
+            app:autoSizeMinTextSize="8sp"
+            app:autoSizeTextType="uniform" />
     </com.google.android.material.button.MaterialButtonToggleGroup>
 
     <FrameLayout

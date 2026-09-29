@@ -90,7 +90,9 @@
             android:layout_height="wrap_content"
             android:importantForAccessibility="no"
             android:max="1000"
+            app:indicatorTrackGapSize="0dp"
             app:trackColor="@color/v2_fill"
+            app:trackStopIndicatorSize="0dp"
             app:trackCornerRadius="2dp"
             app:trackThickness="4dp" />
 
