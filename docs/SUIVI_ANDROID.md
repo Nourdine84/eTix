@@ -7,7 +7,8 @@ Document de reprise entre sessions. Concis : état, décisions, prochain lot.
 | Élément | Emplacement |
 |---|---|
 | Code Android (référence) | `Nourdine84/eTix`, branche `feature/android-v2` (dernier commit 16/01/2026) |
-| Branches de travail | Lot 1 `fix/android-v2-navigation` (depuis `feature/android-v2`) ; Lot 2 `feature/android-lot2-magasins` (depuis lot 1). **Rien fusionné** — fusion uniquement sur accord explicite. |
+| Branches de travail | Lot 1 `fix/android-v2-navigation` ; Lot 2 `feature/android-lot2-magasins` (contient lot 1) ; Lot 3 `feature/android-lot3-accueil-theme` (contient lots 1-2). **Rien fusionné** — fusion uniquement après validation téléphone (`docs/REVUE_LOTS_1_2.md`). |
+| Historique Git | `feature/android-v2` **sans ancêtre commun** avec `dev`/`main` : fusion vers ces branches = décision séparée. |
 | `Nourdine84/etix-android` | Squelette Gradle sans module `app` — **pas** le dépôt de dev |
 | Copie locale Mac `~/AndroidStudioProjects/eTix` | Sur `dev` (19/12/2025), n'a pas `feature/android-v2` |
 | Référence iOS | `Nourdine84/etix-ios` — `feature/home-hero-v2` (19/08/2026) ; `main` diverge (21 commits propres) |
@@ -64,6 +65,30 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
 - `GITHUB_TOKEN` limité à `contents: read`.
 - Procédure : `docs/SIGNATURE_QA.md` ; mises à jour QA par `adb install -r`, aucune désinstallation prévue.
 
+### Lot 3 — Accueil + thème sombre (feature/android-lot3-accueil-theme)
+- Accueil porté depuis iOS `HomeView` : badge « e », titre, salutation/souhait selon l'heure, compteur, montant de période, chip delta (rouge hausse / vert baisse / neutre), narration (`FinancialStateEngine` iOS, mêmes seuils), sélecteur de période, tendance 6 mois + panier moyen, actions. Engrenage Réglages et « Voir l'historique » conservés.
+- Logique pure `features/home/HomeStats.kt` + `HomeStatsTest` (seuils, maturité, libellés, tendance).
+- Thème sombre : bleu primaire constant `#007BFF` + texte blanc sur boutons (le texte était noir), couleurs `md_*` sombres, total Catégories lisible, « Supprimer » contrasté.
+- Actions indisponibles désactivées et signalées : « Vider tous les tickets », « Scanner un ticket » (Accueil et Ajouter). Aucune suppression globale branchée (`ProtectedActionsTest`).
+- OCR : `OCRFixtureObservationTest` (observation sans assertion) ; proposition `docs/OCR_CAS_DE_REFERENCE.md`.
+- Conformité aux maquettes validées **non confirmée** ; aperçus clair/sombre `docs/preview/lot3/`.
+- Version `1.3.0-lot3` (versionCode 4).
+
+## Écarts restants avec iOS (référence `feature/home-hero-v2`)
+
+| Écran | Écart | Lot envisagé |
+|---|---|---|
+| Accueil | Insights (≤ 2), carte Budget / Magasin, étoiles du header sombre, animations d'entrée, lien Tendance → rapport mensuel | 4 |
+| Accueil | Scanner indisponible (flux OCR non branché) | OCR |
+| Ajouter | Pas de catégorie, date, description ; pas de scanner | 4 |
+| Historique | Filtres/tri iOS, regroupement par date, suppression par balayage | 4 |
+| Détail / Édition ticket | Mise en page V1 simple ; catégorie en texte libre (iOS : sélecteur) | 4 |
+| Catégories | V1 (liste + barres) ; iOS : donut, barres, détail catégorie, export | 5 |
+| Magasins | Comparaison entre magasins, graphique « Historique des achats » | 5 |
+| Réglages | V1 ; iOS : Apparence (système/clair/sombre), période par défaut, budgets, export CSV, suppression avec confirmation | 5 |
+| Global | Widget iOS, rapport mensuel / export PDF, onboarding V2 | à décider |
+| Global | Connexion Android sans équivalent iOS (décision reportée) | à décider |
+
 ## Test OCR désactivé — conditions de réactivation
 
 `OCRValidationTest` (`@Ignore`) : limite explicite, pas un test « vert ».
@@ -91,7 +116,8 @@ Constat : `LoginActivity` / `RegisterActivity` acceptent tout identifiant/mot de
 | C. Verrou local réel (BiometricPrompt / code appareil au lancement) | Protection effective contre un tiers | Moyen ; à aligner iOS (Face ID) |
 | D. Vrai compte (backend, sync) | Multi-appareils | Élevé, nouvelle fonctionnalité |
 
-Recommandation : A (ou B) pour la parité, puis C si la confidentialité des tickets est un besoin produit. Décision produit requise ; code conservé en attendant.
+Décision du 29/09 : **reportée**. Code de connexion conservé tel quel, aucune suppression. Le verrou (option C) est une fonctionnalité distincte, à décider séparément ; non incluse dans les lots en cours.
+Recommandation technique inchangée : A (ou B) pour la parité iOS.
 
 ## Points ouverts (non traités)
 
@@ -108,6 +134,6 @@ Recommandation : A (ou B) pour la parité, puis C si la confidentialité des tic
 | 9 | Login simulé — voir section dédiée | Lié au #5 |
 | 10 | Test `OCRValidationTest` désactivé — voir section dédiée | P3 |
 | 11 | Accueil V2 : fond blanc codé en dur (`#FFFFFF`) → illisible/incohérent en thème sombre | P2 |
-| 13 | Réglages : bouton « Vider tous les tickets » affiché mais **sans action** (non câblé) — trompeur ; iOS a « Supprimer tous les tickets » avec confirmation. Non modifié (action destructive → décision requise) | P2 |
-| 14 | Thème sombre global : `colorSurface` du thème figé en clair ; Accueil/Réglages V1 codés en dur | P2 |
+| 13 | Réglages : « Vider tous les tickets » désactivé et signalé indisponible (lot 3). Implémentation (avec confirmation, parité iOS) = décision produit | P3 |
+| 14 | Thème sombre : corrigé au lot 3 sur les écrans principaux ; écrans V1 restants (fiches, popups) à vérifier sur téléphone | P3 |
 | 12 | Signature QA : clé durable via secrets — **en attente de votre action** (`docs/SIGNATURE_QA.md`) ; tant qu'elle manque, aucun APK QA n'est publié | P1 |
