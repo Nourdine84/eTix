@@ -190,6 +190,11 @@ class E2eClavierPetitEcranTest {
         shot("k02_modification_clavier_${passe}")
         assertTrue("Bouton Enregistrer masqué par le clavier après défilement : $apres", apres.visible)
         onView(save).perform(click())
-        waitFor(allOf(withId(R.id.tvAmount), isDescendantOfA(withId(R.id.overlayContainer)), withText("5,30 €")))
+        // Retour au détail, défilé là où l'on était (bas) : on remonte au montant avant de le lire
+        val shownAmount = allOf(withId(R.id.tvAmount), isDescendantOfA(withId(R.id.overlayContainer)))
+        SystemClock.sleep(1500) // fermeture de l'édition (animation)
+        onView(shownAmount).perform(E2e.nestedScrollTo())
+        waitFor(allOf(shownAmount, withText("5,30 €")))
+        shot("k03_detail_apres_modification_${passe}")
     }
 }

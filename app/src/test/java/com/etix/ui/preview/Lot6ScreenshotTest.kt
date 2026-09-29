@@ -167,4 +167,17 @@ class Lot6ScreenshotTest {
         waitFor { a.top() is CategoryDetailFragment }
         assertTrue("Retour au détail de la catégorie après suppression", a.top() is CategoryDetailFragment)
     }
+
+    /** Police 2,0 sur 360 dp : cartes empilées, aucun libellé coupé lettre par lettre (constaté sur émulateur). */
+    @Test fun ticket_detail_grande_police_light() {
+        RuntimeEnvironment.setFontScale(2.0f)
+        seed()
+        val a = launch()
+        a.openTicketDetail(1L); idle()
+        waitFor { a.overlay().findViewById<TextView>(R.id.tvAmount)?.text?.toString() == "64,20 €" }
+        assertEquals(android.widget.LinearLayout.VERTICAL, a.overlay().findViewById<android.widget.LinearLayout>(R.id.infoRow).orientation)
+        capture(a, "l6_07_ticket_detail_police_2_light")
+        a.overlay().findViewById<NestedScrollView>(R.id.ticketDetailScroll).fullScroll(View.FOCUS_DOWN); idle()
+        capture(a, "l6_08_ticket_detail_police_2_bas_light")
+    }
 }

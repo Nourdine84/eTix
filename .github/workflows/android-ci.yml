@@ -695,7 +695,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        shot: [k01_ajout_clavier_a, k02_modification_clavier_a, k01_ajout_clavier_b, k02_modification_clavier_b, k01_ajout_clavier_c, k02_modification_clavier_c]
+        shot: [k01_ajout_clavier_a, k02_modification_clavier_a, k03_detail_apres_modification_a, k01_ajout_clavier_b, k02_modification_clavier_b, k03_detail_apres_modification_b, k01_ajout_clavier_c, k02_modification_clavier_c, k03_detail_apres_modification_c]
     steps:
       - uses: actions/checkout@v4
         with:
