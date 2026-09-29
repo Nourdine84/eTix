@@ -182,6 +182,10 @@ class E2eParcoursTest {
 
         tab(R.id.menu_add)
         onView(shown(R.id.inputStore)).perform(click())
+        // Attendre la FIN de l'ouverture du clavier (animation IME, Android 16) avant de défiler : sinon le clavier
+        // peut recouvrir le bouton après le défilement (échec intermittent observé, run 36618970067)
+        androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        android.os.SystemClock.sleep(1500)
         // Clavier ouvert : le bouton est masqué ; il doit rester atteignable par défilement
         onView(withId(R.id.btnSaveTicket)).perform(scrollTo()).check(matches(isDisplayed()))
         shot("20_ajouter_clavier")
