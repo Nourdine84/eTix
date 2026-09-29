@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Catégories — référence iOS CategoryView (feature/home-hero-v2) : titre grand format, sélecteur de période,
      carte anneau + légende, lignes par catégorie, état vide « Aucun ticket sur cette période ».
-     Non porté : budgets (barre, bouton, invitation), export (détail d’une catégorie : lot 6). -->
+     Budgets : lot 7. Non porté : export. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -10,19 +10,37 @@
     android:background="@color/v2_bg_grouped"
     android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/tvCategoriesTitle"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
         android:paddingStart="24dp"
-        android:paddingEnd="24dp"
-        android:paddingTop="16dp"
-        android:text="Catégories"
-        android:textColor="@color/v2_text_primary"
-        android:textSize="34sp"
-        android:textStyle="bold"
-        android:accessibilityHeading="true"
-        tools:targetApi="p" />
+        android:paddingEnd="12dp"
+        android:paddingTop="16dp">
+
+        <TextView
+            android:id="@+id/tvCategoriesTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Catégories"
+            android:textColor="@color/v2_text_primary"
+            android:textSize="34sp"
+            android:textStyle="bold"
+            android:accessibilityHeading="true"
+            tools:targetApi="p" />
+
+        <!-- Lot 7 : réglage des budgets mensuels (iOS : bouton « slider.vertical.3 » de la barre de navigation) -->
+        <ImageButton
+            android:id="@+id/btnBudgets"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Budgets mensuels"
+            android:src="@drawable/ic_v2_budget"
+            app:tint="@color/v2_primary" />
+    </LinearLayout>
 
     <com.google.android.material.button.MaterialButtonToggleGroup
         android:id="@+id/togglePeriodCategory"

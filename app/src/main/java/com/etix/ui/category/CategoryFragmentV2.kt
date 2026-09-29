@@ -46,9 +46,12 @@ class CategoryFragmentV2 : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val adapter = CategoryV2Adapter { c ->
-            (activity as? com.etix.ui.main.MainActivityV2)?.openCategoryDetail(c.name, range.value)
-        }
+        val main = activity as? com.etix.ui.main.MainActivityV2
+        val adapter = CategoryV2Adapter(
+            onCategoryClick = { c -> main?.openCategoryDetail(c.name, range.value) },
+            onTeaserClick = { main?.openBudgetSettings() }
+        )
+        binding.btnBudgets.setOnClickListener { main?.openBudgetSettings() }
         binding.recyclerViewCategories.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerViewCategories.adapter = adapter
 
@@ -63,14 +66,15 @@ class CategoryFragmentV2 : Fragment() {
         }
 
         val repository = TicketRepository(AppDatabase.getInstance(requireContext()).ticketDao())
-        val breakdown = combine(repository.getAllFlow(), range) { tickets, r ->
-            CategoryStats.breakdown(tickets, r)
+        val budgetStore = com.etix.data.BudgetStore(requireContext())
+        val breakdown = combine(repository.getAllFlow(), range, com.etix.data.BudgetStore.version) { tickets, r, _ ->
+            Triple(CategoryStats.breakdown(tickets, r), budgetStore.load(), r == TimeRange.MONTH)
         }.flowOn(Dispatchers.Default)
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                breakdown.collect { b ->
-                    adapter.submit(b)
+                breakdown.collect { (b, budgets, isMonth) ->
+                    adapter.submit(b, budgets, isMonth)
                     binding.emptyCategories.visibility = if (b.isEmpty) View.VISIBLE else View.GONE
                     binding.recyclerViewCategories.visibility = if (b.isEmpty) View.GONE else View.VISIBLE
                 }

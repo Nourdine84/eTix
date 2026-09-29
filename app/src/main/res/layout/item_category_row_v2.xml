@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- iOS CategoryRowView (sans budget) : nom, total + variation vs période précédente, part en % (bleu) -->
+<!-- iOS CategoryRowView : nom, total + variation vs période précédente, part en % (bleu) ;
+     lot 7 : barre de budget (Ce mois seulement), libellé Attention / Dépassé, « dépensé / budget » -->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -15,9 +16,14 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
+        android:orientation="vertical"
         android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
         <LinearLayout
             android:layout_width="0dp"
@@ -67,5 +73,50 @@
             android:textColor="@color/v2_primary"
             android:textSize="15sp"
             android:textStyle="bold" />
+    </LinearLayout>
+
+    <!-- Budget (lot 7) -->
+    <LinearLayout
+        android:id="@+id/budgetBlock"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/budgetBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:importantForAccessibility="no"
+            android:max="1000"
+            app:trackColor="@color/v2_fill"
+            app:trackCornerRadius="2dp"
+            app:trackThickness="4dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvBudgetStatus"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textSize="11sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvBudgetAmounts"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:gravity="end"
+                android:textColor="@color/v2_text_secondary"
+                android:textSize="11sp" />
+        </LinearLayout>
+    </LinearLayout>
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

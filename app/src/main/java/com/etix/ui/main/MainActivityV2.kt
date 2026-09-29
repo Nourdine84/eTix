@@ -114,6 +114,11 @@ class MainActivityV2 : AppCompatActivity() {
         push(com.etix.ui.category.CategoryDetailFragment.newInstance(name, range), BACKSTACK_CATEGORY)
     }
 
+    /** Lot 7 : budgets mensuels (iOS BudgetSettingsView), depuis l'écran Catégories. */
+    fun openBudgetSettings() {
+        push(com.etix.ui.budget.BudgetSettingsFragment(), BACKSTACK_BUDGETS)
+    }
+
     fun openStoreDetail(storeKey: String) {
         push(StoreDetailFragment.newInstance(storeKey), BACKSTACK_STORE)
     }
@@ -172,5 +177,6 @@ class MainActivityV2 : AppCompatActivity() {
         private const val BACKSTACK_SETTINGS = "settings"
         private const val BACKSTACK_STORE = "store_detail"
         private const val BACKSTACK_CATEGORY = "category_detail"
+        private const val BACKSTACK_BUDGETS = "budget_settings"
     }
 }
