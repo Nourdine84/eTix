@@ -179,7 +179,8 @@ class E2eParcoursTest {
 
         tab(R.id.menu_add)
         onView(shown(R.id.inputStore)).perform(click())
-        onView(shown(R.id.btnSaveTicket)).perform(scrollTo()).check(matches(isDisplayed()))
+        // Clavier ouvert : le bouton est masqué ; il doit rester atteignable par défilement
+        onView(withId(R.id.btnSaveTicket)).perform(scrollTo()).check(matches(isDisplayed()))
         shot("20_ajouter_clavier")
         closeSoftKeyboard()
     }
