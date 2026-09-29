@@ -44,7 +44,8 @@
         <Button
             android:id="@+id/btnDelete"
             android:text="Supprimer"
-            android:textColor="@android:color/holo_red_dark"
+            android:textColor="@color/v2_negative"
+            android:backgroundTint="@color/v2_negative_12"
             android:layout_marginTop="8dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>

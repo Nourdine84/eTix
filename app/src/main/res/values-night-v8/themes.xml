@@ -2,9 +2,11 @@
 
     <style name="Theme.eTix" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Couleurs principales -->
-        <item name="colorPrimary">@color/etix_blue</item>
+        <!-- Lot 3 : bleu primaire constant clair/sombre (iOS Theme.primaryBlue #007BFF) -->
+        <item name="colorPrimary">@color/v2_primary</item>
         <item name="colorPrimaryVariant">@color/etix_blue_dark</item>
-        <item name="colorOnPrimary">@color/white</item>
+        <!-- « @color/white » vaut #000000 en night-v8 → texte noir sur les boutons : corrigé -->
+        <item name="colorOnPrimary">@android:color/white</item>
         <item name="colorPrimaryContainer">@color/md_primaryContainer</item>
         <item name="colorOnPrimaryContainer">@color/md_onPrimaryContainer</item>
 

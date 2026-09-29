@@ -25,6 +25,7 @@
         android:layout_height="wrap_content"
         android:text="@string/cat_grand_total_default"
         android:textColor="@color/gray_200"
+        android:visibility="gone"
         android:textSize="14sp"
         android:layout_marginBottom="8dp" />
 
@@ -57,6 +58,6 @@
         android:text="Total: 0 €"
         android:textSize="18sp"
         android:textStyle="bold"
-        android:textColor="@color/white"
+        android:textColor="@color/v2_text_primary"
         android:layout_marginTop="16dp" />
 </LinearLayout>
