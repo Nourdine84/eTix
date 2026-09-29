@@ -64,7 +64,7 @@ class OCRFixturesTest {
     @Test fun s_restaurant_categorie() = assertEquals("Restaurant", category("synthetique/restaurant_synthetique.txt"))
 
     @Test fun s_long_enseigne() = assertEquals("CARREFOUR MARKET", run("synthetique/ticket_long_synthetique.txt").merchant)
-    @Ignore("Échec moteur connu (cas D1 iOS) : la 1re ligne contenant TOTAL est « SOUS-TOTAL 42,80 ». Attendu 40,80 (TOTAL TTC). À corriger au lot OCR, pas d'ajustement de l'attente.")
+    // Réactivé au lot 6 : défaut D1 corrigé (OCRAmountExtractor), attente inchangée (40,80 = TOTAL TTC).
     @Test fun s_long_montant_total_ttc() = assertEquals(40.80, run("synthetique/ticket_long_synthetique.txt").amount!!, 0.001)
     @Ignore("Bloqué Q4 — proposition : 15/09/2026 (non ambigu)")
     @Test fun s_long_date() {
