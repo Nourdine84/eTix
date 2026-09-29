@@ -24,13 +24,45 @@ jobs:
         run: chmod +x ./gradlew
 
       - name: Build Debug APK
-        run: ./gradlew assembleDebug
+        run: |
+          set -o pipefail
+          ./gradlew assembleDebug --console=plain 2>&1 | tee build.log
 
-      - name: Run Unit Tests
-        run: ./gradlew testDebugUnitTest
-
+      # APK publié dès que le build passe, même si les tests échouent ensuite
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Run Unit Tests
+        run: |
+          set -o pipefail
+          ./gradlew testDebugUnitTest --console=plain 2>&1 | tee test.log
+
+      # Remonte les erreurs Gradle/Kotlin en annotations (lisibles sans télécharger les logs)
+      - name: Report build errors as annotations
+        if: failure()
+        run: |
+          python3 - <<'PY'
+          import os, re
+          lines = []
+          for f in ("build.log", "test.log"):
+              if not os.path.exists(f):
+                  continue
+              txt = open(f, errors="replace").read().splitlines()
+              for i, l in enumerate(txt):
+                  if re.match(r"^(e: |ERROR:|FAILURE:|\* What went wrong|.*error:|.*FAILED$|.*Exception)", l):
+                      lines.extend(txt[i:i + (6 if "What went wrong" in l else 1)])
+          seen, out = set(), []
+          for l in lines:
+              l = l.replace("file:///home/runner/work/eTix/eTix/", "")
+              if l not in seen:
+                  seen.add(l); out.append(l)
+          if not out:
+              out = ["Aucune ligne d'erreur reconnue"]
+          chunk = 40
+          for n in range(0, min(len(out), 400), chunk):
+              msg = "%0A".join(x.replace("%", "%25") for x in out[n:n + chunk])
+              print(f"::error title=Build errors {n // chunk + 1}::{msg}")
+          PY
