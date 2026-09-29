@@ -86,6 +86,7 @@ class E2eParcoursTest {
         shot("05_historique_vide")
 
         tab(R.id.menu_category)
+        waitFor(withText("Aucun ticket sur cette période"))
         shot("06_categories_vide")
 
         tab(R.id.menu_stores)

@@ -6,6 +6,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.etix.ui.home.HomeFragmentV2
 import com.etix.ui.add.AddTicketFragmentV2
 import com.etix.ui.history.TicketHistoryFragmentV2
+import com.etix.ui.category.CategoryFragmentV2
 import com.etix.ui.store.StoreListFragment
 
 class FragmentAdapter(activity: FragmentActivity) : FragmentStateAdapter(activity) {
@@ -17,9 +18,8 @@ class FragmentAdapter(activity: FragmentActivity) : FragmentStateAdapter(activit
             0 -> HomeFragmentV2()
             1 -> AddTicketFragmentV2()
             2 -> TicketHistoryFragmentV2()
-            // CategoryFragmentV2 est un placeholder vide (empty_layout) :
-            // on branche la version V1 fonctionnelle en attendant sa refonte V2.
-            3 -> CategoryFragment()
+            // Lot 5 : Catégories V2 (iOS CategoryView). L'écran V1 CategoryFragment reste dans le code, non branché.
+            3 -> CategoryFragmentV2()
             // Lot 2 : Magasins (parité iOS). Réglages → accessibles depuis l'Accueil (MainActivityV2.openSettings)
             4 -> StoreListFragment()
             else -> HomeFragmentV2()

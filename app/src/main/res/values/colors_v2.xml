@@ -30,4 +30,12 @@
     <color name="v2_disabled_on_primary">#8A94AB</color>
     <!-- Barre d'état thème clair : API 21-22 = noir (icônes blanches non assombrissables) ; API 23+ : values-v23 -->
     <color name="v2_status_bar_light_theme">#FF000000</color>
+    <!-- Graphique Catégories : palette iOS CategoryDonutView (.blue .green .orange .purple .pink .red .teal), couleurs système iOS -->
+    <color name="v2_chart_1">#007AFF</color>
+    <color name="v2_chart_2">#34C759</color>
+    <color name="v2_chart_3">#FF9500</color>
+    <color name="v2_chart_4">#AF52DE</color>
+    <color name="v2_chart_5">#FF2D55</color>
+    <color name="v2_chart_6">#FF3B30</color>
+    <color name="v2_chart_7">#30B0C7</color>
 </resources>

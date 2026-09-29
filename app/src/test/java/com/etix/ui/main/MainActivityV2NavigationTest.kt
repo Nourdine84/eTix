@@ -4,7 +4,7 @@ import android.os.Looper
 import android.view.View
 import androidx.viewpager2.widget.ViewPager2
 import com.etix.R
-import com.etix.fragments.CategoryFragment
+import com.etix.ui.category.CategoryFragmentV2
 import com.etix.fragments.SettingsFragment
 import com.etix.ui.add.AddTicketFragmentV2
 import com.etix.ui.detail.TicketDetailFragmentV2
@@ -68,7 +68,7 @@ class MainActivityV2NavigationTest {
             R.id.menu_home to HomeFragmentV2::class.java,
             R.id.menu_add to AddTicketFragmentV2::class.java,
             R.id.menu_history to TicketHistoryFragmentV2::class.java,
-            R.id.menu_category to CategoryFragment::class.java,
+            R.id.menu_category to CategoryFragmentV2::class.java,
             R.id.menu_stores to StoreListFragment::class.java,
         )
 
