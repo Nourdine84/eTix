@@ -17,15 +17,13 @@
     <color name="v2_neutral_12">#1F8D8D93</color>
 
     <!-- Thème sombre global (lot 3) : couleurs Material « md_* » figées en clair dans values/colors.xml,
-         utilisées par Ajouter / Catégories / Réglages. Valeurs Material 3 baseline sombres. -->
-    <color name="md_background">#141218</color>
+         utilisées par Ajouter / Catégories / Réglages. md_background / md_primaryContainer / md_onPrimaryContainer
+         existent déjà dans values-night-v8/colors-night.xml (inchangés). -->
     <color name="md_onBackground">#E6E0E9</color>
-    <color name="md_surface">#141218</color>
+    <color name="md_surface">#121212</color>
     <color name="md_onSurface">#E6E0E9</color>
     <color name="md_surfaceVariant">#49454F</color>
     <color name="md_onSurfaceVariant">#CAC4D0</color>
-    <color name="md_primaryContainer">#0D2A4D</color>
-    <color name="md_onPrimaryContainer">#D6E6FF</color>
     <color name="v2_disabled_primary">#23283F</color>
     <color name="v2_disabled_on_primary">#6E7591</color>
 </resources>
