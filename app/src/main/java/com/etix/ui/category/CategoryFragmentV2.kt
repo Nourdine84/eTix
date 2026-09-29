@@ -24,7 +24,7 @@ import kotlinx.coroutines.launch
 /**
  * Onglet Catégories (lot 5) — référence iOS CategoryView (feature/home-hero-v2).
  * Lecture seule : aucune catégorie ni aucun ticket n'est modifié. Regroupement par nom exact (comme iOS).
- * Non porté : budgets mensuels, détail d'une catégorie, export (écarts documentés dans docs/SUIVI_ANDROID.md).
+ * Lot 6 : toucher une ligne ouvre le détail de la catégorie. Non porté : budgets mensuels, export (écarts documentés dans docs/SUIVI_ANDROID.md).
  * L'ancien écran V1 (fragments/CategoryFragment) est conservé dans le code, non branché.
  */
 class CategoryFragmentV2 : Fragment() {
@@ -46,7 +46,9 @@ class CategoryFragmentV2 : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val adapter = CategoryV2Adapter()
+        val adapter = CategoryV2Adapter { c ->
+            (activity as? com.etix.ui.main.MainActivityV2)?.openCategoryDetail(c.name, range.value)
+        }
         binding.recyclerViewCategories.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerViewCategories.adapter = adapter
 

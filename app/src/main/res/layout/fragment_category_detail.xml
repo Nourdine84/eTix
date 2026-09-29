@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Détail d'une catégorie — référence iOS CategoryDetailView : période, en-tête (nom, total, nombre de tickets),
+     « Évolution journalière », tickets par jour (→ détail du ticket), état vide.
+     Non porté : « Voir par magasin », export. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/v2_bg_grouped"
+    android:clickable="true"
+    android:focusable="true"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="8dp">
+
+        <ImageButton
+            android:id="@+id/btnCategoryBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Retour"
+            android:src="@drawable/ic_arrow_back_v2" />
+
+        <TextView
+            android:id="@+id/tvCategoryDetailTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="4dp"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="1"
+            android:layout_marginEnd="48dp"
+            android:textColor="@color/v2_text_primary"
+            android:textSize="17sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButtonToggleGroup
+        android:id="@+id/togglePeriodCategoryDetail"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="12dp"
+        app:selectionRequired="true"
+        app:singleSelection="true">
+
+        <Button
+            android:id="@+id/btnCatDetailToday"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:maxLines="1"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:text="Aujourd’hui"
+            android:textSize="13sp" />
+
+        <Button
+            android:id="@+id/btnCatDetailMonth"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:maxLines="1"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:text="Ce mois"
+            android:textSize="13sp" />
+
+        <Button
+            android:id="@+id/btnCatDetailYear"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:maxLines="1"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:text="Cette année"
+            android:textSize="13sp" />
+    </com.google.android.material.button.MaterialButtonToggleGroup>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/categoryDetailScroll"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingBottom="24dp">
+
+            <!-- En-tête -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/v2_surface_grouped"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/tvCategoryDetailName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/v2_text_primary"
+                        android:textSize="22sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvCategoryDetailTotal"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:textColor="@color/v2_primary"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvCategoryDetailCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:textColor="@color/v2_text_secondary"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Évolution journalière -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardDayChart"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                app:cardBackgroundColor="@color/v2_surface_grouped"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="0dp"
+                app:strokeWidth="0dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Évolution journalière"
+                        android:textColor="@color/v2_text_primary"
+                        android:textSize="17sp"
+                        android:textStyle="bold" />
+
+                    <HorizontalScrollView
+                        android:id="@+id/dayChartScroll"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:scrollbars="none">
+
+                        <com.etix.ui.category.CategoryDayBarsView
+                            android:id="@+id/dayChart"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content" />
+                    </HorizontalScrollView>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Tickets par jour -->
+            <LinearLayout
+                android:id="@+id/daySections"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+            <LinearLayout
+                android:id="@+id/emptyCategoryDetail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingTop="40dp"
+                android:paddingBottom="40dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_v2_tray"
+                    app:tint="@color/v2_text_secondary" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Aucun ticket sur cette période"
+                    android:textColor="@color/v2_text_secondary"
+                    android:textSize="15sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+</LinearLayout>

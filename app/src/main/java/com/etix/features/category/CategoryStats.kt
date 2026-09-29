@@ -22,6 +22,25 @@ data class CategoryBreakdown(val categories: List<CategoryTotal>, val grandTotal
     val isEmpty: Boolean get() = categories.isEmpty()
 }
 
+/** Tickets d'une journée (iOS CategoryDetailView.groupedByDay). */
+data class DaySection(val dayStart: Long, val tickets: List<Ticket>) {
+    val total: Double get() = tickets.sumOf { it.amount }
+}
+
+/** Détail d'une catégorie sur une période — iOS CategoryDetailView. */
+data class CategoryDetail(
+    val name: String,
+    /** Plus récent d'abord. */
+    val tickets: List<Ticket>,
+    val total: Double,
+    /** Jours du plus récent au plus ancien, tickets du plus récent au plus ancien. */
+    val days: List<DaySection>
+) {
+    val count: Int get() = tickets.size
+    /** Graphique « Évolution journalière » : jours du plus ancien au plus récent. */
+    val chart: List<Pair<Long, Double>> get() = days.reversed().map { it.dayStart to it.total }
+}
+
 object CategoryStats {
 
     /** Libellé affiché pour un ticket sans catégorie (ancien enregistrement). Le ticket n'est pas modifié. */
@@ -46,4 +65,31 @@ object CategoryStats {
             .sortedWith(compareByDescending<CategoryTotal> { it.total }.thenBy { it.name })
         return CategoryBreakdown(list, list.sumOf { it.total })
     }
+
+    /** iOS : prédicat `category == nom` (exact), période [début, fin[, tri date décroissante, regroupement par jour. */
+    fun detail(tickets: List<Ticket>, name: String, range: TimeRange, now: Long = System.currentTimeMillis()): CategoryDetail {
+        val r = range.currentRange(now)
+        val list = tickets.filter { it.category == name && it.dateMillis in r }.sortedByDescending { it.dateMillis }
+        val days = list.groupBy { startOfDay(it.dateMillis) }
+            .map { (d, l) -> DaySection(d, l) }
+            .sortedByDescending { it.dayStart }
+        return CategoryDetail(name, list, list.sumOf { it.amount }, days)
+    }
+
+    /** Titre de section : « Aujourd'hui », « Hier », sinon date moyenne de la langue du téléphone (comme iOS). */
+    fun sectionTitle(dayStart: Long, now: Long = System.currentTimeMillis(), locale: java.util.Locale = java.util.Locale.getDefault()): String {
+        val today = startOfDay(now)
+        val yesterday = java.util.Calendar.getInstance().apply { timeInMillis = today; add(java.util.Calendar.DAY_OF_MONTH, -1) }.timeInMillis
+        return when (dayStart) {
+            today -> "Aujourd’hui"
+            yesterday -> "Hier"
+            else -> java.text.DateFormat.getDateInstance(java.text.DateFormat.MEDIUM, locale).format(java.util.Date(dayStart))
+        }
+    }
+
+    fun startOfDay(ms: Long): Long = java.util.Calendar.getInstance().apply {
+        timeInMillis = ms
+        set(java.util.Calendar.HOUR_OF_DAY, 0); set(java.util.Calendar.MINUTE, 0)
+        set(java.util.Calendar.SECOND, 0); set(java.util.Calendar.MILLISECOND, 0)
+    }.timeInMillis
 }

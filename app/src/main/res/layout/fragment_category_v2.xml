@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Catégories — référence iOS CategoryView (feature/home-hero-v2) : titre grand format, sélecteur de période,
      carte anneau + légende, lignes par catégorie, état vide « Aucun ticket sur cette période ».
-     Non porté : budgets (barre, bouton, invitation), détail d'une catégorie, export. -->
+     Non porté : budgets (barre, bouton, invitation), export (détail d’une catégorie : lot 6). -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"

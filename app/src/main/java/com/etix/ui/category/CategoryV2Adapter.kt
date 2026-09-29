@@ -15,7 +15,9 @@ import com.etix.features.category.CategoryTotal
 import java.util.Locale
 
 /** Position 0 : carte anneau + légende ; ensuite une ligne par catégorie (ordre = total décroissant). */
-class CategoryV2Adapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class CategoryV2Adapter(
+    private val onCategoryClick: (CategoryTotal) -> Unit = {}
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var data = CategoryBreakdown(emptyList(), 0.0)
 
@@ -30,7 +32,7 @@ class CategoryV2Adapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inf = LayoutInflater.from(parent.context)
         return if (viewType == TYPE_CHART) ChartVH(ItemCategoryChartBinding.inflate(inf, parent, false))
-        else RowVH(ItemCategoryRowV2Binding.inflate(inf, parent, false))
+        else RowVH(ItemCategoryRowV2Binding.inflate(inf, parent, false), onCategoryClick)
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
@@ -59,7 +61,10 @@ class CategoryV2Adapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         }
     }
 
-    class RowVH(private val b: ItemCategoryRowV2Binding) : RecyclerView.ViewHolder(b.root) {
+    class RowVH(
+        private val b: ItemCategoryRowV2Binding,
+        private val onClick: (CategoryTotal) -> Unit
+    ) : RecyclerView.ViewHolder(b.root) {
         fun bind(c: CategoryTotal, percent: Double) {
             val ctx = b.root.context
             val name = CategoryStats.displayName(c.name)
@@ -75,6 +80,7 @@ class CategoryV2Adapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
                     if (delta >= 0) R.color.v2_negative else R.color.v2_positive))
             }
             b.tvCategoryPercent.text = String.format(Locale.FRANCE, "%.0f %%", percent)
+            b.root.setOnClickListener { onClick(c) } // lot 6 : détail de la catégorie (iOS NavigationLink)
             b.root.contentDescription = buildString {
                 append(name).append(", ").append(euro(c.total))
                 append(", ").append(String.format(Locale.FRANCE, "%.0f pour cent", percent))

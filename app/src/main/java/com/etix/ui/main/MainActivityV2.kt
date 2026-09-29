@@ -109,6 +109,11 @@ class MainActivityV2 : AppCompatActivity() {
         push(SettingsFragment(), BACKSTACK_SETTINGS)
     }
 
+    /** Lot 6 : détail d'une catégorie (iOS CategoryDetailView), période initiale = celle de l'onglet. */
+    fun openCategoryDetail(name: String, range: com.etix.features.store.TimeRange) {
+        push(com.etix.ui.category.CategoryDetailFragment.newInstance(name, range), BACKSTACK_CATEGORY)
+    }
+
     fun openStoreDetail(storeKey: String) {
         push(StoreDetailFragment.newInstance(storeKey), BACKSTACK_STORE)
     }
@@ -166,5 +171,6 @@ class MainActivityV2 : AppCompatActivity() {
         private const val BACKSTACK_EDIT = "ticket_edit"
         private const val BACKSTACK_SETTINGS = "settings"
         private const val BACKSTACK_STORE = "store_detail"
+        private const val BACKSTACK_CATEGORY = "category_detail"
     }
 }

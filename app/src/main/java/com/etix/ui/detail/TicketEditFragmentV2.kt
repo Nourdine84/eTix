@@ -101,26 +101,10 @@ class TicketEditFragmentV2 : Fragment() {
         }
     }
 
-    /** Suppression d'UN ticket, après confirmation (iOS : ConfirmDeletePopup). */
+    /** Suppression d'UN ticket, après confirmation (iOS : ConfirmDeletePopup) — logique partagée avec le détail. */
     private fun delete() {
         val t = currentTicket ?: return
-        com.google.android.material.dialog.MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Supprimer ce ticket ?")
-            .setMessage("${t.store} — cette action est définitive.")
-            .setNegativeButton("Annuler", null)
-            .setPositiveButton("Supprimer") { _, _ -> confirmDelete(t) }
-            .show()
-    }
-
-    private fun confirmDelete(ticket: Ticket) {
-        ticket.let {
-            lifecycleScope.launch {
-                repository.delete(it)
-                // Le détail d'un ticket supprimé n'a plus de sens : on ferme les deux écrans
-                (activity as? MainActivityV2)?.closeTicketFlow()
-                    ?: parentFragmentManager.popBackStack()
-            }
-        }
+        TicketDeletion.confirm(this, t, repository)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
