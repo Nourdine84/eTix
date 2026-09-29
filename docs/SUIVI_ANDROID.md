@@ -8,7 +8,7 @@ Document de reprise entre sessions. Concis : état, décisions, prochain lot.
 |---|---|
 | Code Android (référence) | `Nourdine84/eTix`, branche `feature/android-v2` (dernier commit 16/01/2026) |
 | Branches de travail | Lot 1 `fix/android-v2-navigation` ; Lot 2 `feature/android-lot2-magasins` (contient lot 1) ; Lot 3 `feature/android-lot3-accueil-theme` (contient lots 1-2). **Rien fusionné** — fusion uniquement après validation téléphone (`docs/REVUE_LOTS_1_2.md`). |
-| Historique Git | `feature/android-v2` **sans ancêtre commun** avec `dev`/`main` : fusion vers ces branches = décision séparée. |
+| Historique Git | `feature/android-v2` et `dev` : ancêtre commun `ab7d6f8`, `dev` a 3 commits propres. `main` : racine distincte, sans ancêtre commun. Détail : `docs/REVUE_LOTS_1_2.md`. Intégration `dev`/`main` = décision séparée. |
 | `Nourdine84/etix-android` | Squelette Gradle sans module `app` — **pas** le dépôt de dev |
 | Copie locale Mac `~/AndroidStudioProjects/eTix` | Sur `dev` (19/12/2025), n'a pas `feature/android-v2` |
 | Référence iOS | `Nourdine84/etix-ios` — `feature/home-hero-v2` (19/08/2026) ; `main` diverge (21 commits propres) |

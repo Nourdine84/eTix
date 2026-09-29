@@ -11,6 +11,26 @@
 | Volume | 15 commits · 46 fichiers · +2 373 / −63 · **0 fichier supprimé** |
 | CI (tête) | run 36586335822 : build OK, 21 tests OK, 1 désactivé (OCR), aucun APK QA (secrets absents) |
 
+## Historique Git (vérifié le 29/09/2026)
+
+Méthode : historique **complet** récupéré (`git fetch --unshallow`), puis `git merge-base` et `git rev-list --max-parents=0`.
+Correction : le compte rendu du lot 3 affirmait l'absence d'ancêtre commun entre `feature/android-v2` et `dev` ;
+c'était faux (clone limité à 20 commits). Le constat exact :
+
+| Branche | Tête | Racine | Commits |
+|---|---|---|---|
+| `feature/android-v2` | `6095a7b` (16/01/2026) | `87e3414` « Initial commit » (18/08/2025) | 58 |
+| `dev` | `7260ed5` (19/12/2025) | `87e3414` | 9 |
+| `main` | `4159105` (31/12/2025) | `410e8d7` « Initial commit » (18/08/2025) — **autre racine** | 21 |
+
+| Comparaison | Ancêtre commun | Écart |
+|---|---|---|
+| `feature/android-v2` ↔ `dev` | `ab7d6f8` « feat(android): add Android app module » (19/12/2025) | android-v2 : +52 ; dev : +3 (`5313a44`, `82d2b8d`, `7260ed5` : gitignore, config Gradle/KAPT, CI) |
+| `feature/android-v2` ↔ `main` | **aucun** | historiques indépendants |
+| `dev` ↔ `main` | **aucun** | historiques indépendants |
+
+Aucune fusion forcée, aucune réécriture d'historique, aucune intégration vers `dev`/`main` : décision séparée.
+
 ## Contenu
 
 ### Lot 1 — navigation
@@ -39,7 +59,7 @@
 
 | # | Point | Risque | Mitigation |
 |---|---|---|---|
-| R1 | `feature/android-v2` et `dev`/`main` **n'ont aucun ancêtre commun** | Fusion vers `dev`/`main` impossible sans `--allow-unrelated-histories` | Fusionner uniquement dans `feature/android-v2` ; l'intégration dans `dev`/`main` est une décision séparée |
+| R1 | `main` n'a **aucun ancêtre commun** avec `feature/android-v2` / `dev` ; `dev` a 3 commits absents de `feature/android-v2` (voir « Historique Git ») | Intégration vers `main` impossible sans fusion forcée ; vers `dev`, conflits possibles sur la config Gradle/CI | Fusionner uniquement dans `feature/android-v2` ; `dev`/`main` = décision séparée, aucune fusion forcée ni réécriture |
 | R2 | Réglages retirés des onglets | Habitude utilisateur | Engrenage en haut de l'Accueil ; test R01/R02 |
 | R3 | Regroupement des magasins insensible à la casse (≠ iOS) | Écart de chiffres avec iOS sur des noms mal saisis | Assumé et documenté ; à confirmer produit |
 | R4 | `gradle.properties` impose un JDK macOS | Build CLI hors Mac | Laissé tel quel (build local), surchargé en CI |

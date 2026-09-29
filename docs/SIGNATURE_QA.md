@@ -1,89 +1,96 @@
 # Signature QA durable — eTix QA (`com.etix.qa`)
 
-Objectif : toutes les versions d'eTix QA sont signées par **la même clé**, pour que chaque nouvel APK
-s'installe en **mise à jour** (`adb install -r`), sans jamais désinstaller.
+But : toutes les versions d'eTix QA signées par **la même clé**, installées en **mise à jour** (`adb install -r`),
+sans jamais désinstaller. La clé et son mot de passe ne passent **jamais** par le dépôt, les journaux ou la conversation.
 
-## Principe
+## Règles appliquées par la CI
 
-| Élément | Où | Visibilité |
+| Situation | Build QA | Publication de l'APK QA |
 |---|---|---|
-| Keystore QA (PKCS12) | Chez vous : gestionnaire de mots de passe + 1 sauvegarde hors ligne | Privé |
-| `QA_KEYSTORE_B64` | Secret GitHub Actions du dépôt `Nourdine84/eTix` | Chiffré, jamais affiché |
-| `QA_KEYSTORE_PASSWORD` | Secret GitHub Actions | Chiffré, jamais affiché |
-| `QA_CERT_SHA256` | **Variable** GitHub Actions (non secrète) | Empreinte publique du certificat |
+| Secrets absents | Non construit | Non |
+| Secrets présents, variable `QA_CERT_SHA256` absente | Construit et inspecté | **Non** (avertissement avec l'empreinte obtenue) |
+| Empreinte ≠ `QA_CERT_SHA256` | Construit | **Non** (échec du job) |
+| Empreinte = `QA_CERT_SHA256` | Construit | Oui, annotation « APK QA publié » : commit, applicationId, version, empreinte, SHA-256 du fichier |
 
-- Rien de tout cela n'est dans le dépôt. `app/build.gradle.kts` lit uniquement des variables
-  d'environnement (`ETIX_QA_KEYSTORE_FILE`, `ETIX_QA_KEYSTORE_PASSWORD`, alias `etix-qa`).
-- En CI, le keystore est décodé dans le dossier temporaire du runner (droits 600), jamais dans le
-  workspace ni l'artefact, et supprimé en fin de job. GitHub masque les secrets dans les journaux.
-- **Sans secrets, aucun APK QA n'est publié** : pas de clé de secours, pas de cache.
-- Avec `QA_CERT_SHA256` défini, un APK dont l'empreinte diffère **n'est pas publié** (échec CI) :
-  impossible de recevoir un APK QA qui ne s'installerait pas en mise à jour.
-- Les secrets ne sont pas transmis aux workflows déclenchés par des PR de forks (règle GitHub).
+La réussite des tests est rapportée à part (annotation « Tests ») : un APK peut être publié alors qu'un test échoue,
+et inversement. Les trois statuts — tests, production, publication — figurent séparément dans chaque compte rendu.
 
-## Actions de votre part (une seule fois)
+## Permissions minimales
 
-Permissions minimales : être **administrateur du dépôt** `Nourdine84/eTix` (vous l'êtes, propriétaire)
-pour créer secrets et variables. Si vous passez par `gh` avec un jeton à portée fine :
-dépôt `Nourdine84/eTix` uniquement, permissions **Secrets : lecture/écriture**, **Variables : lecture/écriture**
-(et Metadata : lecture, imposée par GitHub). Aucune autre permission.
+- Dépôt personnel `Nourdine84/eTix` : seul le **propriétaire** (vous) peut créer des secrets et variables Actions ;
+  un collaborateur, même en écriture, ne le peut pas. Aucune permission n'est à accorder à qui que ce soit.
+- Méthode recommandée : **interface web GitHub** avec votre session → aucun jeton supplémentaire à créer.
+- Je n'ai besoin d'aucun accès : je ne lis ni la clé ni le mot de passe ; je lis seulement l'empreinte publique
+  affichée par la CI.
 
-### 1. Créer la clé (sur votre Mac, hors du dépôt)
+## Étapes (Mac, Terminal zsh) — environ 10 minutes
 
-```bash
-mkdir -p ~/Documents/etix-cles && cd ~/Documents/etix-cles
-keytool -genkeypair -keystore etix-qa.p12 -storetype PKCS12 \
+### 1. Créer la clé hors du dépôt et hors des dossiers synchronisés
+
+```zsh
+KEYTOOL="/Applications/Android Studio.app/Contents/jbr/Contents/Home/bin/keytool"
+mkdir -p ~/.etix-cles && chmod 700 ~/.etix-cles && cd ~/.etix-cles
+"$KEYTOOL" -genkeypair -keystore etix-qa.p12 -storetype PKCS12 \
   -alias etix-qa -keyalg RSA -keysize 4096 -validity 10950 \
   -dname "CN=eTix QA, O=eTix"
+chmod 600 etix-qa.p12
 ```
 
-`keytool` demande le mot de passe de façon masquée : ne le passez **pas** en argument
-(il resterait dans l'historique du terminal). Ne créez pas ce dossier dans `~/AndroidStudioProjects/eTix`.
+- `keytool` demande le mot de passe (saisie masquée, 2 fois) : ne le mettez jamais dans la commande.
+- `~/.etix-cles` n'est ni dans `~/Documents` (souvent synchronisé iCloud) ni dans `~/AndroidStudioProjects`.
 
-### 2. Conserver durablement
+### 2. Calculer l'empreinte attendue (depuis la clé)
 
-- Gestionnaire de mots de passe : fichier `etix-qa.p12` en pièce jointe + mot de passe.
-- Une sauvegarde hors ligne (clé USB chiffrée, par exemple).
-- Perdre la clé imposerait un jour de réinstaller eTix QA : c'est ce que ces deux copies évitent.
-
-### 3. Déclarer les secrets
-
-Interface : GitHub → `Nourdine84/eTix` → **Settings → Secrets and variables → Actions → Secrets → New repository secret**.
-
-| Nom | Valeur |
-|---|---|
-| `QA_KEYSTORE_B64` | Contenu base64 du fichier : `base64 -i etix-qa.p12 \| pbcopy` puis coller (rien ne s'affiche dans le terminal) |
-| `QA_KEYSTORE_PASSWORD` | Le mot de passe choisi à l'étape 1 |
-
-Ou avec `gh` (saisie masquée, rien dans l'historique) :
-
-```bash
-base64 -i etix-qa.p12 | gh secret set QA_KEYSTORE_B64 -R Nourdine84/eTix
-gh secret set QA_KEYSTORE_PASSWORD -R Nourdine84/eTix
+```zsh
+"$KEYTOOL" -list -v -keystore ~/.etix-cles/etix-qa.p12 -storetype PKCS12 -alias etix-qa | grep "SHA256:"
 ```
 
-Videz ensuite le presse-papiers (copier un autre texte).
+Résultat : `SHA256: AB:CD:…` (32 paires). C'est une donnée **publique** : vous pouvez me la transmettre.
 
-### 4. Me prévenir
+### 3. Sauvegarder
 
-Je relance la CI. L'annotation « APK QA » du run donne l'empreinte SHA-256 complète (publique).
+Gestionnaire de mots de passe : fichier `etix-qa.p12` en pièce jointe + mot de passe. Plus une copie hors ligne.
 
-### 5. Épingler l'empreinte
+### 4. Déclarer secrets et variable (interface web)
 
-GitHub → **Settings → Secrets and variables → Actions → Variables → New repository variable** :
-`QA_CERT_SHA256` = l'empreinte donnée à l'étape 4 (64 caractères hexadécimaux, avec ou sans `:`).
+GitHub → `Nourdine84/eTix` → **Settings → Secrets and variables → Actions**.
 
-À partir de là, un APK QA signé avec une autre clé ne peut plus être publié.
+1. Onglet **Secrets** → *New repository secret* → nom `QA_KEYSTORE_B64`. Dans le Terminal :
+   ```zsh
+   base64 -i ~/.etix-cles/etix-qa.p12 | pbcopy
+   ```
+   puis coller dans le champ *Secret* (rien ne s'affiche dans le Terminal).
+2. *New repository secret* → `QA_KEYSTORE_PASSWORD` → saisir le mot de passe.
+3. Onglet **Variables** → *New repository variable* → `QA_CERT_SHA256` → coller l'empreinte de l'étape 2
+   (avec ou sans `:`, majuscules acceptées).
+4. Vider le presse-papiers :
+   ```zsh
+   pbcopy < /dev/null
+   ```
 
-## Option de renforcement (non activée)
+### 5. Me prévenir
 
-Un *Environment* GitHub `qa-signing` restreint aux branches `feature/*` et `fix/*` limiterait l'usage des
-secrets à ces branches. Utile si d'autres personnes obtiennent un accès en écriture au dépôt ;
-superflu tant que vous êtes seul contributeur.
+Je relance la CI. L'APK n'est publié que si l'empreinte du certificat signé = `QA_CERT_SHA256`.
 
-## Si un APK QA a déjà été installé avec l'ancienne clé
+## Avant la première installation sur un appareil
 
-Les APK QA des runs du 29/09 avant cette configuration (empreintes `85382a…`, `29aa43…`, `00076c…`,
-`d67444…`) sont signés avec des clés temporaires de CI. **Ne les installez pas.** Si l'un d'eux est déjà
-sur le téléphone, le passage à la clé durable ne pourra pas se faire en mise à jour : signalez-le avant
-toute action, la décision vous revient.
+```zsh
+adb shell pm list packages com.etix.qa
+```
+
+- Aucune ligne → première installation : `adb install eTix-QA-<version>.apk`.
+- `package:com.etix.qa` présent (APK QA du lot 2, clés temporaires) → **arrêter**. Comparer :
+  ```zsh
+  adb shell pm path com.etix.qa                    # → package:/data/app/…/base.apk
+  adb pull <chemin>/base.apk qa-installee.apk
+  "/Applications/Android Studio.app/Contents/jbr/Contents/Home/bin/keytool" -printcert -jarfile qa-installee.apk | grep SHA256
+  ```
+  Si l'empreinte diffère de `QA_CERT_SHA256`, la mise à jour sera refusée par Android.
+  Solution **sans perte ni désinstallation** : publier le build durable sous un identifiant QA nouveau
+  (`com.etix.qa2`, « eTix QA 2 »), installé à côté ; l'ancienne eTix QA et ses données restent intactes
+  jusqu'à votre décision. (Aucune désinstallation n'est proposée ni automatisée.)
+
+## Perte de la clé
+
+Les copies de l'étape 3 l'évitent. Sans clé, aucune mise à jour d'eTix QA ne serait possible :
+il faudrait alors, là aussi, un nouvel identifiant QA.
