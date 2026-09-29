@@ -38,10 +38,13 @@
             android:layout_weight="1"
             android:ellipsize="end"
             android:gravity="center"
-            android:maxLines="2"
+            android:maxLines="1"
             android:textColor="@color/v2_text_primary"
             android:textSize="17sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            app:autoSizeMaxTextSize="17sp"
+            app:autoSizeMinTextSize="10sp"
+            app:autoSizeTextType="uniform" />
 
         <Button
             android:id="@+id/btnBudgetApply"
