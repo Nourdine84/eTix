@@ -256,6 +256,18 @@ jobs:
         if: always()
         run: python3 .github/scripts/emu_report.py emu-out "API 34"
 
+      - name: Emit failure shot 1
+        if: always()
+        run: |
+          F=$(ls emu-out/shots/*zz_echec*.png 2>/dev/null | head -1)
+          if [ -n "$F" ]; then python3 -m pip install --quiet pillow && python3 .github/scripts/emit_image.py "$F"; fi
+
+      - name: Emit failure shot 2
+        if: always()
+        run: |
+          F=$(ls emu-out/shots/*zz_echec*.png 2>/dev/null | sed -n 2p)
+          if [ -n "$F" ]; then python3 -m pip install --quiet pillow && python3 .github/scripts/emit_image.py "$F"; fi
+
       - name: Upload emulator results
         if: always()
         uses: actions/upload-artifact@v4
@@ -274,7 +286,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        shot: [01_onboarding, 02_connexion, 03_accueil_vide, 04_ajouter_vide, 05_historique_vide, 06_categories_vide, 07_magasins_vide, 08_reglages, 09_ajout_clavier_ouvert, 10_accueil_un_ticket, 11_historique, 12_detail, 13_modification, 14_detail_apres_modification, 15_historique_apres_retour, 16_magasins_mois, 17_magasins_aujourdhui, 18_fiche_magasin, 19_accueil_defile, 20_ajouter_clavier, 21_reglages_sombre, 22_accueil_sombre, 23_historique_sombre, 24_magasins_sombre, 25_ajouter_sombre, 26_reglages_clair, 27_apres_redemarrage, 28_eTixQA_premier_lancement, 30_selecteur_date, 31_selecteur_categorie, 32_ajout_formulaire_complet, 33_historique_sections, 34_historique_recherche, 35_filtre_dates, 36_historique_filtre_actif, 37_modification_prerempli, 37b_dialogue_categorie_edition, 38_detail_apres_modification, 40_categories_mois, 41_categories_annee, 42_categories_aujourdhui, 43_categories_sombre, 44_categories_sombre_lignes]
+        shot: [01_onboarding, 02_connexion, 03_accueil_vide, 04_ajouter_vide, 05_historique_vide, 06_categories_vide, 07_magasins_vide, 08_reglages, 09_ajout_clavier_ouvert, 10_accueil_un_ticket, 11_historique, 12_detail, 13_modification, 14_detail_apres_modification, 15_historique_apres_retour, 16_magasins_mois, 17_magasins_aujourdhui, 18_fiche_magasin, 19_accueil_defile, 20_ajouter_clavier, 21_reglages_sombre, 22_accueil_sombre, 23_historique_sombre, 24_magasins_sombre, 25_ajouter_sombre, 26_reglages_clair, 27_apres_redemarrage, 28_eTixQA_premier_lancement, 30_selecteur_date, 31_selecteur_categorie, 32_ajout_formulaire_complet, 33_historique_sections, 34_historique_recherche, 35_filtre_dates, 36_historique_filtre_actif, 37_modification_prerempli, 37b_dialogue_categorie_edition, 38_detail_apres_modification, 40_categories_mois, 41_categories_annee, 42_categories_aujourdhui, 43_categories_sombre, 44_categories_sombre_lignes, 45_categorie_detail, 46_ticket_detail, 47_confirmation_suppression, 48_categorie_apres_suppression, 49_categorie_detail_sombre, 50_ticket_detail_sombre]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -346,6 +358,18 @@ jobs:
         if: always()
         run: python3 .github/scripts/emu_report.py emu-out "API 36"
 
+      - name: Emit failure shot 1
+        if: always()
+        run: |
+          F=$(ls emu-out/shots/*zz_echec*.png 2>/dev/null | head -1)
+          if [ -n "$F" ]; then python3 -m pip install --quiet pillow && python3 .github/scripts/emit_image.py "$F"; fi
+
+      - name: Emit failure shot 2
+        if: always()
+        run: |
+          F=$(ls emu-out/shots/*zz_echec*.png 2>/dev/null | sed -n 2p)
+          if [ -n "$F" ]; then python3 -m pip install --quiet pillow && python3 .github/scripts/emit_image.py "$F"; fi
+
       - name: Upload emulator results
         if: always()
         uses: actions/upload-artifact@v4
@@ -364,7 +388,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        shot: [01_onboarding, 02_connexion, 03_accueil_vide, 04_ajouter_vide, 05_historique_vide, 06_categories_vide, 07_magasins_vide, 08_reglages, 09_ajout_clavier_ouvert, 10_accueil_un_ticket, 11_historique, 12_detail, 13_modification, 14_detail_apres_modification, 15_historique_apres_retour, 16_magasins_mois, 17_magasins_aujourdhui, 18_fiche_magasin, 19_accueil_defile, 20_ajouter_clavier, 21_reglages_sombre, 22_accueil_sombre, 23_historique_sombre, 24_magasins_sombre, 25_ajouter_sombre, 26_reglages_clair, 27_apres_redemarrage, 28_eTixQA_premier_lancement, 30_selecteur_date, 31_selecteur_categorie, 32_ajout_formulaire_complet, 33_historique_sections, 34_historique_recherche, 35_filtre_dates, 36_historique_filtre_actif, 37_modification_prerempli, 37b_dialogue_categorie_edition, 38_detail_apres_modification, 40_categories_mois, 41_categories_annee, 42_categories_aujourdhui, 43_categories_sombre, 44_categories_sombre_lignes]
+        shot: [01_onboarding, 02_connexion, 03_accueil_vide, 04_ajouter_vide, 05_historique_vide, 06_categories_vide, 07_magasins_vide, 08_reglages, 09_ajout_clavier_ouvert, 10_accueil_un_ticket, 11_historique, 12_detail, 13_modification, 14_detail_apres_modification, 15_historique_apres_retour, 16_magasins_mois, 17_magasins_aujourdhui, 18_fiche_magasin, 19_accueil_defile, 20_ajouter_clavier, 21_reglages_sombre, 22_accueil_sombre, 23_historique_sombre, 24_magasins_sombre, 25_ajouter_sombre, 26_reglages_clair, 27_apres_redemarrage, 28_eTixQA_premier_lancement, 30_selecteur_date, 31_selecteur_categorie, 32_ajout_formulaire_complet, 33_historique_sections, 34_historique_recherche, 35_filtre_dates, 36_historique_filtre_actif, 37_modification_prerempli, 37b_dialogue_categorie_edition, 38_detail_apres_modification, 40_categories_mois, 41_categories_annee, 42_categories_aujourdhui, 43_categories_sombre, 44_categories_sombre_lignes, 45_categorie_detail, 46_ticket_detail, 47_confirmation_suppression, 48_categorie_apres_suppression, 49_categorie_detail_sombre, 50_ticket_detail_sombre]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -436,6 +460,18 @@ jobs:
         if: always()
         run: python3 .github/scripts/emu_report.py emu-out "API 21"
 
+      - name: Emit failure shot 1
+        if: always()
+        run: |
+          F=$(ls emu-out/shots/*zz_echec*.png 2>/dev/null | head -1)
+          if [ -n "$F" ]; then python3 -m pip install --quiet pillow && python3 .github/scripts/emit_image.py "$F"; fi
+
+      - name: Emit failure shot 2
+        if: always()
+        run: |
+          F=$(ls emu-out/shots/*zz_echec*.png 2>/dev/null | sed -n 2p)
+          if [ -n "$F" ]; then python3 -m pip install --quiet pillow && python3 .github/scripts/emit_image.py "$F"; fi
+
       - name: Upload emulator results
         if: always()
         uses: actions/upload-artifact@v4
@@ -454,7 +490,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        shot: [01_onboarding, 02_connexion, 03_accueil_vide, 04_ajouter_vide, 05_historique_vide, 06_categories_vide, 07_magasins_vide, 08_reglages, 09_ajout_clavier_ouvert, 10_accueil_un_ticket, 11_historique, 12_detail, 13_modification, 14_detail_apres_modification, 15_historique_apres_retour, 16_magasins_mois, 17_magasins_aujourdhui, 18_fiche_magasin, 19_accueil_defile, 20_ajouter_clavier, 21_reglages_sombre, 22_accueil_sombre, 23_historique_sombre, 24_magasins_sombre, 25_ajouter_sombre, 26_reglages_clair, 27_apres_redemarrage, 28_eTixQA_premier_lancement, 30_selecteur_date, 31_selecteur_categorie, 32_ajout_formulaire_complet, 33_historique_sections, 34_historique_recherche, 35_filtre_dates, 36_historique_filtre_actif, 37_modification_prerempli, 37b_dialogue_categorie_edition, 38_detail_apres_modification, 40_categories_mois, 41_categories_annee, 42_categories_aujourdhui, 43_categories_sombre, 44_categories_sombre_lignes]
+        shot: [01_onboarding, 02_connexion, 03_accueil_vide, 04_ajouter_vide, 05_historique_vide, 06_categories_vide, 07_magasins_vide, 08_reglages, 09_ajout_clavier_ouvert, 10_accueil_un_ticket, 11_historique, 12_detail, 13_modification, 14_detail_apres_modification, 15_historique_apres_retour, 16_magasins_mois, 17_magasins_aujourdhui, 18_fiche_magasin, 19_accueil_defile, 20_ajouter_clavier, 21_reglages_sombre, 22_accueil_sombre, 23_historique_sombre, 24_magasins_sombre, 25_ajouter_sombre, 26_reglages_clair, 27_apres_redemarrage, 28_eTixQA_premier_lancement, 30_selecteur_date, 31_selecteur_categorie, 32_ajout_formulaire_complet, 33_historique_sections, 34_historique_recherche, 35_filtre_dates, 36_historique_filtre_actif, 37_modification_prerempli, 37b_dialogue_categorie_edition, 38_detail_apres_modification, 40_categories_mois, 41_categories_annee, 42_categories_aujourdhui, 43_categories_sombre, 44_categories_sombre_lignes, 45_categorie_detail, 46_ticket_detail, 47_confirmation_suppression, 48_categorie_apres_suppression, 49_categorie_detail_sombre, 50_ticket_detail_sombre]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -525,6 +561,18 @@ jobs:
       - name: Report
         if: always()
         run: python3 .github/scripts/emu_report.py emu-out "API 34 fr-FR"
+
+      - name: Emit failure shot 1
+        if: always()
+        run: |
+          F=$(ls emu-out/shots/*zz_echec*.png 2>/dev/null | head -1)
+          if [ -n "$F" ]; then python3 -m pip install --quiet pillow && python3 .github/scripts/emit_image.py "$F"; fi
+
+      - name: Emit failure shot 2
+        if: always()
+        run: |
+          F=$(ls emu-out/shots/*zz_echec*.png 2>/dev/null | sed -n 2p)
+          if [ -n "$F" ]; then python3 -m pip install --quiet pillow && python3 .github/scripts/emit_image.py "$F"; fi
 
       - name: Upload emulator results
         if: always()
@@ -616,6 +664,18 @@ jobs:
       - name: Report
         if: always()
         run: python3 .github/scripts/emu_report.py emu-out "API 36 petit écran"
+
+      - name: Emit failure shot 1
+        if: always()
+        run: |
+          F=$(ls emu-out/shots/*zz_echec*.png 2>/dev/null | head -1)
+          if [ -n "$F" ]; then python3 -m pip install --quiet pillow && python3 .github/scripts/emit_image.py "$F"; fi
+
+      - name: Emit failure shot 2
+        if: always()
+        run: |
+          F=$(ls emu-out/shots/*zz_echec*.png 2>/dev/null | sed -n 2p)
+          if [ -n "$F" ]; then python3 -m pip install --quiet pillow && python3 .github/scripts/emit_image.py "$F"; fi
 
       - name: Upload emulator results
         if: always()

@@ -41,6 +41,7 @@ object E2e {
             }
             SystemClock.sleep(200)
         }
+        diagnostic("waitFor ${matcher.toString().take(160)}")
         throw AssertionError("Vue non affichée après ${timeoutMs} ms : $matcher", last)
     }
 
@@ -70,5 +71,40 @@ object E2e {
     /** Ferme le clavier sans Espresso.closeSoftKeyboard (qui échoue si aucun clavier n'est ouvert sur certaines versions). */
     fun closeKeyboard() {
         try { androidx.test.espresso.Espresso.closeSoftKeyboard() } catch (_: Throwable) { }
+    }
+
+    /** scrollTo pour NestedScrollView (non pris en charge par ViewActions.scrollTo d'Espresso 3.5). */
+    fun nestedScrollTo(): androidx.test.espresso.ViewAction = object : androidx.test.espresso.ViewAction {
+        override fun getConstraints(): Matcher<View> = allOf(
+            androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA(
+                androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom(androidx.core.widget.NestedScrollView::class.java)),
+            androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility(
+                androidx.test.espresso.matcher.ViewMatchers.Visibility.VISIBLE))
+        override fun getDescription() = "défilement NestedScrollView jusqu'à la vue"
+        override fun perform(uiController: androidx.test.espresso.UiController, view: View) {
+            view.requestRectangleOnScreen(android.graphics.Rect(0, 0, view.width, view.height), true)
+            uiController.loopMainThreadUntilIdle()
+        }
+    }
+
+    /**
+     * Diagnostic d'échec : capture « zz_echec_… » + fenêtre ayant le focus (dumpsys window), consignés dans
+     * files/shots/echec.txt (publié par la CI). N'altère pas l'état de l'app.
+     */
+    fun diagnostic(context: String) {
+        try {
+            val tag = "zz_echec_${SystemClock.uptimeMillis()}"
+            // Pas de waitForIdleSync ici : l'app peut justement ne jamais être « idle »
+            instrumentation.uiAutomation.takeScreenshot()?.let { bmp ->
+                FileOutputStream(File(File(ctx.filesDir, "shots").apply { mkdirs() }, "api${Build.VERSION.SDK_INT}_$tag.png"))
+                    .use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
+            }
+            val pfd = instrumentation.uiAutomation.executeShellCommand("dumpsys window")
+            val dump = android.os.ParcelFileDescriptor.AutoCloseInputStream(pfd).bufferedReader().use { it.readText() }
+            val focus = dump.lines().filter { l -> listOf("mCurrentFocus", "mFocusedApp", "mFocusedWindow").any { it in l } }
+                .map { it.trim() }.distinct().take(6)
+            File(File(ctx.filesDir, "shots").apply { mkdirs() }, "echec.txt")
+                .appendText("[$tag] $context\n  " + focus.joinToString("\n  ") + "\n")
+        } catch (_: Throwable) { }
     }
 }

@@ -74,6 +74,10 @@ mes = read(f"{out}/shots/mesures_clavier.txt").strip()
 if mes:
     notice("Clavier petit écran (mesures)", mes)
 
+ech = read(f"{out}/shots/echec.txt").strip()
+if ech:
+    notice("Diagnostic des échecs (focus fenêtre)", ech[:3500], "warning")
+
 to = read(f"{out}/timeouts.txt").strip()
 if to:
     notice("Délais dépassés", to[:3500], "error")

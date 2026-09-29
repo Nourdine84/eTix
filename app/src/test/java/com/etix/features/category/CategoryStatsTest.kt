@@ -77,4 +77,39 @@ class CategoryStatsTest {
         val b = CategoryStats.breakdown(listOf(t("Z", 0.0, at(2026, 2, 2))), TimeRange.MONTH, now)
         assertEquals(0.0, b.percent(b.categories.single()), 0.0)
     }
+
+    // ---------- Détail d'une catégorie (lot 6, iOS CategoryDetailView) ----------
+
+    @Test fun detail_categorie_exacte_periode_tri_et_jours() {
+        val d = CategoryStats.detail(listOf(
+            t("Courses", 10.0, at(2026, 2, 14, 9)),
+            t("Courses", 5.0, at(2026, 2, 14, 18)),
+            t("Courses", 7.0, at(2026, 2, 2, 12)),
+            t("courses", 99.0, at(2026, 2, 14, 10)),   // casse différente : autre catégorie
+            t("Courses", 50.0, at(2026, 1, 27)),        // mois précédent
+            t("Restaurant", 20.0, at(2026, 2, 14)),
+        ), "Courses", TimeRange.MONTH, now)
+        assertEquals(3, d.count)
+        assertEquals(22.0, d.total, 1e-9)
+        assertEquals(listOf(5.0, 10.0, 7.0), d.tickets.map { it.amount })          // plus récent d'abord
+        assertEquals(2, d.days.size)
+        assertEquals(listOf(5.0, 10.0), d.days[0].tickets.map { it.amount })
+        assertEquals(15.0, d.days[0].total, 1e-9)
+        assertEquals(listOf(7.0, 15.0), d.chart.map { it.second })                // plus ancien d'abord
+    }
+
+    @Test fun detail_vide_et_sans_categorie() {
+        val empty = CategoryStats.detail(listOf(t("Courses", 3.0, at(2025, 0, 1))), "Courses", TimeRange.MONTH, now)
+        assertEquals(0, empty.count); assertTrue(empty.days.isEmpty()); assertTrue(empty.chart.isEmpty())
+        val blank = CategoryStats.detail(listOf(t("", 3.0, at(2026, 2, 2)), t("Autre", 4.0, at(2026, 2, 2))), "", TimeRange.MONTH, now)
+        assertEquals(listOf(3.0), blank.tickets.map { it.amount }) // « Sans catégorie » ≠ « Autre » : aucune fusion
+    }
+
+    @Test fun titres_de_section() {
+        val fr = java.util.Locale.FRANCE
+        assertEquals("Aujourd’hui", CategoryStats.sectionTitle(at(2026, 2, 15, 0), now, fr))
+        assertEquals("Hier", CategoryStats.sectionTitle(at(2026, 2, 14, 0), now, fr))
+        assertEquals(java.text.DateFormat.getDateInstance(java.text.DateFormat.MEDIUM, fr).format(java.util.Date(at(2026, 2, 13, 0))),
+            CategoryStats.sectionTitle(at(2026, 2, 13, 0), now, fr))
+    }
 }

@@ -128,5 +128,8 @@ run com.etix.e2e.E2eLot4Test
 # Phase D : lot 5 (écran Catégories)
 run com.etix.e2e.E2eCategoriesTest
 
+# Phase E : lot 6 (détail catégorie / ticket, suppression confirmée d'un ticket fictif créé par le test)
+run com.etix.e2e.E2eDetailsTest
+
 collect
 exit 0

@@ -131,6 +131,8 @@ class E2eClavierPetitEcranTest {
         log("Ajouter", avant, apres)
         shot("k01_ajout_clavier_${passe}")
         assertTrue("Bouton Enregistrer masqué par le clavier après défilement : $apres", apres.visible)
+        var saisi = ""
+        instr.runOnMainSync { saisi = resumedOnMain().findViewById<android.widget.TextView>(R.id.inputAmount).text.toString() }
         onView(withId(R.id.btnSaveTicket)).perform(click()) // vrai toucher à l'emplacement mesuré
         // Enregistrement asynchrone (coroutine) : on attend jusqu'à 5 s
         var saved = false
@@ -141,7 +143,15 @@ class E2eClavierPetitEcranTest {
             }
             if (!saved) SystemClock.sleep(200)
         }
-        assertTrue("Ticket non enregistré 5 s après le toucher du bouton", saved)
+        if (!saved) {
+            shot("k01_apres_toucher_${passe}")
+            E2e.diagnostic("k01 passe $passe : non enregistré")
+        }
+        val proches = runBlocking {
+            AppDatabase.getInstance(ctx).ticketDao().getAllFlow().first().filter { it.store.startsWith("Clavier") }
+                .joinToString { "${it.store}=${it.amount}" }
+        }
+        assertTrue("Ticket non enregistré 5 s après le toucher du bouton (montant saisi « $saisi », tickets : $proches)", saved)
     }
 
     @Test
@@ -160,7 +170,7 @@ class E2eClavierPetitEcranTest {
         waitFor(row)
         onView(allOf(row, isDisplayed())).perform(click())
         waitFor(allOf(withId(R.id.btnEdit), isDescendantOfA(withId(R.id.overlayContainer))))
-        onView(allOf(withId(R.id.btnEdit), isDescendantOfA(withId(R.id.overlayContainer)))).perform(scrollTo(), click())
+        onView(allOf(withId(R.id.btnEdit), isDescendantOfA(withId(R.id.overlayContainer)))).perform(E2e.nestedScrollTo(), click())
         val amount = allOf(withId(R.id.inputAmount), isDescendantOfA(withId(R.id.overlayContainer)))
         waitFor(amount)
         onView(amount).perform(scrollTo(), click(), clearText(), typeText("5,30"))
