@@ -506,7 +506,7 @@ jobs:
           arch: x86_64
           emulator-boot-timeout: 900
           disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -no-snapshot -change-locale fr-FR
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -no-snapshot
           script: bash .github/scripts/emulator_e2e.sh
 
       - name: Report

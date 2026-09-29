@@ -5,6 +5,28 @@
 # MODE=fr : émulateur en français, tests de locale (saisie, dates, filtres inclusifs, limites de période)
 set -u
 MODE="${MODE:-standard}"
+
+boot_wait() { # attend la fin du démarrage (max ~4 min)
+  timeout 60 adb wait-for-device
+  for _ in $(seq 1 120); do
+    [ "$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = "1" ] && \
+      adb shell cmd package list packages >/dev/null 2>&1 && return 0
+    sleep 2
+  done
+  return 1
+}
+
+if [ "$MODE" = "fr" ]; then
+  # Langue système fr-FR : propriété persistante (image google_apis, adb root) + redémarrage du framework.
+  # (-change-locale redémarrait le framework pendant l'installation : « Broken pipe », langue restée en-US.)
+  timeout 60 adb root >/dev/null 2>&1 || true
+  boot_wait
+  adb shell setprop persist.sys.locale fr-FR
+  adb shell setprop ctl.restart zygote
+  sleep 10
+  boot_wait
+  sleep 15
+fi
 API=$(adb shell getprop ro.build.version.sdk | tr -d '\r')
 REL=$(adb shell getprop ro.build.version.release | tr -d '\r')
 LOC=$(adb shell getprop persist.sys.locale | tr -d '\r'); [ -z "$LOC" ] && LOC=$(adb shell getprop ro.product.locale | tr -d '\r')

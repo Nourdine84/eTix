@@ -137,7 +137,8 @@ class E2eParcoursTest {
         shot("12_detail")
         onView(inOverlay(R.id.btnEdit)).perform(click())
 
-        waitFor(inOverlay(R.id.btnSave))
+        // Bouton Enregistrer parfois sous la ligne de flottaison (API 36) : on attend le champ, scrollTo ensuite
+        waitFor(inOverlay(R.id.inputAmount))
         onView(inOverlay(R.id.inputAmount)).perform(clearText(), typeText("15,75"))
         closeSoftKeyboard()
         shot("13_modification")

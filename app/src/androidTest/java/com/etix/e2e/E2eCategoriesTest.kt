@@ -71,7 +71,9 @@ class E2eCategoriesTest {
 
     private fun row(vararg m: Matcher<View>) =
         onView(withId(R.id.recyclerViewCategories)).perform(
-            RecyclerViewActions.scrollTo<RecyclerView.ViewHolder>(allOf(m.map { hasDescendant(it) })))
+            RecyclerViewActions.scrollTo<RecyclerView.ViewHolder>(
+                // Lignes uniquement : la légende de la carte anneau contient aussi les noms
+                allOf((m.toList() + withId(R.id.tvCategoryPercent)).map { hasDescendant(it) })))
 
     private fun noRow(name: String) {
         try { row(withText(name)); throw AssertionError("« $name » ne devrait pas figurer sur cette période") }
