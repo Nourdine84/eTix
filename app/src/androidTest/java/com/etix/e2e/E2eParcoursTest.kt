@@ -45,7 +45,7 @@ class E2eParcoursTest {
     private fun startMain() {
         ctx.startActivity(Intent(ctx, MainActivityV2::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK))
-        waitFor(withId(R.id.bottomNav), 30_000) // démarrage à froid (après mise à jour : compilation)
+        E2e.waitForAppReady("E2eParcoursTest"); waitFor(withId(R.id.bottomNav))
     }
 
     private fun tab(id: Int) = onView(withId(id)).perform(click())
@@ -55,6 +55,7 @@ class E2eParcoursTest {
     @Test
     fun a01_premier_lancement_onboarding_connexion() {
         ctx.startActivity(Intent(ctx, SplashActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        E2e.waitForAppReady("E2eParcoursTest.a01")
         waitFor(withId(R.id.btnStart))
         shot("01_onboarding")
         onView(withId(R.id.btnStart)).perform(click())
@@ -66,7 +67,7 @@ class E2eParcoursTest {
         closeSoftKeyboard()
         onView(withId(R.id.btnLogin)).perform(click())
 
-        waitFor(withId(R.id.bottomNav), 30_000) // démarrage à froid (après mise à jour : compilation)
+        E2e.waitForAppReady("E2eParcoursTest"); waitFor(withId(R.id.bottomNav))
         waitFor(withText("Aucun ticket enregistré"))
         shot("03_accueil_vide")
     }

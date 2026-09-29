@@ -107,4 +107,48 @@ object E2e {
                 .appendText("[$tag] $context\n  " + focus.joinToString("\n  ") + "\n")
         } catch (_: Throwable) { }
     }
+
+    /**
+     * Attente fondée sur l'ÉTAT RÉEL de l'app (lot 7), et non sur un délai : activité de l'app au premier plan
+     * (RESUMED) PUIS fenêtre ayant le focus. Mesure les deux temps (files/shots/demarrage.txt, publié par la CI).
+     * Si la borne de sécurité est atteinte, le diagnostic distingue :
+     *  - « APP » : aucune activité eTix RESUMED (lancement lent ou bloqué côté app) ;
+     *  - « SYSTÈME » : activité RESUMED mais sans focus (fenêtre système / environnement émulateur).
+     * La cause n'est pas présumée : c'est le constat qui est consigné.
+     */
+    fun waitForAppReady(label: String, boundMs: Long = 60_000) {
+        val t0 = SystemClock.uptimeMillis()
+        var resumedAt = -1L
+        var focusedAt = -1L
+        var activityName = "?"
+        while (SystemClock.uptimeMillis() - t0 < boundMs) {
+            var resumed = false
+            var focused = false
+            instrumentation.runOnMainSync {
+                val act = androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry.getInstance()
+                    .getActivitiesInStage(androidx.test.runner.lifecycle.Stage.RESUMED).firstOrNull()
+                if (act != null) {
+                    resumed = true
+                    activityName = act.javaClass.simpleName
+                    focused = act.window.decorView.hasWindowFocus()
+                }
+            }
+            val now = SystemClock.uptimeMillis() - t0
+            if (resumed && resumedAt < 0) resumedAt = now
+            if (focused) { focusedAt = now; break }
+            SystemClock.sleep(100)
+        }
+        val verdict = when {
+            focusedAt >= 0 -> "prêt"
+            resumedAt < 0 -> "APP : aucune activité au premier plan"
+            else -> "SYSTÈME : activité au premier plan sans focus"
+        }
+        File(File(ctx.filesDir, "shots").apply { mkdirs() }, "demarrage.txt").appendText(
+            "$label : $activityName au premier plan ${if (resumedAt >= 0) "$resumedAt ms" else "—"}, " +
+                "focus ${if (focusedAt >= 0) "$focusedAt ms" else "—"} → $verdict\n")
+        if (focusedAt < 0) {
+            diagnostic("waitForAppReady $label : $verdict")
+            throw AssertionError("App non prête après $boundMs ms ($label) : $verdict")
+        }
+    }
 }

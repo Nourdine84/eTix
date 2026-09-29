@@ -74,6 +74,10 @@ mes = read(f"{out}/shots/mesures_clavier.txt").strip()
 if mes:
     notice("Clavier petit écran (mesures)", mes)
 
+dem = read(f"{out}/shots/demarrage.txt").strip()
+if dem:
+    notice("Démarrages (état réel de l'app)", dem[:3500])
+
 ech = read(f"{out}/shots/echec.txt").strip()
 if ech:
     notice("Diagnostic des échecs (focus fenêtre)", ech[:3500], "warning")
