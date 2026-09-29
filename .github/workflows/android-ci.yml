@@ -531,7 +531,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        shot: [f01_ajout_virgule_fr, f02_historique_montant_fr, f03_selecteur_date_fr, f04_date_jour_mois_fr, f05_filtre_inclusif_fr, f06_historique_filtre_inclusif_fr, f07_magasins_aujourdhui_limites_fr, f08_magasins_mois_limites_fr]
+        shot: [f01_ajout_virgule_fr, f05a_historique_recherche_limites_fr, f02_historique_montant_fr, f03_selecteur_date_fr, f04_date_jour_mois_fr, f05_filtre_inclusif_fr, f06_historique_filtre_inclusif_fr, f07_magasins_aujourdhui_limites_fr, f08_magasins_mois_limites_fr]
     steps:
       - uses: actions/checkout@v4
         with:

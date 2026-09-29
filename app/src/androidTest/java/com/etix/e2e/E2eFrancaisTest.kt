@@ -99,6 +99,10 @@ class E2eFrancaisTest {
         onView(withId(R.id.recyclerStores)).perform(
             RecyclerViewActions.scrollTo<RecyclerView.ViewHolder>(hasDescendant(withText(name))))
 
+    private fun inHistory(name: String) =
+        onView(withId(R.id.recyclerHistory)).perform(
+            RecyclerViewActions.scrollTo<RecyclerView.ViewHolder>(hasDescendant(withText(name))))
+
     private fun notInStores(name: String) {
         try {
             inStores(name)
@@ -177,9 +181,11 @@ class E2eFrancaisTest {
 
         startMain()
         onView(withId(R.id.menu_history)).perform(click())
-        onView(withId(R.id.inputSearch)).perform(click(), typeText("Fr Limite"))
+        // Saisie de la recherche déjà couverte en f01 ; ici on vise les bornes du filtre
+        onView(withId(R.id.inputSearch)).perform(replaceText("Fr Limite"))
         closeSoftKeyboard()
-        waitFor(withText("Fr Limite A"))
+        shot("f05a_historique_recherche_limites_fr")
+        listOf("Fr Limite A", "Fr Limite B", "Fr Limite C", "Fr Limite D").forEach { inHistory(it) }
 
         // Filtre du J-1 au J-1 : début ET fin inclus → B et C seulement
         onView(withId(R.id.btnFilter)).perform(click())

@@ -53,3 +53,27 @@ Fichiers référencés par le test mais **absents** : `ticket_carrefour.txt`, `t
 3. Réactivation dans le lot OCR **avec** les corrections moteur : avec les attentes proposées, 003 (enseigne)
    et 004 (catégorie) échouent aujourd'hui. Ces échecs sont le résultat attendu tant que le moteur n'est pas corrigé :
    on corrige le moteur, pas l'attente.
+
+## Tests séparés par fichier (lot 5) — `OCRFixturesTest`
+
+Un test par fichier et par champ. Seules les attentes **établies par le texte** sont actives ; les autres sont
+`@Ignore` avec leur motif exact. Aucune attente ajustée sur le moteur ; moteur et catégories **inchangés**.
+`OCRValidationTest` (ancien, jeux de données absents) reste désactivé tel quel. Q1–Q4 restent des **propositions**.
+
+| Fichier | Actifs (passent) | Bloqués (`@Ignore`) | Motif du blocage |
+|---|---|---|---|
+| `ticket_001.txt` | enseigne `LIDL`, montant 34,50, pas de date | catégorie | Q2 (taxonomie) |
+| `ticket_002.txt` | enseigne `CARREFOUR`, montant 12,99, pas de date | catégorie | Q2 |
+| `ticket_003.txt` | montant 58,20, pas de date | enseigne, catégorie | Q1 (« TOTAL » = libellé ?) ; moteur renvoie `TOTAL` |
+| `ticket_004.txt` | enseigne `ESSO`, montant 23,45 | date, catégorie | Q3/Q4 (lecture jj/mm, date dans les attentes) ; Q2 (`Carburant` iOS, inconnu du moteur Android) |
+| `synthetique/restaurant_synthetique.txt` | enseigne `LE PETIT BISTROT`, montant 16,70 | catégorie | Q2 (proposition : Restaurant) |
+| `synthetique/ticket_long_synthetique.txt` | enseigne `CARREFOUR MARKET` | montant, date, catégorie | **Échec moteur connu** (cas D1 iOS) : retient `SOUS-TOTAL 42,80` au lieu de `TOTAL TTC 40,80` ; Q4 ; Q2 |
+
+Résultat CI (commit `337edb2`, run 36614394342) : **13 actifs réussis, 11 désactivés** (10 `OCRFixturesTest` + `OCRValidationTest`).
+
+### Tickets synthétiques
+
+`app/src/test/resources/ocr/synthetique/` (voir `LISEZMOI.md`) : textes **rédigés à la main**, jamais issus d'un
+scan. Ils couvrent des structures absentes des 4 fichiers (addition de restaurant avec TVA 10 %, ticket long avec
+15 articles, sous-total, remise, TVA). Ils **ne remplacent pas** une validation sur de vrais tickets photographiés
+(bruit OCR, colonnes, polices, caractères mal lus) : celle-ci reste à faire au lot OCR, avec vos tickets réels.
