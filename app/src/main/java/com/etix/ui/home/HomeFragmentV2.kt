@@ -64,6 +64,13 @@ class HomeFragmentV2 : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val main = activity as? MainActivityV2
 
+        // iOS : RadialGradient bleu 18 % → transparent, rayon 180 pt, statique
+        binding.heroGlow.background = android.graphics.drawable.GradientDrawable().apply {
+            gradientType = android.graphics.drawable.GradientDrawable.RADIAL_GRADIENT
+            colors = intArrayOf(ContextCompat.getColor(requireContext(), R.color.v2_primary_glow), 0x00007BFF)
+            gradientRadius = 180f * resources.displayMetrics.density
+        }
+
         binding.btnSettings.setOnClickListener { main?.openSettings() }
         binding.btnAddTicket.setOnClickListener { main?.goToPage(MainActivityV2.PAGE_ADD) }
         binding.btnHistory.setOnClickListener { main?.goToPage(MainActivityV2.PAGE_HISTORY) }
