@@ -2,12 +2,14 @@ package com.etix.ui.detail
 
 import android.os.Bundle
 import android.view.*
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.etix.data.AppDatabase
 import com.etix.data.TicketRepository
 import com.etix.databinding.FragmentTicketEditV2Binding
 import com.etix.model.Ticket
+import com.etix.ui.main.MainActivityV2
 import kotlinx.coroutines.launch
 
 class TicketEditFragmentV2 : Fragment() {
@@ -46,9 +48,9 @@ class TicketEditFragmentV2 : Fragment() {
             AppDatabase.getInstance(requireContext()).ticketDao()
         )
 
-        lifecycleScope.launch {
-            repository.getByIdFlow(ticketId).collect { ticket ->
-                ticket ?: return@collect
+        // Chargement unique : une collecte continue écraserait la saisie en cours
+        viewLifecycleOwner.lifecycleScope.launch {
+            repository.getById(ticketId)?.let { ticket ->
                 currentTicket = ticket
 
                 binding.inputStore.setText(ticket.store)
@@ -69,9 +71,17 @@ class TicketEditFragmentV2 : Fragment() {
 
     private fun save() {
         val t = currentTicket ?: return
+        // Avant : "12,50" (virgule FR) → 0.0 enregistré silencieusement
+        val amount = binding.inputAmount.text.toString().trim()
+            .replace(',', '.').toDoubleOrNull()
+        val store = binding.inputStore.text.toString().trim()
+        if (amount == null || amount <= 0.0 || store.isEmpty()) {
+            Toast.makeText(requireContext(), "Magasin et montant valides requis", Toast.LENGTH_SHORT).show()
+            return
+        }
         val updated = t.copy(
-            store = binding.inputStore.text.toString(),
-            amount = binding.inputAmount.text.toString().toDoubleOrNull() ?: 0.0,
+            store = store,
+            amount = amount,
             category = binding.inputCategory.text.toString(),
             description = binding.inputDescription.text.toString()
         )
@@ -86,7 +96,9 @@ class TicketEditFragmentV2 : Fragment() {
         currentTicket?.let {
             lifecycleScope.launch {
                 repository.delete(it)
-                parentFragmentManager.popBackStack()
+                // Le détail d'un ticket supprimé n'a plus de sens : on ferme les deux écrans
+                (activity as? MainActivityV2)?.closeTicketFlow()
+                    ?: parentFragmentManager.popBackStack()
             }
         }
     }

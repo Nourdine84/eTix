@@ -43,7 +43,7 @@ class OCRValidationTest {
                 result.amount
             )
 
-            val category = OCRSmartAnalyzer.guessCategory(rawText)
+            val category = OCRSmartAnalyzer.guessCategoryWithConfidence(rawText).category
             assertEquals(
                 dataset.expected.category,
                 category

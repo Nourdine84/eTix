@@ -7,7 +7,9 @@ import androidx.lifecycle.lifecycleScope
 import com.etix.data.AppDatabase
 import com.etix.data.TicketRepository
 import com.etix.databinding.FragmentTicketDetailV2Binding
+import com.etix.ui.main.MainActivityV2
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 class TicketDetailFragmentV2 : Fragment() {
 
@@ -16,6 +18,12 @@ class TicketDetailFragmentV2 : Fragment() {
 
     private lateinit var repository: TicketRepository
     private var ticketId: Long = 0L
+
+    companion object {
+        fun newInstance(ticketId: Long) = TicketDetailFragmentV2().apply {
+            arguments = Bundle().apply { putLong("ticketId", ticketId) }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,25 +44,22 @@ class TicketDetailFragmentV2 : Fragment() {
             AppDatabase.getInstance(requireContext()).ticketDao()
         )
 
-        lifecycleScope.launch {
+        // viewLifecycleOwner : la collecte s'arrête quand la vue est détruite
+        // (sinon NPE sur binding quand l'édition met à jour le ticket)
+        viewLifecycleOwner.lifecycleScope.launch {
             repository.getByIdFlow(ticketId).collect { ticket ->
                 ticket ?: return@collect
 
                 binding.tvStore.text = ticket.store
-                binding.tvAmount.text = "${ticket.amount} €"
+                binding.tvAmount.text = String.format(Locale.FRANCE, "%.2f €", ticket.amount)
                 binding.tvCategory.text = ticket.category
                 binding.tvDescription.text = ticket.description ?: "-"
             }
         }
 
+        // Avant : requireParentFragment() → IllegalStateException (pas de fragment parent)
         binding.btnEdit.setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .replace(
-                    requireParentFragment().id,
-                    TicketEditFragmentV2.newInstance(ticketId)
-                )
-                .addToBackStack(null)
-                .commit()
+            (activity as? MainActivityV2)?.openTicketEdit(ticketId)
         }
     }
 

@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.etix.data.AppDatabase
 import com.etix.data.TicketRepository
 import com.etix.databinding.FragmentTicketHistoryV2Binding
+import com.etix.ui.main.MainActivityV2
 import com.etix.utils.CsvExporter
 import kotlinx.coroutines.launch
 
@@ -39,11 +40,14 @@ class TicketHistoryFragmentV2 : Fragment() {
         val repository = TicketRepository(dao)
         viewModel = TicketHistoryViewModel(repository)
 
-        adapter = TicketHistoryAdapter()
+        // Tap sur un ticket → détail (auparavant aucun accès au détail depuis l'historique)
+        adapter = TicketHistoryAdapter { ticket ->
+            (activity as? MainActivityV2)?.openTicketDetail(ticket.id)
+        }
         binding.recyclerHistory.layoutManager = LinearLayoutManager(requireContext())
         binding.recyclerHistory.adapter = adapter
 
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             viewModel.tickets.collect { list ->
                 adapter.submitList(list)
                 binding.emptyState.visibility =

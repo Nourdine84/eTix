@@ -66,8 +66,9 @@ class AddTicketFragmentV2 : Fragment() {
             return
         }
 
-        val amount = amountText.toDoubleOrNull()
-        if (amount == null) {
+        // Accepte la virgule décimale (saisie FR) : "12,50" était refusé
+        val amount = amountText.replace(',', '.').toDoubleOrNull()
+        if (amount == null || amount <= 0.0) {
             Toast.makeText(requireContext(), "Montant invalide", Toast.LENGTH_SHORT).show()
             return
         }

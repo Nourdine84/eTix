@@ -11,7 +11,9 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
-class TicketHistoryAdapter : RecyclerView.Adapter<TicketHistoryAdapter.TicketViewHolder>() {
+class TicketHistoryAdapter(
+    private val onTicketClick: (Ticket) -> Unit = {}
+) : RecyclerView.Adapter<TicketHistoryAdapter.TicketViewHolder>() {
 
     private val items = mutableListOf<Ticket>()
     private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.FRANCE)
@@ -47,6 +49,7 @@ class TicketHistoryAdapter : RecyclerView.Adapter<TicketHistoryAdapter.TicketVie
             tvStore.text = ticket.store
             tvAmount.text = String.format(Locale.FRANCE, "%.2f €", ticket.amount)
             tvDate.text = dateFormat.format(Date(ticket.dateMillis))
+            itemView.setOnClickListener { onTicketClick(ticket) }
         }
     }
 }
