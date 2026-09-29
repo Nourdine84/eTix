@@ -197,4 +197,54 @@ class E2eClavierPetitEcranTest {
         waitFor(allOf(shownAmount, withText("5,30 €")))
         shot("k03_detail_apres_modification_${passe}")
     }
+
+    /**
+     * Lot 7 : fenêtre de saisie du budget, clavier ouvert — « Appliquer » mesuré par rapport au haut du clavier
+     * (fenêtre de dialogue), puis touché ; le budget doit être enregistré.
+     */
+    @Test
+    fun k04_budget_appliquer_atteignable_clavier_ouvert() {
+        runBlocking {
+            AppDatabase.getInstance(ctx).ticketDao().insert(com.etix.model.Ticket(store = "Clavier budget $passe",
+                amount = 3.0, category = "Clavier $passe", dateMillis = System.currentTimeMillis()))
+        }
+        startMain()
+        BudgetE2e.openCategoriesMonth()
+        onView(withId(R.id.btnBudgets)).perform(click())
+        waitFor(withId(R.id.tvBudgetsTitle))
+        onView(allOf(withId(R.id.tvBudgetCategory), withText("Clavier $passe"))).perform(E2e.nestedScrollTo(), click())
+        waitFor(withId(R.id.inputBudget))
+        // Clavier visible (WindowInsets.isVisible(ime) : fiable même si la fenêtre est redimensionnée), puis stable
+        val dlg = androidx.test.espresso.matcher.RootMatchers.isDialog()
+        var imeVisible = false
+        val end = SystemClock.uptimeMillis() + 8000
+        while (SystemClock.uptimeMillis() < end && !imeVisible) {
+            onView(withId(R.id.inputBudget)).inRoot(dlg).check { v, _ ->
+                imeVisible = ViewCompat.getRootWindowInsets(v)?.isVisible(WindowInsetsCompat.Type.ime()) == true
+            }
+            if (!imeVisible) SystemClock.sleep(250)
+        }
+        assertTrue("Clavier non affiché", imeVisible)
+        SystemClock.sleep(1000) // fin d'animation
+        onView(withId(R.id.inputBudget)).inRoot(dlg).perform(typeText("7,50"))
+        var info = ""
+        onView(withText("Appliquer")).inRoot(dlg).check { v, _ ->
+            val root = v.rootView
+            val ins = ViewCompat.getRootWindowInsets(root)
+            val b = IntArray(2).also(v::getLocationOnScreen)
+            val r = IntArray(2).also(root::getLocationOnScreen)
+            info = "fenêtre=[${r[1]},${r[1] + root.height}] Appliquer=[${b[1]},${b[1] + v.height}] " +
+                "clavier_visible=${ins?.isVisible(WindowInsetsCompat.Type.ime())} inset_clavier=${ins?.getInsets(WindowInsetsCompat.Type.ime())?.bottom}"
+        }
+        val res = ctx.resources; val dm = res.displayMetrics
+        java.io.File(java.io.File(ctx.filesDir, "shots").apply { mkdirs() }, "mesures_clavier.txt").appendText(
+            "passe=$passe sdk=${android.os.Build.VERSION.SDK_INT} police=${res.configuration.fontScale} " +
+                "ecran=${(dm.widthPixels / dm.density).toInt()}x${(dm.heightPixels / dm.density).toInt()}dp " +
+                "Budget (fenêtre) $info\n")
+        shot("k04_budget_clavier_${passe}")
+        // Décisif : VRAI toucher sur « Appliquer » ; s'il était sous le clavier, le toucher irait au clavier
+        onView(withText("Appliquer")).inRoot(dlg).perform(click())
+        val saved = com.etix.data.BudgetStore(ctx).limit("Clavier $passe")
+        assertTrue("Budget non enregistré ($saved)", saved == 7.5)
+    }
 }

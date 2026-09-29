@@ -102,6 +102,8 @@ fi
 
 # Phase A : parcours complet sur app neuve
 run com.etix.e2e.E2eParcoursTest
+# Lot 7 : budget saisi AVANT la mise à jour (stockage additif à conserver)
+run com.etix.e2e.E2eBudgetAvantMajTest
 adb shell am force-stop com.etix
 
 # Mise à jour A → B sans désinstallation (même clé de signature, versionCode + 1)
@@ -125,6 +127,7 @@ sleep 3; adb shell am force-stop com.etix
 
 # Phase B : après mise à jour A→B + processus tué + QA installée à côté → données com.etix intactes
 run com.etix.e2e.E2ePersistanceTest
+run com.etix.e2e.E2eBudgetApresMajTest
 
 # Phase C : lot 4 (date, catégorie, filtres et recherche de l'Historique) — sans suppression
 run com.etix.e2e.E2eLot4Test
@@ -134,6 +137,9 @@ run com.etix.e2e.E2eCategoriesTest
 
 # Phase E : lot 6 (détail catégorie / ticket, suppression confirmée d'un ticket fictif créé par le test)
 run com.etix.e2e.E2eDetailsTest
+
+# Phase F : lot 7 (budgets mensuels)
+run com.etix.e2e.E2eBudgetsTest
 
 collect
 exit 0

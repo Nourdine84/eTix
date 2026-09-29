@@ -5,6 +5,7 @@ import android.widget.EditText
 import androidx.recyclerview.widget.RecyclerView
 import androidx.test.espresso.Espresso.closeSoftKeyboard
 import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.Espresso.pressBack
 import androidx.test.espresso.PerformException
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.replaceText
@@ -233,5 +234,23 @@ class E2eFrancaisTest {
         notInStores("Fr Mois Precedent Fin")
         inStores("Fr Mois Debut")
         shot("f08_magasins_mois_limites_fr")
+    }
+
+    /** Lot 7 : budget saisi au clavier FRANÇAIS (« 12,5 ») → « 12,50 € » ; puis « 1 200 » (espace) → « 1200 € ». */
+    @Test
+    fun f05_budget_saisie_francaise() {
+        startMain()
+        BudgetE2e.openCategoriesMonth()
+        BudgetE2e.setBudget("Autre", "12,5")
+        BudgetE2e.settingsValue("Autre", "12,50 €")
+        shot("f09_budget_saisie_fr")
+        assertEquals(12.5, com.etix.data.BudgetStore(ctx).limit("Autre")!!, 0.0)
+        pressBack()
+        BudgetE2e.setBudget("Autre", "1 200")
+        BudgetE2e.settingsValue("Autre", "1200 €")
+        assertEquals(1200.0, com.etix.data.BudgetStore(ctx).limit("Autre")!!, 0.0)
+        pressBack()
+        BudgetE2e.row(withText("Autre"), withId(R.id.budgetBlock))
+        shot("f10_categories_budget_fr")
     }
 }
