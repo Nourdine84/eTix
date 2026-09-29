@@ -149,6 +149,9 @@ jobs:
                   state = "PASS"
                   if tc.find("failure") is not None or tc.find("error") is not None:
                       state = "FAIL"
+                      f = tc.find("failure") if tc.find("failure") is not None else tc.find("error")
+                      msg = ((f.get("message") or "") + " | " + (f.text or "").strip().split("\n")[0:6].__str__())[:900]
+                      print("::error title=Échec JVM " + tc.get("name") + "::" + msg.replace("\n", " ").replace("%", "%25"))
                   elif tc.find("skipped") is not None:
                       state = "SKIP"
                   rows.append(f"{state} {tc.get('classname').split('.')[-1]}.{tc.get('name')} ({tc.get('time')}s)")
