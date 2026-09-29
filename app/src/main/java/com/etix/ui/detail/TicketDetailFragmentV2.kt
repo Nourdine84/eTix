@@ -66,12 +66,15 @@ class TicketDetailFragmentV2 : Fragment() {
     }
 
     /**
-     * Grande police (≥ 1,5) : cartes empilées au lieu de côte à côte. Sinon, sur 360 dp, « DATE D'ACHAT »,
-     * « MAGASIN » et le jour de la semaine se coupent lettre par lettre (constaté à 2,0 sur émulateur, run 36632203892).
+     * Grande police ou écran étroit (largeur dp / taille de police < 300) : cartes empilées au lieu de côte à côte.
+     * Sinon « DATE D'ACHAT », « MAGASIN », « CATÉGORIE » et le jour se coupent lettre par lettre (constaté sur émulateur :
+     * 360 dp police 2,0, run 36632203892 ; 320 dp police 1,3, run 36634872566).
      * Adaptation Android ; iOS garde deux colonnes.
      */
     private fun adaptToLargeFont() {
-        if (resources.configuration.fontScale < 1.5f) return
+        // Largeur disponible exprimée « en caractères » : 360 dp à 1,3 → 277 ; 320 dp à 1,3 → 246 (libellés coupés constatés)
+        val cfg = resources.configuration
+        if (cfg.screenWidthDp / cfg.fontScale >= 300f) return
         val dp = resources.displayMetrics.density
         with(binding) {
             dateRow.orientation = LinearLayout.VERTICAL
