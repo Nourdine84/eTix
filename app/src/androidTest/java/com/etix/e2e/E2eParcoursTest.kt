@@ -139,7 +139,7 @@ class E2eParcoursTest {
         onView(inOverlay(R.id.inputAmount)).perform(clearText(), typeText("15,75"))
         closeSoftKeyboard()
         shot("13_modification")
-        onView(inOverlay(R.id.btnSave)).perform(click())
+        onView(inOverlay(R.id.btnSave)).perform(scrollTo(), click())
 
         waitFor(allOf(inOverlay(R.id.tvAmount), withText("15,75 €")))
         shot("14_detail_apres_modification")

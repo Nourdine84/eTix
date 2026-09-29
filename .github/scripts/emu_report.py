@@ -55,5 +55,9 @@ notice("Isolation QA (émulateur)",
        f"paquets installés:\n{read(f'{out}/packages.txt').strip()}\ninstall QA: {read(f'{out}/install_qa.txt').strip()[-200:]}\n"
        f"com.etix avant: {avant}\ncom.etix après: {apres}\nidentique: {avant == apres and bool(avant)}")
 
+to = read(f"{out}/timeouts.txt").strip()
+if to:
+    notice("Délais dépassés", to[:3500], "error")
+
 crash = read(f"{out}/crashes.txt").strip()
 notice("Plantages (logcat)", crash[:3500] if crash else "aucun FATAL EXCEPTION", "error" if crash else "notice")

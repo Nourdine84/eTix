@@ -160,7 +160,7 @@ class E2eLot4Test {
         closeSoftKeyboard()
         onView(inOverlay(R.id.rowCategory)).perform(scrollTo(), click())
         shot("37b_dialogue_categorie_edition")
-        onView(withText("Autre…")).inRoot(isDialog()).perform(click())
+        onData(hasToString("Autre…")).inRoot(isDialog()).perform(click())
         onView(isAssignableFrom(EditText::class.java)).inRoot(isDialog()).perform(replaceText("Péage fictif"))
         onView(withText("OK")).inRoot(isDialog()).perform(click())
         waitFor(allOf(inOverlay(R.id.tvCategoryValue), withText("Péage fictif")))

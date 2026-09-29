@@ -191,7 +191,7 @@ jobs:
   # ------------------------------------------------------------------
   emulator-api34:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 85
     permissions:
       contents: read
     steps:
@@ -270,7 +270,7 @@ jobs:
 
   emulator-api21:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 85
     permissions:
       contents: read
     steps:

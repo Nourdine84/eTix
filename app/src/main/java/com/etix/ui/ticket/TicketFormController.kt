@@ -18,6 +18,8 @@ import java.util.Date
  * Contrôleur du formulaire ticket partagé (Ajout / Édition) — iOS TicketForm + CategoryPickerSheet.
  * Aucune écriture en base : l'écran appelant enregistre à partir de [read].
  */
+private const val OTHER_LABEL = "Autre…"
+
 class TicketFormController(
     private val fragment: Fragment,
     private val b: ViewTicketFormBinding,
@@ -96,17 +98,22 @@ class TicketFormController(
         picker.show(fragment.childFragmentManager, "ticket_date")
     }
 
-    /** iOS CategoryPickerSheet : système + utilisées, « Autre… » (saisie libre), « Effacer », « Fermer ». */
+    /**
+     * iOS CategoryPickerSheet : système + utilisées, puis « Autre… » (section séparée sur iOS → dernière ligne ici),
+     * « Effacer » et « Fermer ». Deux boutons maximum : trois boutons s'empilent et sortent de l'écran
+     * (constaté sur émulateur API 34).
+     */
     private fun pickCategory() {
         val ctx = fragment.requireContext()
         val items = TicketFormRules.pickerCategories(usedCategories())
+        val labels = (items + OTHER_LABEL).toTypedArray()
         val checked = items.indexOf(category)
         val builder = MaterialAlertDialogBuilder(ctx)
             .setTitle("Catégorie")
-            .setSingleChoiceItems(items.toTypedArray(), checked) { d, which ->
-                category = items[which]; render(); d.dismiss()
+            .setSingleChoiceItems(labels, checked) { d, which ->
+                d.dismiss()
+                if (which == items.size) pickCustomCategory() else { category = items[which]; render() }
             }
-            .setNeutralButton("Autre…") { _, _ -> pickCustomCategory() }
             .setNegativeButton("Fermer", null)
         if (category.isNotEmpty()) {
             builder.setPositiveButton("Effacer") { _, _ -> category = ""; render() }
