@@ -74,15 +74,33 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
 - Conformité aux maquettes validées **non confirmée** ; aperçus clair/sombre `docs/preview/lot3/`.
 - Version `1.3.0-lot3` (versionCode 4).
 
+### Validation sur émulateur (lots 1-3) et corrections
+- Tests de bout en bout Espresso sur **vrais émulateurs** en CI (`emulator-api34`, `emulator-api21`), données fictives, captures réelles, extraction des plantages (logcat), isolation QA mesurée.
+- Bugs trouvés sur émulateur et corrigés (`dd2b4fa`) :
+  - **virgule supprimée au clavier** (API 34, clavier en-US) : « 12,50 » saisi → « 1250 » → ticket enregistré à 1 250,00 € ; champs montant acceptant désormais `,` et `.` ;
+  - engrenage Réglages / retour fiche magasin : marge négative, 25 % de la zone tactile de 48 dp rognée.
+- Lots 1-3 sur API 34 (Android 14) : 8/8 tests, aucun plantage (run 36593272554, `df5066c`).
+- API 21 : image 64 bits jamais démarrée en CI ; image 32 bits en cours de validation.
+
+### Lot 4 — Formulaire et Historique (feature/android-lot4-formulaire-historique)
+- Formulaire partagé Ajout / Édition (iOS `TicketForm`) : magasin, montant (virgule ou point), date (sélecteur, heure conservée), catégorie (sélecteur iOS : 12 catégories système + catégories utilisées + « Autre… » libre, « Effacer »), description.
+- Validation iOS : magasin non vide, montant > 0 ; montant en rouge si invalide.
+- Édition préremplie (date, catégorie) ; suppression d'un ticket désormais **confirmée** (iOS `ConfirmDeletePopup`).
+- Détail : date d'achat affichée.
+- Historique (iOS `TicketHistoryView`) : recherche magasin/catégorie, filtre début/fin facultatifs (fin ≥ début), sections Aujourd'hui / Hier / Cette semaine / Ce mois / Plus ancien, plus récent d'abord, états « Aucun ticket » / « Aucun résultat » + « Effacer les filtres ». iOS n'a pas de sélecteur de tri : aucun ajouté. Export CSV Android conservé.
+- **Aucune migration** : l'entité `Ticket` avait déjà date, catégorie, description (diff `model/` et `schemas/` vide). Seul ajout DAO : lecture `SELECT DISTINCT category`.
+- Écarts assumés : catégorie non choisie → « Autre » (iOS : vide) pour l'écran Catégories V1 ; recherche Android n'inclut plus la description (alignement iOS).
+- Version `1.4.0-lot4` (versionCode 5).
+
 ## Écarts restants avec iOS (référence `feature/home-hero-v2`)
 
 | Écran | Écart | Lot envisagé |
 |---|---|---|
 | Accueil | Insights (≤ 2), carte Budget / Magasin, étoiles du header sombre, animations d'entrée, lien Tendance → rapport mensuel | 4 |
 | Accueil | Scanner indisponible (flux OCR non branché) | OCR |
-| Ajouter | Pas de catégorie, date, description ; pas de scanner | 4 |
-| Historique | Filtres/tri iOS, regroupement par date, suppression par balayage | 4 |
-| Détail / Édition ticket | Mise en page V1 simple ; catégorie en texte libre (iOS : sélecteur) | 4 |
+| Ajouter | Scanner indisponible ; pas de suggestion de catégorie (OCR / historique) | OCR |
+| Historique | Suppression par balayage (iOS) non portée | 5 |
+| Détail ticket | Mise en page V1 simple (iOS : carte montant, date détaillée, note) | 5 |
 | Catégories | V1 (liste + barres) ; iOS : donut, barres, détail catégorie, export | 5 |
 | Magasins | Comparaison entre magasins, graphique « Historique des achats » | 5 |
 | Réglages | V1 ; iOS : Apparence (système/clair/sombre), période par défaut, budgets, export CSV, suppression avec confirmation | 5 |
