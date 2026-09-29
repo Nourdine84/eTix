@@ -7,7 +7,7 @@ Document de reprise entre sessions. Concis : état, décisions, prochain lot.
 | Élément | Emplacement |
 |---|---|
 | Code Android (référence) | `Nourdine84/eTix`, branche `feature/android-v2` (dernier commit 16/01/2026) |
-| Branches de travail | Lot 1 `fix/android-v2-navigation` ; Lot 2 `feature/android-lot2-magasins` (contient lot 1) ; Lot 3 `feature/android-lot3-accueil-theme` (contient lots 1-2). **Rien fusionné** — fusion uniquement après validation téléphone (`docs/REVUE_LOTS_1_2.md`). |
+| Branches de travail | Lot 1 `fix/android-v2-navigation` ; Lot 2 `feature/android-lot2-magasins` (contient lot 1) ; Lot 3 `feature/android-lot3-accueil-theme` (contient lots 1-2) ; Lot 4 `feature/android-lot4-formulaire-historique` ; **Lot 5 `feature/android-lot5-categories`** (créée depuis le lot 4 @ `c77f0ba`, base de continuation). Anciennes branches conservées. **Rien fusionné** — fusion uniquement après validation téléphone (`docs/REVUE_LOTS_1_2.md`). |
 | Historique Git | `feature/android-v2` et `dev` : ancêtre commun `ab7d6f8`, `dev` a 3 commits propres. `main` : racine distincte, sans ancêtre commun. Détail : `docs/REVUE_LOTS_1_2.md`. Intégration `dev`/`main` = décision séparée. |
 | `Nourdine84/etix-android` | Squelette Gradle sans module `app` — **pas** le dépôt de dev |
 | Copie locale Mac `~/AndroidStudioProjects/eTix` | Sur `dev` (19/12/2025), n'a pas `feature/android-v2` |
@@ -27,7 +27,7 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
 
 - Pas de migration d'architecture : on garde ViewPager2 + BottomNav ; `nav_graph.xml` n'est **pas** utilisé par l'app (aucun NavHost).
 - Écrans poussés (détail / édition ticket) : `overlayContainer` au-dessus du ViewPager, bottom nav visible (équivalent TabBar iOS).
-- Catégories : version V1 fonctionnelle branchée tant que la V2 reste un placeholder vide.
+- Catégories (lot 5) : écran V2 `CategoryFragmentV2` branché ; l'écran V1 `fragments/CategoryFragment` reste dans le code, non branché (aucune suppression).
 - Onglets (lot 2) : Accueil, Ajouter, Historique, Catégories, Magasins. Réglages via l'icône en haut de l'Accueil (BottomNavigationView limitée à 5).
 - Tests manuels : **uniquement** avec l'APK QA (`com.etix.qa`), installé à côté de l'app. Jamais de désinstallation ni de réinitialisation de `com.etix` sans accord explicite.
 - Tokens couleur V2 provisoires (`colors_v2.xml`, clair/sombre) repris des équivalents UIKit utilisés par iOS — à valider contre les maquettes.
@@ -93,6 +93,36 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
 - Écarts assumés : catégorie non choisie → « Autre » (iOS : vide) pour l'écran Catégories V1 ; recherche Android n'inclut plus la description (alignement iOS).
 - Version `1.4.0-lot4` (versionCode 5).
 
+### Lot 5 — Catégories + couverture émulateur (feature/android-lot5-categories)
+- Onglet Catégories porté depuis iOS `CategoryView` : sélecteur Aujourd'hui / Ce mois / Cette année (défaut Ce mois), anneau de
+  répartition (palette iOS, variantes sombres), « Total » au centre, légende en % (1 décimale), lignes : total, variation vs
+  période précédente (hausse rouge / baisse verte / absente si rien avant, comme iOS), part en % ; état vide « Aucun ticket sur
+  cette période » ; clair et sombre.
+- Lecture seule, regroupement par nom **exact** (comme iOS) : aucune catégorie fusionnée ni renommée, aucun ticket modifié
+  (vérifié en Robolectric et sur émulateur). Ticket sans catégorie affiché « Sans catégorie » (donnée inchangée).
+- Logique pure `features/category/CategoryStats.kt` + `CategoryStatsTest` (bornes, variations, division par zéro).
+- Couverture émulateur : **API 36 (Android 16)** ajoutée ; **émulateur en français** (saisie « 12,50 », dates, sélecteur, filtres
+  inclusifs, limites de période) ; **mise à jour A → B par `adb install -r`** sans désinstallation, tickets conservés.
+- OCR : `OCRFixturesTest` (un test par fichier et par champ, blocages documentés), tickets **synthétiques** restaurant et long.
+  Moteur et catégories inchangés ; Q1–Q4 restent des propositions.
+- Version `1.5.0-lot5` (versionCode 6 ; build B de test : 7, suffixe `-maj`, jamais publié).
+- Résultats : `docs/VALIDATION_EMULATEUR.md` (commit `747c558`, run 36619891801 ; code app identique depuis `1a30eac`) ; aperçus `docs/preview/lot5*`.
+- Conformité aux maquettes validées **non confirmée** ; parité iOS de l'écran **partielle** (voir écarts).
+
+#### Traçabilité commits ↔ exécutions CI (lot 5)
+
+| Commit | Nature | Run CI | Résultat |
+|---|---|---|---|
+| `2244887` | Code de test/CI : émulateurs fr-FR et API 36, mise à jour A→B, tests OCR séparés | (non poussé seul) | — |
+| `1a30eac` | Code app : écran Catégories V2 | 36613893760 | build échoué : aperçu Robolectric (test) |
+| `337edb2` | Test : correction de l'aperçu | 36614394342 | JVM OK ; API 34 et 21 : 12/14, API 36 : 9/14 (tests à corriger, pas l'app) ; fr non exécuté (installation interrompue) |
+| `7c28211` | Test/CI : langue fr, ciblage des lignes, API 36 | 36615624815 | 14/14 × 3 ; fr 3/4 |
+| `4308a16` | Test fr f03 (**contient aussi** la mise à jour de `docs/OCR_CAS_DE_REFERENCE.md`) | 36616597248 | 14/14 × 3, fr 4/4, aucun plantage |
+| `f08ffd0` | CI : bilan chiffré des tests JVM | 36617478203 | JVM 63 réussis / 11 désactivés ; API 36 14/14, API 21 14/14, fr 4/4 ; **API 34 12/14 (échec intermittent, voir validation)** |
+| `f9df7ea` | CI : préparation de l'émulateur avant tests | 36618970067 | API 34 14/14, API 21 14/14, fr 4/4 ; **API 36 13/14 (a06 intermittent)** |
+| `747c558` | Test a06 : attente de l'ouverture du clavier | **36619891801** | **référence finale** : JVM 63/0/11, API 36/34/21 14/14, fr 4/4, aucun plantage |
+| (suivants) | Documentation uniquement | — | — |
+
 ## Écarts restants avec iOS (référence `feature/home-hero-v2`)
 
 | Écran | Écart | Lot envisagé |
@@ -102,7 +132,8 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
 | Ajouter | Scanner indisponible ; pas de suggestion de catégorie (OCR / historique) | OCR |
 | Historique | Suppression par balayage (iOS) non portée | 5 |
 | Détail ticket | Mise en page V1 simple (iOS : carte montant, date détaillée, note) | 5 |
-| Catégories | V1 (liste + barres) ; iOS : donut, barres, détail catégorie, export | 5 |
+| Catégories | Budgets mensuels (barre, alerte, invitation, réglage) ; détail d'une catégorie ; export ; graphique en barres | à planifier |
+| Catégories | Choix provisoire « Autre » quand aucune catégorie n'est choisie à l'ajout (iOS : vide) → ces tickets apparaissent sous « Autre » | décision produit |
 | Magasins | Comparaison entre magasins, graphique « Historique des achats » | 5 |
 | Réglages | V1 ; iOS : Apparence (système/clair/sombre), période par défaut, budgets, export CSV, suppression avec confirmation | 5 |
 | Global | Widget iOS, rapport mensuel / export PDF, onboarding V2 | à décider |
@@ -144,8 +175,8 @@ Recommandation technique inchangée : A (ou B) pour la parité iOS.
 |---|---|---|
 | 1 | Magasins : bouton « Comparaison » (iOS `StoreComparisonView`) et graphique « Historique des achats » non portés | P2 |
 | 2 | Bouton « Scanner » de l'ajout sans action ; flux OCR conçu pour NavController (crasherait) | P3 |
-| 3 | Ajout : catégorie forcée à « Autre », pas de date ni de description | P3 |
-| 4 | Accueil / Catégories / Réglages loin d'iOS (insights, budget, donut, apparence, export PDF…) | P2-P3 |
+| 3 | Ajout : catégorie non choisie → « Autre » (choix provisoire, écart iOS : vide) — date et description ajoutées au lot 4 | décision produit |
+| 4 | Accueil / Réglages loin d'iOS (insights, budget, apparence, export PDF…) ; Catégories : budgets/détail/export manquants | P2-P3 |
 | 5 | Login / Register Android sans équivalent iOS (iOS : splash → onboarding → app) | À décider |
 | 6 | `ETixApp` non déclarée dans le manifeste → journal de crash jamais alimenté | P4 |
 | 7 | Manifeste : `.TicketEditActivity` déclarée mais inexistante | P4 |

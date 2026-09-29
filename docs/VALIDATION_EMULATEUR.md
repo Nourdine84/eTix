@@ -1,4 +1,4 @@
-# Validation sur émulateur — lots 1 à 4
+# Validation sur émulateur — lots 1 à 5
 
 **Ce n'est pas une validation sur téléphone physique.** Émulateurs Android officiels (Google) dans GitHub Actions,
 données fictives uniquement, build de test signé avec la clé de développement du runner
@@ -42,6 +42,52 @@ Run : https://github.com/Nourdine84/eTix/actions/runs/36601028467
 | c02 | Lot 4 : sections, recherche « carbu », filtre date de début, réinitialisation |
 | c03 | Lot 4 : édition préremplie, catégorie libre « Péage fictif », reprise dans le sélecteur |
 
+## Lot 5 — résultat de référence (branche `feature/android-lot5-categories`)
+
+Commit de code testé : **`747c558`** — run https://github.com/Nourdine84/eTix/actions/runs/36619891801
+(code de l'application identique depuis `1a30eac` ; les commits suivants ne touchent que tests et CI. Premier run entièrement vert : `4308a16`, run 36616597248.)
+
+| Niveau | Environnement | Résultat |
+|---|---|---|
+| JVM + Robolectric | runner Ubuntu | **63 réussis, 0 échec, 11 désactivés** (OCR bloqués, voir `OCR_CAS_DE_REFERENCE.md`) |
+| Émulateur **API 36** (Android 16, nouveau) | `google_apis` x86_64, en-US | **14/14** |
+| Émulateur API 34 (Android 14) | `google_apis` x86_64, en-US | **14/14** |
+| Émulateur API 21 (Android 5.0.2) | `default` x86, en-US | **14/14** |
+| Émulateur **API 34 en français** (nouveau) | `google_apis` x86_64, langue système `fr-FR` vérifiée (`Locale.getDefault() = fr`) | **4/4** |
+| Plantages (logcat) | 4 émulateurs | aucun |
+| **Mise à jour A → B sans désinstallation** | API 21, 34, 36 | versionCode 6 → 7, même certificat pour A et B, `firstInstallTime` inchangé, tickets fictifs et session conservés (`E2ePersistanceTest`) |
+| Isolation eTix QA | API 21, 34, 36 | `lastUpdateTime` de `com.etix` identique avant/après (non exécutée dans le job français, « identique: False » y signifie « non mesuré ») |
+
+Déroulé standard : parcours (app neuve, build A) → arrêt → **`adb install -r` du build B** (même code, versionCode + 1,
+même clé de test) → installation d'eTix QA à côté → persistance → lot 4 → Catégories (lot 5). La clé est celle du
+runner CI (tests), **pas** la clé QA durable ; sur téléphone, la même vérification reste à faire avec la clé QA.
+
+### Tests ajoutés
+
+| Test | Couvre |
+|---|---|
+| f01 (fr-FR) | « 12,50 » tapé au clavier français → champ « 12,50 », date du jour au format français (« 29 sept. 2026 »), Historique « 12,50 € » |
+| f02 (fr-FR) | Sélecteur de date en saisie « 15/MM/aaaa » (jour > 12 : pas d'ambiguïté jour/mois) → « 15 sept. 2026 » à l'écran et dans l'Historique |
+| f03 (fr-FR) | Filtre Historique du J-1 au J-1 : J-1 00:00:00.000 et J-1 23:59:59.999 **inclus**, J-2 23:59:59.999 et J 00:00:00.000 **exclus** |
+| f04 (fr-FR) | Magasins : Aujourd'hui inclut J 00:00, exclut J-1 23:59:59.999 ; Ce mois inclut le 1er 00:00, exclut la veille 23:59:59.999 |
+| d01 | Catégories, Ce mois : lignes par catégorie exacte, variation +100 % (hausse), −75 % (baisse), aucune (pas de période précédente) ; aucun ticket modifié |
+| d02 | Cette année (ticket de janvier présent) puis Aujourd'hui (absent) |
+| d03 | Catégories en thème sombre puis retour au clair |
+
+### Défauts trouvés en cours de lot (tests, pas l'application)
+
+| Constat | Cause | Correction |
+|---|---|---|
+| `-change-locale fr-FR` sans effet (langue restée en-US) et installation interrompue (« Broken pipe ») | redémarrage du framework pendant l'installation | langue posée par `persist.sys.locale` + redémarrage contrôlé avant installation (`7c28211`) |
+| a04 échoue sur API 36 | bouton Enregistrer sous la ligne de flottaison, attendu « affiché » avant défilement | attente du champ montant (`7c28211`) |
+| d02/d03 : correspondance multiple | la légende de l'anneau contient aussi les noms | cibler les lignes (`7c28211`) |
+| f03 : ticket non trouvé | présence vérifiée dans la partie visible seulement | recherche dans toute la liste (`4308a16`) |
+| **Échec intermittent** API 34, run 36617478203 (`f08ffd0`, code app = `4308a16`) : a01 « fenêtre sans focus » au 1er lancement, puis persistance en cascade (session non ouverte) ; 12/14, aucun plantage | environnement émulateur probable (dialogue système au démarrage) — **non prouvé** | réveil / déverrouillage / fermeture des dialogues avant les tests + focus consigné (`f9df7ea`) ; non reproduit au run suivant (36618970067 : API 34 14/14) |
+| **Échec intermittent** API 36, run 36618970067 (`f9df7ea`) : a06, bouton Enregistrer non visible après défilement clavier ouvert (1 fois sur 4 runs API 36) | défilement lancé pendant l'animation d'ouverture du clavier (hypothèse) — **non prouvé** ; si réel, le bouton reste atteignable en défilant à nouveau | attente de la fin d'ouverture du clavier avant défilement (`747c558` : 14/14) ; **à vérifier sur téléphone Android 16** |
+
+Aperçus : `docs/preview/lot5-emulateur/` (`api21/34/36-categories.jpg` : vide, mois, année, aujourd'hui, sombre ;
+`api34-fr-FR.jpg`). Aperçus Robolectric clair/sombre : `docs/preview/lot5/`.
+
 ## Défauts trouvés par les émulateurs (invisibles en JVM/Robolectric) et corrigés
 
 | # | Défaut | Où | Gravité | Correctif |
@@ -65,7 +111,8 @@ Magasins/persistance, thème sombre, formulaire lot 4, Historique lot 4). Captur
 
 ## Limites
 
-- Émulateurs en anglais (dates « Sep 29, 2026 ») : sur un téléphone en français, format français attendu — **à vérifier sur appareil**.
+- Émulateurs standard en anglais ; le français est couvert par le job `emulator-api34-fr` (Android 14 uniquement), pas encore sur API 21/36 ni sur téléphone.
+- Clavier : saisie Espresso (événements clavier injectés), pas une frappe réelle sur le clavier AZERTY à l'écran.
 - Pas de test sur tablette, grand écran, pliable, ni Android 6 à 13 intermédiaires.
 - Pas de mesure de performance ni de batterie ; pas de TalkBack réel (libellés d'accessibilité posés, non écoutés).
 - Suppression d'un ticket non couverte par ces parcours (hors périmètre demandé).

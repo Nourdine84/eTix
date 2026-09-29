@@ -69,7 +69,7 @@ Un test par fichier et par champ. Seules les attentes **établies par le texte**
 | `synthetique/restaurant_synthetique.txt` | enseigne `LE PETIT BISTROT`, montant 16,70 | catégorie | Q2 (proposition : Restaurant) |
 | `synthetique/ticket_long_synthetique.txt` | enseigne `CARREFOUR MARKET` | montant, date, catégorie | **Échec moteur connu** (cas D1 iOS) : retient `SOUS-TOTAL 42,80` au lieu de `TOTAL TTC 40,80` ; Q4 ; Q2 |
 
-Résultat CI (commit `337edb2`, run 36614394342) : **13 actifs réussis, 11 désactivés** (10 `OCRFixturesTest` + `OCRValidationTest`).
+Résultat CI (commit `747c558`, run 36619891801) : **13 actifs réussis, 11 désactivés** (bilan JVM global : 63 réussis, 0 échec, 11 désactivés) (10 `OCRFixturesTest` + `OCRValidationTest`).
 
 ### Tickets synthétiques
 
