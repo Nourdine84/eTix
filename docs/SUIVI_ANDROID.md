@@ -80,7 +80,8 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
   - **virgule supprimée au clavier** (API 34, clavier en-US) : « 12,50 » saisi → « 1250 » → ticket enregistré à 1 250,00 € ; champs montant acceptant désormais `,` et `.` ;
   - engrenage Réglages / retour fiche magasin : marge négative, 25 % de la zone tactile de 48 dp rognée.
 - Lots 1-3 sur API 34 (Android 14) : 8/8 tests, aucun plantage (run 36593272554, `df5066c`).
-- API 21 : image 64 bits jamais démarrée en CI ; image 32 bits en cours de validation.
+- API 21 : image 64 bits jamais démarrée en CI → image 32 bits. **Plantage à l'ouverture de l'Accueil** trouvé et corrigé (`05bd9f4`).
+- Résultat de référence (lots 1-4, `b7fd557`) : API 34 **11/11**, API 21 **11/11**, aucun plantage, isolation QA vérifiée sur les deux. Détail : `docs/VALIDATION_EMULATEUR.md`. **Pas une validation sur téléphone.**
 
 ### Lot 4 — Formulaire et Historique (feature/android-lot4-formulaire-historique)
 - Formulaire partagé Ajout / Édition (iOS `TicketForm`) : magasin, montant (virgule ou point), date (sélecteur, heure conservée), catégorie (sélecteur iOS : 12 catégories système + catégories utilisées + « Autre… » libre, « Effacer »), description.

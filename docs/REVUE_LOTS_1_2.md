@@ -87,6 +87,15 @@ Aucune fusion forcée, aucune réécriture d'historique, aucune intégration ver
 | L1-05 | Détail ouvert → autre onglet | Détail fermé |
 | L1-06 | Onglet Historique → Retour | Accueil ; second Retour → sortie |
 
+## Mise à jour après validation émulateur (29/09)
+
+Les émulateurs ont révélé 2 défauts critiques présents dans les lots 1-3 (virgule supprimée au clavier ;
+plantage de l'Accueil sur Android 5) et plusieurs défauts mineurs (`VALIDATION_EMULATEUR.md`).
+Les correctifs critiques sont sur les branches des lots 3 et 4 ; certains correctifs mineurs (barre d'état API 21-22,
+halo, libellés d'onglets) ne sont que sur le lot 4. **La branche du lot 2 seule reste affectée par le défaut de virgule.**
+Recommandation : faire porter la revue et, après votre validation, la fusion sur `feature/android-lot4-formulaire-historique`
+(contient les lots 1 à 4 et tous les correctifs), plutôt que lot par lot.
+
 ## Proposition de fusion (après votre validation)
 
 1. Pull request `feature/android-lot2-magasins` → `feature/android-v2`, en brouillon jusqu'à validation.
