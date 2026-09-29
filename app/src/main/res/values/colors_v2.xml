@@ -28,4 +28,6 @@
     <!-- Bouton principal désactivé (Scanner indisponible) -->
     <color name="v2_disabled_primary">#E0E6F5</color>
     <color name="v2_disabled_on_primary">#8A94AB</color>
+    <!-- Barre d'état thème clair : API 21-22 = noir (icônes blanches non assombrissables) ; API 23+ : values-v23 -->
+    <color name="v2_status_bar_light_theme">#FF000000</color>
 </resources>

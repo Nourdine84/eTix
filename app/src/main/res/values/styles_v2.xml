@@ -30,4 +30,9 @@
         <item name="android:layout_marginBottom">12dp</item>
         <item name="android:background">@color/v2_divider</item>
     </style>
+
+    <!-- Barre d'onglets : 5 libellés lisibles jusqu'à 320 dp de large -->
+    <style name="V2.TabLabel" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:textSize">11sp</item>
+    </style>
 </resources>

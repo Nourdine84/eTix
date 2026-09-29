@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- API 23+ : icônes sombres possibles (windowLightStatusBar) → barre transparente comme avant -->
+    <color name="v2_status_bar_light_theme">@android:color/transparent</color>
+</resources>

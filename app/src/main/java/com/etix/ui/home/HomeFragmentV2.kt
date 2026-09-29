@@ -70,6 +70,12 @@ class HomeFragmentV2 : Fragment() {
             colors = intArrayOf(ContextCompat.getColor(requireContext(), R.color.v2_primary_glow), 0x00007BFF)
             gradientRadius = 180f * resources.displayMetrics.density
         }
+        // Rayon borné à la zone : sinon bords nets visibles sur écran étroit (constaté API 21, 320 dp)
+        binding.heroGlow.post {
+            val g = binding.heroGlow
+            (g.background as? android.graphics.drawable.GradientDrawable)?.gradientRadius =
+                minOf(180f * resources.displayMetrics.density, minOf(g.width, g.height) / 2f).coerceAtLeast(1f)
+        }
 
         binding.btnSettings.setOnClickListener { main?.openSettings() }
         binding.btnAddTicket.setOnClickListener { main?.goToPage(MainActivityV2.PAGE_ADD) }
