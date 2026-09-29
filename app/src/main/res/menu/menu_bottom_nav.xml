@@ -21,9 +21,11 @@
         android:icon="@drawable/ic_category"
         android:title="Catégories" />
 
+    <!-- Lot 2 : Magasins remplace Paramètres (limite de 5 onglets Material).
+         Réglages accessibles via l'icône en haut de l'Accueil. -->
     <item
-        android:id="@+id/menu_settings"
-        android:icon="@drawable/ic_settings"
-        android:title="Paramètres" />
+        android:id="@+id/menu_stores"
+        android:icon="@drawable/ic_store"
+        android:title="Magasins" />
 
 </menu>

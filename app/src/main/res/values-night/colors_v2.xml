@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="v2_bg_grouped">#000000</color>
+    <color name="v2_surface_grouped">#1C1C1E</color>
+    <color name="v2_text_primary">#FFFFFF</color>
+    <color name="v2_text_secondary">#8D8D93</color>
+    <color name="v2_fill">#5C787880</color>
+    <color name="v2_divider">#4D545458</color>
+    <color name="v2_negative">#FF453A</color>
+    <color name="v2_positive">#30D158</color>
+</resources>

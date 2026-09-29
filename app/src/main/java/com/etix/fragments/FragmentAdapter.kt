@@ -6,6 +6,7 @@ import androidx.viewpager2.adapter.FragmentStateAdapter
 import com.etix.ui.home.HomeFragmentV2
 import com.etix.ui.add.AddTicketFragmentV2
 import com.etix.ui.history.TicketHistoryFragmentV2
+import com.etix.ui.store.StoreListFragment
 
 class FragmentAdapter(activity: FragmentActivity) : FragmentStateAdapter(activity) {
 
@@ -16,10 +17,11 @@ class FragmentAdapter(activity: FragmentActivity) : FragmentStateAdapter(activit
             0 -> HomeFragmentV2()
             1 -> AddTicketFragmentV2()
             2 -> TicketHistoryFragmentV2()
-            // CategoryFragmentV2 / SettingsFragmentV2 sont des placeholders vides (empty_layout) :
-            // on branche les versions V1 fonctionnelles en attendant leur refonte V2.
+            // CategoryFragmentV2 est un placeholder vide (empty_layout) :
+            // on branche la version V1 fonctionnelle en attendant sa refonte V2.
             3 -> CategoryFragment()
-            4 -> SettingsFragment()
+            // Lot 2 : Magasins (parité iOS). Réglages → accessibles depuis l'Accueil (MainActivityV2.openSettings)
+            4 -> StoreListFragment()
             else -> HomeFragmentV2()
         }
     }

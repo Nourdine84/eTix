@@ -9,6 +9,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      QA_KEYSTORE_B64: ${{ secrets.QA_KEYSTORE_B64 }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,13 +25,51 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      - name: Build Debug APK
+      # Clé de signature stable entre les runs : sans elle chaque APK CI a une signature
+      # différente et l'app QA ne peut pas être mise à jour d'un lot à l'autre.
+      # Recommandé : secret QA_KEYSTORE_B64 (keystore debug encodé base64, mdp "android").
+      # À défaut : cache Actions (stable seulement sur une même branche).
+      - name: Install QA keystore from secret
+        if: env.QA_KEYSTORE_B64 != ''
+        run: mkdir -p ~/.android && echo "$QA_KEYSTORE_B64" | base64 -d > ~/.android/debug.keystore
+
+      - name: Restore debug keystore from cache
+        if: env.QA_KEYSTORE_B64 == ''
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: etix-ci-debug-keystore-v1
+
+      - name: Build Debug + QA APK
         run: |
           set -o pipefail
-          ./gradlew assembleDebug --console=plain -Dorg.gradle.java.home="$JAVA_HOME" 2>&1 | tee build.log
+          ./gradlew assembleDebug assembleQa --console=plain -Dorg.gradle.java.home="$JAVA_HOME" 2>&1 | tee build.log
 
-      # APK publié dès que le build passe, même si les tests échouent ensuite
-      - name: Upload APK artifact
+      # Contrôles de l'APK QA : package distinct, version, empreinte du certificat
+      - name: Inspect QA APK
+        id: qa
+        run: |
+          APK=app/build/outputs/apk/qa/app-qa.apk
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          PKG=$("$BT/aapt2" dump badging "$APK" | grep -oP "^package: name='\K[^']+")
+          VER=$("$BT/aapt2" dump badging "$APK" | grep -oP "versionName='\K[^']+")
+          LABEL=$("$BT/aapt2" dump badging "$APK" | grep -oP "^application-label:'\K[^']+")
+          CERT=$("$BT/apksigner" verify --print-certs "$APK" | grep -oP 'SHA-256 digest: \K.*' | head -1)
+          NAME="eTix-QA-$VER.apk"
+          mkdir -p dist && cp "$APK" "dist/$NAME"
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          echo "::notice title=APK QA::fichier=$NAME%0Apackage=$PKG%0Alabel=$LABEL%0AversionName=$VER%0Acert SHA-256=$CERT"
+          DCERT=$("$BT/apksigner" verify --print-certs app/build/outputs/apk/debug/app-debug.apk | grep -oP 'SHA-256 digest: \K.*' | head -1)
+          echo "::notice title=APK debug::package=com.etix (même que l'app installée)%0Acert SHA-256=$DCERT"
+
+      # APK publiés dès que le build passe, même si les tests échouent ensuite
+      - name: Upload QA APK (installable à côté de l'app)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.qa.outputs.name }}
+          path: dist/${{ steps.qa.outputs.name }}
+
+      - name: Upload debug APK (même package que l'app installée)
         uses: actions/upload-artifact@v4
         with:
           name: app-debug-apk
@@ -39,6 +79,51 @@ jobs:
         run: |
           set -o pipefail
           ./gradlew testDebugUnitTest --console=plain -Dorg.gradle.java.home="$JAVA_HOME" 2>&1 | tee test.log
+
+      # Aperçu visuel (captures Robolectric) — artefact + annotations
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: app/build/screenshots/
+          if-no-files-found: ignore
+
+      - name: Install Pillow
+        if: always()
+        run: python3 -m pip install --quiet pillow
+
+      - name: Shot 01_accueil_reglages_light
+        if: always() && hashFiles('app/build/screenshots/01_accueil_reglages_light.png') != ''
+        run: python3 .github/scripts/emit_image.py app/build/screenshots/01_accueil_reglages_light.png
+
+      - name: Shot 02_magasins_mois_light
+        if: always() && hashFiles('app/build/screenshots/02_magasins_mois_light.png') != ''
+        run: python3 .github/scripts/emit_image.py app/build/screenshots/02_magasins_mois_light.png
+
+      - name: Shot 03_magasins_mois_dark
+        if: always() && hashFiles('app/build/screenshots/03_magasins_mois_dark.png') != ''
+        run: python3 .github/scripts/emit_image.py app/build/screenshots/03_magasins_mois_dark.png
+
+      - name: Shot 04_magasins_vide_aujourdhui_light
+        if: always() && hashFiles('app/build/screenshots/04_magasins_vide_aujourdhui_light.png') != ''
+        run: python3 .github/scripts/emit_image.py app/build/screenshots/04_magasins_vide_aujourdhui_light.png
+
+      - name: Shot 05_fiche_magasin_light
+        if: always() && hashFiles('app/build/screenshots/05_fiche_magasin_light.png') != ''
+        run: python3 .github/scripts/emit_image.py app/build/screenshots/05_fiche_magasin_light.png
+
+      - name: Shot 05b_fiche_magasin_bas_light
+        if: always() && hashFiles('app/build/screenshots/05b_fiche_magasin_bas_light.png') != ''
+        run: python3 .github/scripts/emit_image.py app/build/screenshots/05b_fiche_magasin_bas_light.png
+
+      - name: Shot 06_fiche_magasin_dark
+        if: always() && hashFiles('app/build/screenshots/06_fiche_magasin_dark.png') != ''
+        run: python3 .github/scripts/emit_image.py app/build/screenshots/06_fiche_magasin_dark.png
+
+      - name: Shot 07_reglages_depuis_accueil_light
+        if: always() && hashFiles('app/build/screenshots/07_reglages_depuis_accueil_light.png') != ''
+        run: python3 .github/scripts/emit_image.py app/build/screenshots/07_reglages_depuis_accueil_light.png
 
       # Récapitulatif des tests (lisible via l'API, succès comme échec)
       - name: Report test summary

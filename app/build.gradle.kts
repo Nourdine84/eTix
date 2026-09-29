@@ -16,13 +16,21 @@ android {
         applicationId = "com.etix"
         minSdk = 21
         targetSdk = 34
-        versionCode = 2
-        versionName = "1.1.0-lot1"
+        versionCode = 3
+        versionName = "1.2.0-lot2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
+        // Build de test installable À CÔTÉ de l'app existante :
+        // package com.etix.qa → données, signature et désinstallation totalement séparées de com.etix.
+        create("qa") {
+            initWith(getByName("debug"))
+            applicationIdSuffix = ".qa"
+            versionNameSuffix = "-qa"
+            matchingFallbacks += listOf("debug")
+        }
         release {
             isMinifyEnabled = false
             proguardFiles(

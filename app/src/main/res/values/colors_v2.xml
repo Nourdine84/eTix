@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tokens V2 provisoires, repris de la référence iOS (maquettes validées non disponibles).
+     Équivalents UIKit : systemGroupedBackground / secondarySystemGroupedBackground / label / secondaryLabel.
+     À VALIDER visuellement contre eTix_V2_Maquettes_Completes_Validees_FINAL. -->
+<resources>
+    <color name="v2_primary">#007BFF</color>
+    <color name="v2_primary_75">#BF007BFF</color>
+    <color name="v2_bg_grouped">#F2F2F7</color>
+    <color name="v2_surface_grouped">#FFFFFF</color>
+    <color name="v2_text_primary">#000000</color>
+    <color name="v2_text_secondary">#8A8A8E</color>
+    <color name="v2_fill">#1F787880</color>
+    <color name="v2_divider">#33C6C6C8</color>
+    <color name="v2_negative">#FF3B30</color>
+    <color name="v2_positive">#34C759</color>
+</resources>

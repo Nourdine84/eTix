@@ -12,15 +12,32 @@
         android:orientation="vertical"
         android:padding="24dp">
 
-        <!-- 🏷️ Header -->
-        <TextView
-            android:id="@+id/tvTitle"
-            android:layout_width="wrap_content"
+        <!-- 🏷️ Header (lot 2 : accès Réglages en haut à droite) -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="eTix"
-            android:textSize="28sp"
-            android:textStyle="bold"
-            android:textColor="#1C1C1E" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="eTix"
+                android:textSize="28sp"
+                android:textStyle="bold"
+                android:textColor="#1C1C1E" />
+
+            <ImageButton
+                android:id="@+id/btnSettings"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="-12dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Réglages"
+                android:src="@drawable/ic_settings" />
+        </LinearLayout>
 
         <TextView
             android:id="@+id/tvSubtitle"

@@ -11,8 +11,10 @@ import androidx.fragment.app.FragmentManager
 import androidx.viewpager2.widget.ViewPager2
 import com.etix.R
 import com.etix.fragments.FragmentAdapter
+import com.etix.fragments.SettingsFragment
 import com.etix.ui.detail.TicketDetailFragmentV2
 import com.etix.ui.detail.TicketEditFragmentV2
+import com.etix.ui.store.StoreDetailFragment
 import com.etix.utils.SessionManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
@@ -45,7 +47,7 @@ class MainActivityV2 : AppCompatActivity() {
                 R.id.menu_add -> PAGE_ADD
                 R.id.menu_history -> PAGE_HISTORY
                 R.id.menu_category -> PAGE_CATEGORY
-                R.id.menu_settings -> PAGE_SETTINGS
+                R.id.menu_stores -> PAGE_STORES
                 else -> return@setOnItemSelectedListener false
             }
             goToPage(page)
@@ -102,6 +104,23 @@ class MainActivityV2 : AppCompatActivity() {
         push(TicketEditFragmentV2.newInstance(ticketId), BACKSTACK_EDIT)
     }
 
+    /** Réglages : plus un onglet (5 max en BottomNavigationView) → accessibles depuis l'Accueil. */
+    fun openSettings() {
+        push(SettingsFragment(), BACKSTACK_SETTINGS)
+    }
+
+    fun openStoreDetail(storeKey: String) {
+        push(StoreDetailFragment.newInstance(storeKey), BACKSTACK_STORE)
+    }
+
+    /** Ferme la fiche magasin (et ce qui est au-dessus), sans toucher au reste de la pile. */
+    fun closeStoreDetail() {
+        supportFragmentManager.popBackStack(
+            BACKSTACK_STORE,
+            FragmentManager.POP_BACK_STACK_INCLUSIVE
+        )
+    }
+
     /** Ferme l'édition ET le détail (ex. après suppression du ticket). */
     fun closeTicketFlow() {
         supportFragmentManager.popBackStack(
@@ -141,9 +160,11 @@ class MainActivityV2 : AppCompatActivity() {
         const val PAGE_ADD = 1
         const val PAGE_HISTORY = 2
         const val PAGE_CATEGORY = 3
-        const val PAGE_SETTINGS = 4
+        const val PAGE_STORES = 4
 
         private const val BACKSTACK_DETAIL = "ticket_detail"
         private const val BACKSTACK_EDIT = "ticket_edit"
+        private const val BACKSTACK_SETTINGS = "settings"
+        private const val BACKSTACK_STORE = "store_detail"
     }
 }

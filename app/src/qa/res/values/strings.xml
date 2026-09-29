@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Nom distinct sur le lanceur pour ne pas confondre avec l'app principale -->
+<resources>
+    <string name="app_name">eTix QA</string>
+</resources>

@@ -51,5 +51,10 @@ class HomeFragmentV2 : Fragment(R.layout.fragment_home_v2) {
         btnHistory.setOnClickListener {
             (requireActivity() as MainActivityV2).goToPage(2)
         }
+
+        // Lot 2 : Réglages ne sont plus un onglet
+        view.findViewById<View>(R.id.btnSettings).setOnClickListener {
+            (requireActivity() as MainActivityV2).openSettings()
+        }
     }
 }

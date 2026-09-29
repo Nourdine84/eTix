@@ -11,10 +11,13 @@ import com.etix.ui.detail.TicketDetailFragmentV2
 import com.etix.ui.detail.TicketEditFragmentV2
 import com.etix.ui.history.TicketHistoryFragmentV2
 import com.etix.ui.home.HomeFragmentV2
+import com.etix.ui.store.StoreDetailFragment
+import com.etix.ui.store.StoreListFragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.Robolectric
@@ -22,6 +25,9 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.Shadows.shadowOf
 import org.robolectric.android.controller.ActivityController
 import org.robolectric.annotation.Config
+import org.robolectric.RuntimeEnvironment
+import com.etix.model.Ticket
+import com.etix.testutil.TestDb
 
 /**
  * Lot 1 — navigation principale.
@@ -31,6 +37,15 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [33])
 class MainActivityV2NavigationTest {
+
+    @Before
+    fun seed() {
+        val ctx = RuntimeEnvironment.getApplication()
+        TestDb.reset(ctx)
+        TestDb.seed(ctx, listOf(
+            Ticket(id = 7L, store = "Lidl", amount = 12.5, category = "Courses", dateMillis = System.currentTimeMillis())
+        ))
+    }
 
     private fun launch(): ActivityController<MainActivityV2> =
         Robolectric.buildActivity(MainActivityV2::class.java).setup().also { idle() }
@@ -54,7 +69,7 @@ class MainActivityV2NavigationTest {
             R.id.menu_add to AddTicketFragmentV2::class.java,
             R.id.menu_history to TicketHistoryFragmentV2::class.java,
             R.id.menu_category to CategoryFragment::class.java,
-            R.id.menu_settings to SettingsFragment::class.java,
+            R.id.menu_stores to StoreListFragment::class.java,
         )
 
         expected.forEachIndexed { index, (menuId, fragmentClass) ->
@@ -74,7 +89,7 @@ class MainActivityV2NavigationTest {
         val controller = launch()
         val activity = controller.get()
 
-        activity.nav().selectedItemId = R.id.menu_settings
+        activity.nav().selectedItemId = R.id.menu_stores
         idle()
         activity.onBackPressedDispatcher.onBackPressed()
         idle()
@@ -127,5 +142,43 @@ class MainActivityV2NavigationTest {
         assertEquals(View.GONE, activity.overlay().visibility)
         assertEquals(0, activity.supportFragmentManager.backStackEntryCount)
         assertEquals(MainActivityV2.PAGE_CATEGORY, activity.pager().currentItem)
+    }
+
+    @Test
+    fun settings_open_from_home_and_back_returns_home() {
+        val activity = launch().get()
+        assertEquals(5, activity.nav().menu.size())
+        activity.findViewById<View>(R.id.btnSettings).performClick()
+        idle()
+        assertEquals(View.VISIBLE, activity.overlay().visibility)
+        assertTrue(activity.supportFragmentManager.findFragmentById(R.id.overlayContainer) is SettingsFragment)
+
+        activity.onBackPressedDispatcher.onBackPressed()
+        idle()
+        assertEquals(View.GONE, activity.overlay().visibility)
+        assertEquals(MainActivityV2.PAGE_HOME, activity.pager().currentItem)
+        assertFalse(activity.isFinishing)
+    }
+
+    @Test
+    fun store_detail_then_ticket_detail_back_stack() {
+        val activity = launch().get()
+        activity.nav().selectedItemId = R.id.menu_stores
+        idle()
+        activity.openStoreDetail("lidl")
+        idle()
+        assertTrue(activity.supportFragmentManager.findFragmentById(R.id.overlayContainer) is StoreDetailFragment)
+
+        activity.openTicketDetail(7L)
+        idle()
+        assertTrue(activity.supportFragmentManager.findFragmentById(R.id.overlayContainer) is TicketDetailFragmentV2)
+
+        activity.onBackPressedDispatcher.onBackPressed()
+        idle()
+        assertEquals(1, activity.supportFragmentManager.backStackEntryCount)
+        activity.onBackPressedDispatcher.onBackPressed()
+        idle()
+        assertEquals(View.GONE, activity.overlay().visibility)
+        assertEquals(MainActivityV2.PAGE_STORES, activity.pager().currentItem)
     }
 }
