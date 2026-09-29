@@ -36,6 +36,13 @@ adb shell settings put global window_animation_scale 0
 adb shell settings put global transition_animation_scale 0
 adb shell settings put global animator_duration_scale 0
 adb logcat -c || true
+# Écran allumé, déverrouillé, sans boîte de dialogue système (ex. « System UI ne répond pas » au démarrage) :
+# une telle fenêtre retire le focus à l'app et fait échouer le 1er test sans rapport avec l'app.
+adb shell input keyevent KEYCODE_WAKEUP >/dev/null 2>&1 || true
+adb shell wm dismiss-keyguard >/dev/null 2>&1 || true
+sleep 5
+adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS >/dev/null 2>&1 || true
+{ echo "focus avant tests:"; timeout 30 adb shell dumpsys window 2>/dev/null | grep -E "mCurrentFocus|mFocusedApp" | tr -d '\r' | sed 's/^ *//'; } >> "$OUT/device.txt"
 
 T() { # T <secondes> <commande…> : limite de durée ; en cas de dépassement, diagnostic
   local secs=$1; shift
