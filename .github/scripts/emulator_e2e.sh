@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 # Tests de bout en bout sur émulateur (données fictives). Exécuté par android-emulator-runner.
 # Ne touche à aucun appareil réel. Signature : clé de développement du runner (build réservé aux tests).
+# MODE=standard (défaut) : parcours complet + mise à jour A→B + isolation QA + persistance + lot 4 + Catégories
+# MODE=fr : émulateur en français, tests de locale (saisie, dates, filtres inclusifs, limites de période)
 set -u
+MODE="${MODE:-standard}"
 API=$(adb shell getprop ro.build.version.sdk | tr -d '\r')
 REL=$(adb shell getprop ro.build.version.release | tr -d '\r')
+LOC=$(adb shell getprop persist.sys.locale | tr -d '\r'); [ -z "$LOC" ] && LOC=$(adb shell getprop ro.product.locale | tr -d '\r')
 OUT="emu-out"; mkdir -p "$OUT/shots"
-echo "api=$API release=$REL" > "$OUT/device.txt"
-adb shell getprop ro.product.model | tr -d '\r' >> "$OUT/device.txt"
+{ echo "api=$API release=$REL mode=$MODE locale=$LOC"; adb shell getprop ro.product.model | tr -d '\r'; } > "$OUT/device.txt"
 adb shell settings put global window_animation_scale 0
 adb shell settings put global transition_animation_scale 0
 adb shell settings put global animator_duration_scale 0
@@ -23,7 +26,10 @@ T() { # T <secondes> <commande…> : limite de durée ; en cas de dépassement, 
   fi
 }
 
-T 300 adb install -r app/build/outputs/apk/debug/app-debug.apk > "$OUT/install.txt" 2>&1
+pkginfo() { adb shell dumpsys package com.etix | grep -E "versionCode|versionName|lastUpdateTime|firstInstallTime" | tr -d '\r' | sed 's/^ *//'; }
+
+# Build A (versionCode N) — même code que B, voir workflow
+T 300 adb install -r dist/app-A.apk > "$OUT/install.txt" 2>&1
 T 300 adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk >> "$OUT/install.txt" 2>&1
 
 run() { # $1 = classe de test (limite 12 min par classe)
@@ -31,11 +37,30 @@ run() { # $1 = classe de test (limite 12 min par classe)
   timeout 20 adb shell am force-stop com.etix.test >/dev/null 2>&1 || true
 }
 
+collect() {
+  for f in $(timeout 60 adb shell run-as com.etix ls files/shots 2>/dev/null | tr -d '\r'); do
+    timeout 60 adb exec-out run-as com.etix cat "files/shots/$f" > "$OUT/shots/$f"
+  done
+  timeout 120 adb logcat -d > "$OUT/logcat.txt" 2>&1 || true
+  grep -n -A25 "FATAL EXCEPTION" "$OUT/logcat.txt" > "$OUT/crashes.txt" || true
+}
+
+if [ "$MODE" = "fr" ]; then
+  run com.etix.e2e.E2eFrancaisTest
+  collect
+  exit 0
+fi
+
 # Phase A : parcours complet sur app neuve
 run com.etix.e2e.E2eParcoursTest
-
-# Isolation QA (sur émulateur) : état de com.etix avant installation d'eTix QA
 adb shell am force-stop com.etix
+
+# Mise à jour A → B sans désinstallation (même clé de signature, versionCode + 1)
+pkginfo > "$OUT/update_avant.txt"
+T 300 adb install -r dist/app-B.apk > "$OUT/update_install.txt" 2>&1
+pkginfo > "$OUT/update_apres.txt"
+
+# Isolation QA (sur émulateur) : état de com.etix avant/après installation d'eTix QA
 adb shell dumpsys package com.etix | grep -E "lastUpdateTime|versionName" | tr -d '\r' > "$OUT/etix_avant_qa.txt"
 T 300 adb install app/build/outputs/apk/qa/app-qa.apk > "$OUT/install_qa.txt" 2>&1
 adb shell pm list packages | grep -i etix | tr -d '\r' > "$OUT/packages.txt"
@@ -45,18 +70,14 @@ sleep 6
 adb exec-out screencap -p > "$OUT/shots/api${API}_28_eTixQA_premier_lancement.png"
 adb shell am force-stop com.etix.qa
 
-# Phase B : processus tué, QA installée à côté → données com.etix intactes
+# Phase B : après mise à jour A→B + processus tué + QA installée à côté → données com.etix intactes
 run com.etix.e2e.E2ePersistanceTest
 
 # Phase C : lot 4 (date, catégorie, filtres et recherche de l'Historique) — sans suppression
 run com.etix.e2e.E2eLot4Test
 
-# Captures prises par les tests (run-as : app debuggable)
-for f in $(timeout 60 adb shell run-as com.etix ls files/shots 2>/dev/null | tr -d '\r'); do
-  timeout 60 adb exec-out run-as com.etix cat "files/shots/$f" > "$OUT/shots/$f"
-done
+# Phase D : lot 5 (écran Catégories)
+run com.etix.e2e.E2eCategoriesTest
 
-# Plantages éventuels
-timeout 120 adb logcat -d > "$OUT/logcat.txt" 2>&1 || true
-grep -n -A25 "FATAL EXCEPTION" "$OUT/logcat.txt" > "$OUT/crashes.txt" || true
+collect
 exit 0

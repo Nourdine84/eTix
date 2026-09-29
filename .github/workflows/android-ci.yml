@@ -186,8 +186,9 @@ jobs:
   # Tests de bout en bout sur VRAIS émulateurs Android (données fictives).
   # Build réservé à l'émulateur : signature de développement du runner,
   # jamais publié ni présenté comme APK QA durable.
-  # Un job par version (les aperçus d'une version n'attendent pas l'autre).
+  # Un job par configuration (les aperçus d'une configuration n'attendent pas les autres).
   # API 21 = minSdk : image 64 bits non démarrée en CI (> 35 min) → image 32 bits.
+  # api34-fr : émulateur en français (fr-FR) pour la saisie, les dates et les filtres.
   # ------------------------------------------------------------------
   emulator-api34:
     runs-on: ubuntu-latest
@@ -211,13 +212,24 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Build APKs (app, tests, QA de développement)
+      # A et B : même code, même clé de développement du runner ; B = versionCode + 1 (test de mise à jour)
+      - name: Build APKs (A, B, tests, QA de développement)
         run: |
           chmod +x ./gradlew
-          ./gradlew assembleDebug assembleDebugAndroidTest assembleQa --console=plain -Dorg.gradle.java.home="$JAVA_HOME"
+          G="--console=plain -Dorg.gradle.java.home=$JAVA_HOME"
+          ./gradlew assembleDebug assembleDebugAndroidTest assembleQa $G
+          mkdir -p dist emu-out && cp app/build/outputs/apk/debug/app-debug.apk dist/app-A.apk
+          ./gradlew assembleDebug -PetixVersionCodeOffset=1 -PetixVersionNameSuffix=-maj $G
+          cp app/build/outputs/apk/debug/app-debug.apk dist/app-B.apk
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          for x in A B; do
+            echo "$x $("$BT/aapt2" dump badging dist/app-$x.apk | grep -oP "versionCode='\K[^']+") $("$BT/apksigner" verify --print-certs dist/app-$x.apk | grep -oP 'SHA-256 digest: \K.*' | head -1)"
+          done > emu-out/update_certs.txt
 
       - name: Run E2E on emulator API 34
         uses: reactivecircus/android-emulator-runner@v2
+        env:
+          MODE: standard
         with:
           api-level: 34
           target: google_apis
@@ -249,7 +261,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        shot: [01_onboarding, 02_connexion, 03_accueil_vide, 04_ajouter_vide, 05_historique_vide, 06_categories_vide, 07_magasins_vide, 08_reglages, 09_ajout_clavier_ouvert, 10_accueil_un_ticket, 11_historique, 12_detail, 13_modification, 14_detail_apres_modification, 15_historique_apres_retour, 16_magasins_mois, 17_magasins_aujourdhui, 18_fiche_magasin, 19_accueil_defile, 20_ajouter_clavier, 21_reglages_sombre, 22_accueil_sombre, 23_historique_sombre, 24_magasins_sombre, 25_ajouter_sombre, 26_reglages_clair, 27_apres_redemarrage, 28_eTixQA_premier_lancement, 30_selecteur_date, 31_selecteur_categorie, 32_ajout_formulaire_complet, 33_historique_sections, 34_historique_recherche, 35_filtre_dates, 36_historique_filtre_actif, 37_modification_prerempli, 37b_dialogue_categorie_edition, 38_detail_apres_modification]
+        shot: [01_onboarding, 02_connexion, 03_accueil_vide, 04_ajouter_vide, 05_historique_vide, 06_categories_vide, 07_magasins_vide, 08_reglages, 09_ajout_clavier_ouvert, 10_accueil_un_ticket, 11_historique, 12_detail, 13_modification, 14_detail_apres_modification, 15_historique_apres_retour, 16_magasins_mois, 17_magasins_aujourdhui, 18_fiche_magasin, 19_accueil_defile, 20_ajouter_clavier, 21_reglages_sombre, 22_accueil_sombre, 23_historique_sombre, 24_magasins_sombre, 25_ajouter_sombre, 26_reglages_clair, 27_apres_redemarrage, 28_eTixQA_premier_lancement, 30_selecteur_date, 31_selecteur_categorie, 32_ajout_formulaire_complet, 33_historique_sections, 34_historique_recherche, 35_filtre_dates, 36_historique_filtre_actif, 37_modification_prerempli, 37b_dialogue_categorie_edition, 38_detail_apres_modification, 40_categories_mois, 41_categories_annee, 42_categories_aujourdhui, 43_categories_sombre, 44_categories_sombre_lignes]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -266,6 +278,96 @@ jobs:
             python3 .github/scripts/emit_image.py "$F"
           else
             echo "::warning title=shot missing::api34_${{ matrix.shot }}"
+          fi
+
+  emulator-api36:
+    runs-on: ubuntu-latest
+    timeout-minutes: 85
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      # A et B : même code, même clé de développement du runner ; B = versionCode + 1 (test de mise à jour)
+      - name: Build APKs (A, B, tests, QA de développement)
+        run: |
+          chmod +x ./gradlew
+          G="--console=plain -Dorg.gradle.java.home=$JAVA_HOME"
+          ./gradlew assembleDebug assembleDebugAndroidTest assembleQa $G
+          mkdir -p dist emu-out && cp app/build/outputs/apk/debug/app-debug.apk dist/app-A.apk
+          ./gradlew assembleDebug -PetixVersionCodeOffset=1 -PetixVersionNameSuffix=-maj $G
+          cp app/build/outputs/apk/debug/app-debug.apk dist/app-B.apk
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          for x in A B; do
+            echo "$x $("$BT/aapt2" dump badging dist/app-$x.apk | grep -oP "versionCode='\K[^']+") $("$BT/apksigner" verify --print-certs dist/app-$x.apk | grep -oP 'SHA-256 digest: \K.*' | head -1)"
+          done > emu-out/update_certs.txt
+
+      - name: Run E2E on emulator API 36
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          MODE: standard
+        with:
+          api-level: 36
+          target: google_apis
+          arch: x86_64
+          emulator-boot-timeout: 900
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -no-snapshot
+          script: bash .github/scripts/emulator_e2e.sh
+
+      - name: Report
+        if: always()
+        run: python3 .github/scripts/emu_report.py emu-out "API 36"
+
+      - name: Upload emulator results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: emulator-api36
+          path: emu-out/
+          if-no-files-found: ignore
+
+  preview-emu-api36:
+    needs: emulator-api36
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        shot: [01_onboarding, 02_connexion, 03_accueil_vide, 04_ajouter_vide, 05_historique_vide, 06_categories_vide, 07_magasins_vide, 08_reglages, 09_ajout_clavier_ouvert, 10_accueil_un_ticket, 11_historique, 12_detail, 13_modification, 14_detail_apres_modification, 15_historique_apres_retour, 16_magasins_mois, 17_magasins_aujourdhui, 18_fiche_magasin, 19_accueil_defile, 20_ajouter_clavier, 21_reglages_sombre, 22_accueil_sombre, 23_historique_sombre, 24_magasins_sombre, 25_ajouter_sombre, 26_reglages_clair, 27_apres_redemarrage, 28_eTixQA_premier_lancement, 30_selecteur_date, 31_selecteur_categorie, 32_ajout_formulaire_complet, 33_historique_sections, 34_historique_recherche, 35_filtre_dates, 36_historique_filtre_actif, 37_modification_prerempli, 37b_dialogue_categorie_edition, 38_detail_apres_modification, 40_categories_mois, 41_categories_annee, 42_categories_aujourdhui, 43_categories_sombre, 44_categories_sombre_lignes]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+      - uses: actions/download-artifact@v4
+        with:
+          name: emulator-api36
+          path: emu
+      - name: Emit api36_${{ matrix.shot }}
+        run: |
+          F="emu/shots/api36_${{ matrix.shot }}.png"
+          if [ -f "$F" ]; then
+            python3 -m pip install --quiet pillow
+            python3 .github/scripts/emit_image.py "$F"
+          else
+            echo "::warning title=shot missing::api36_${{ matrix.shot }}"
           fi
 
   emulator-api21:
@@ -290,13 +392,24 @@ jobs:
           sudo udevadm control --reload-rules
           sudo udevadm trigger --name-match=kvm
 
-      - name: Build APKs (app, tests, QA de développement)
+      # A et B : même code, même clé de développement du runner ; B = versionCode + 1 (test de mise à jour)
+      - name: Build APKs (A, B, tests, QA de développement)
         run: |
           chmod +x ./gradlew
-          ./gradlew assembleDebug assembleDebugAndroidTest assembleQa --console=plain -Dorg.gradle.java.home="$JAVA_HOME"
+          G="--console=plain -Dorg.gradle.java.home=$JAVA_HOME"
+          ./gradlew assembleDebug assembleDebugAndroidTest assembleQa $G
+          mkdir -p dist emu-out && cp app/build/outputs/apk/debug/app-debug.apk dist/app-A.apk
+          ./gradlew assembleDebug -PetixVersionCodeOffset=1 -PetixVersionNameSuffix=-maj $G
+          cp app/build/outputs/apk/debug/app-debug.apk dist/app-B.apk
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          for x in A B; do
+            echo "$x $("$BT/aapt2" dump badging dist/app-$x.apk | grep -oP "versionCode='\K[^']+") $("$BT/apksigner" verify --print-certs dist/app-$x.apk | grep -oP 'SHA-256 digest: \K.*' | head -1)"
+          done > emu-out/update_certs.txt
 
       - name: Run E2E on emulator API 21
         uses: reactivecircus/android-emulator-runner@v2
+        env:
+          MODE: standard
         with:
           api-level: 21
           target: default
@@ -328,7 +441,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        shot: [01_onboarding, 02_connexion, 03_accueil_vide, 04_ajouter_vide, 05_historique_vide, 06_categories_vide, 07_magasins_vide, 08_reglages, 09_ajout_clavier_ouvert, 10_accueil_un_ticket, 11_historique, 12_detail, 13_modification, 14_detail_apres_modification, 15_historique_apres_retour, 16_magasins_mois, 17_magasins_aujourdhui, 18_fiche_magasin, 19_accueil_defile, 20_ajouter_clavier, 21_reglages_sombre, 22_accueil_sombre, 23_historique_sombre, 24_magasins_sombre, 25_ajouter_sombre, 26_reglages_clair, 27_apres_redemarrage, 28_eTixQA_premier_lancement, 30_selecteur_date, 31_selecteur_categorie, 32_ajout_formulaire_complet, 33_historique_sections, 34_historique_recherche, 35_filtre_dates, 36_historique_filtre_actif, 37_modification_prerempli, 37b_dialogue_categorie_edition, 38_detail_apres_modification]
+        shot: [01_onboarding, 02_connexion, 03_accueil_vide, 04_ajouter_vide, 05_historique_vide, 06_categories_vide, 07_magasins_vide, 08_reglages, 09_ajout_clavier_ouvert, 10_accueil_un_ticket, 11_historique, 12_detail, 13_modification, 14_detail_apres_modification, 15_historique_apres_retour, 16_magasins_mois, 17_magasins_aujourdhui, 18_fiche_magasin, 19_accueil_defile, 20_ajouter_clavier, 21_reglages_sombre, 22_accueil_sombre, 23_historique_sombre, 24_magasins_sombre, 25_ajouter_sombre, 26_reglages_clair, 27_apres_redemarrage, 28_eTixQA_premier_lancement, 30_selecteur_date, 31_selecteur_categorie, 32_ajout_formulaire_complet, 33_historique_sections, 34_historique_recherche, 35_filtre_dates, 36_historique_filtre_actif, 37_modification_prerempli, 37b_dialogue_categorie_edition, 38_detail_apres_modification, 40_categories_mois, 41_categories_annee, 42_categories_aujourdhui, 43_categories_sombre, 44_categories_sombre_lignes]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -345,6 +458,96 @@ jobs:
             python3 .github/scripts/emit_image.py "$F"
           else
             echo "::warning title=shot missing::api21_${{ matrix.shot }}"
+          fi
+
+  emulator-api34-fr:
+    runs-on: ubuntu-latest
+    timeout-minutes: 85
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      # A et B : même code, même clé de développement du runner ; B = versionCode + 1 (test de mise à jour)
+      - name: Build APKs (A, B, tests, QA de développement)
+        run: |
+          chmod +x ./gradlew
+          G="--console=plain -Dorg.gradle.java.home=$JAVA_HOME"
+          ./gradlew assembleDebug assembleDebugAndroidTest assembleQa $G
+          mkdir -p dist emu-out && cp app/build/outputs/apk/debug/app-debug.apk dist/app-A.apk
+          ./gradlew assembleDebug -PetixVersionCodeOffset=1 -PetixVersionNameSuffix=-maj $G
+          cp app/build/outputs/apk/debug/app-debug.apk dist/app-B.apk
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          for x in A B; do
+            echo "$x $("$BT/aapt2" dump badging dist/app-$x.apk | grep -oP "versionCode='\K[^']+") $("$BT/apksigner" verify --print-certs dist/app-$x.apk | grep -oP 'SHA-256 digest: \K.*' | head -1)"
+          done > emu-out/update_certs.txt
+
+      - name: Run E2E on emulator API 34 fr-FR
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          MODE: fr
+        with:
+          api-level: 34
+          target: google_apis
+          arch: x86_64
+          emulator-boot-timeout: 900
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -no-snapshot -change-locale fr-FR
+          script: bash .github/scripts/emulator_e2e.sh
+
+      - name: Report
+        if: always()
+        run: python3 .github/scripts/emu_report.py emu-out "API 34 fr-FR"
+
+      - name: Upload emulator results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: emulator-api34-fr
+          path: emu-out/
+          if-no-files-found: ignore
+
+  preview-emu-api34-fr:
+    needs: emulator-api34-fr
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      max-parallel: 20
+      matrix:
+        shot: [f01_ajout_virgule_fr, f02_historique_montant_fr, f03_selecteur_date_fr, f04_date_jour_mois_fr, f05_filtre_inclusif_fr, f06_historique_filtre_inclusif_fr, f07_magasins_aujourdhui_limites_fr, f08_magasins_mois_limites_fr]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+      - uses: actions/download-artifact@v4
+        with:
+          name: emulator-api34-fr
+          path: emu
+      - name: Emit api34_${{ matrix.shot }}
+        run: |
+          F="emu/shots/api34_${{ matrix.shot }}.png"
+          if [ -f "$F" ]; then
+            python3 -m pip install --quiet pillow
+            python3 .github/scripts/emit_image.py "$F"
+          else
+            echo "::warning title=shot missing::api34_${{ matrix.shot }}"
           fi
 
   # Aperçu : une capture par job (limites d'annotations GitHub), lisible via l'API checks

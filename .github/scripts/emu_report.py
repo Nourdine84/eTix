@@ -50,6 +50,20 @@ if fails:
     for i in range(0, len(fails), 3):
         notice(f"Échecs émulateur {i//3+1}", "\n".join(fails[i:i+3]), "error")
 
+ua, ub = read(f"{out}/update_avant.txt").strip(), read(f"{out}/update_apres.txt").strip()
+if ua or ub:
+    import re as _re
+    def field(t, k):
+        m = _re.search(k + r"=([^\s]+(?: [0-9:]+)?)", t)
+        return m.group(1) if m else "?"
+    same_first = field(ua, "firstInstallTime") == field(ub, "firstInstallTime") != "?"
+    notice("Mise à jour A→B sans désinstallation",
+           f"certificats (A / B) :\n{read(f'{out}/update_certs.txt').strip()}\n"
+           f"install -r : {read(f'{out}/update_install.txt').strip()[-160:]}\n"
+           f"avant : {ua}\naprès : {ub}\n"
+           f"versionCode {field(ua,'versionCode')} → {field(ub,'versionCode')} ; "
+           f"firstInstallTime inchangé (pas de désinstallation) : {same_first}")
+
 avant, apres = read(f"{out}/etix_avant_qa.txt").strip(), read(f"{out}/etix_apres_qa.txt").strip()
 notice("Isolation QA (émulateur)",
        f"paquets installés:\n{read(f'{out}/packages.txt').strip()}\ninstall QA: {read(f'{out}/install_qa.txt').strip()[-200:]}\n"

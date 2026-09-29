@@ -16,8 +16,10 @@ android {
         applicationId = "com.etix"
         minSdk = 21
         targetSdk = 34
-        versionCode = 5
-        versionName = "1.4.0-lot4"
+        // Build « B » de test de mise à jour (CI émulateur uniquement) : même code, versionCode + offset.
+        val versionOffset = (project.findProperty("etixVersionCodeOffset") as String?)?.toInt() ?: 0
+        versionCode = 6 + versionOffset
+        versionName = "1.5.0-lot5" + ((project.findProperty("etixVersionNameSuffix") as String?) ?: "")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -149,6 +151,7 @@ dependencies {
     androidTestImplementation("androidx.test:runner:1.5.2")
     androidTestImplementation("androidx.test:rules:1.5.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1")
 
     // 🔍 ML Kit – Text Recognition (OCR)
     implementation("com.google.mlkit:text-recognition:16.0.0")

@@ -53,4 +53,17 @@ object E2e {
             bmp.compress(Bitmap.CompressFormat.PNG, 100, it)
         }
     }
+
+    /** Format de saisie texte de MaterialDatePicker (UtcDates.getDefaultTextInputFormat) pour la locale courante. */
+    fun pickerText(c: java.util.Calendar): String {
+        val base = (java.text.DateFormat.getDateInstance(java.text.DateFormat.SHORT, java.util.Locale.getDefault())
+            as java.text.SimpleDateFormat).toPattern()
+        val pattern = base.replace(Regex("\\s+"), "").replace(Regex("d{1,2}"), "dd")
+            .replace(Regex("M{1,2}"), "MM").replace(Regex("y{1,4}"), "yyyy")
+        val utc = java.util.TimeZone.getTimeZone("UTC")
+        return java.text.SimpleDateFormat(pattern, java.util.Locale.getDefault()).apply { timeZone = utc }
+            .format(java.util.Calendar.getInstance(utc).apply {
+                clear(); set(c.get(java.util.Calendar.YEAR), c.get(java.util.Calendar.MONTH), c.get(java.util.Calendar.DAY_OF_MONTH))
+            }.time)
+    }
 }
