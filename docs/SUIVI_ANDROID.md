@@ -7,7 +7,7 @@ Document de reprise entre sessions. Concis : état, décisions, prochain lot.
 | Élément | Emplacement |
 |---|---|
 | Code Android (référence) | `Nourdine84/eTix`, branche `feature/android-v2` (dernier commit 16/01/2026) |
-| Branches de travail | Lot 1 `fix/android-v2-navigation` ; Lot 2 `feature/android-lot2-magasins` (contient lot 1) ; Lot 3 `feature/android-lot3-accueil-theme` (contient lots 1-2) ; Lot 4 `feature/android-lot4-formulaire-historique` ; Lot 5 `feature/android-lot5-categories` (depuis le lot 4 @ `c77f0ba`) ; **Lot 6 `feature/android-lot6-fiabilisation`** (depuis le lot 5 @ `959f41e`, base de continuation). Anciennes branches conservées. **Rien fusionné** — fusion uniquement après validation téléphone (`docs/REVUE_LOTS_1_2.md`). |
+| Branches de travail | Lot 1 `fix/android-v2-navigation` ; Lot 2 `feature/android-lot2-magasins` (contient lot 1) ; Lot 3 `feature/android-lot3-accueil-theme` (contient lots 1-2) ; Lot 4 `feature/android-lot4-formulaire-historique` ; Lot 5 `feature/android-lot5-categories` (depuis le lot 4 @ `c77f0ba`) ; Lot 6 `feature/android-lot6-fiabilisation` (depuis le lot 5 @ `959f41e`) ; **Lot 7 `feature/android-lot7-budgets`** (depuis le lot 6 @ `8172881`, base de continuation). Anciennes branches conservées. **Rien fusionné** — fusion uniquement après validation téléphone (`docs/REVUE_LOTS_1_2.md`). |
 | Historique Git | `feature/android-v2` et `dev` : ancêtre commun `ab7d6f8`, `dev` a 3 commits propres. `main` : racine distincte, sans ancêtre commun. Détail : `docs/REVUE_LOTS_1_2.md`. Intégration `dev`/`main` = décision séparée. |
 | `Nourdine84/etix-android` | Squelette Gradle sans module `app` — **pas** le dépôt de dev |
 | Copie locale Mac `~/AndroidStudioProjects/eTix` | Sur `dev` (19/12/2025), n'a pas `feature/android-v2` |
@@ -154,6 +154,35 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
 | `095727b` | Code : seuil d'empilement | **36635957810** | **référence** : JVM 93/0/10, 17/17 ×3, fr 4/4, petit écran 6/6, aucun plantage |
 | (suivants) | Documentation uniquement | — | — |
 
+### Lot 7 — Budgets mensuels (feature/android-lot7-budgets)
+- Règles iOS reproduites et **ambiguïtés A1–A9** : `docs/BUDGETS.md` (budget par catégorie, mensuel, reconduit ;
+  pas de budget global saisi — l'agrégat n'existe que sur l'Accueil iOS, non porté).
+- Stockage **additif** (préférences `etix_budgets`, clé = catégorie en minuscules) : aucune migration Room ; tickets et
+  catégories jamais modifiés. Mise à jour A → B avec budget et tickets fictifs déjà présents : conservés.
+- Catégories « Ce mois » : barre verte / orange « Attention — xx% » / rouge « Dépassé — xx% », « dépensé / budget » ;
+  restant et dépassement lus par TalkBack ; invitation tant qu'aucun budget ; bouton de réglage.
+- Réglage « Budgets mensuels » et saisie dans un écran à barre haute (comme la feuille iOS). Une fenêtre de dialogue
+  essayée d'abord a été abandonnée : recouverte par le clavier à 320 dp / police 1,3 et à police 2,0 (émulateur).
+- Grande police : titre « Catégories » et boutons de période en taille automatique (coupure « Catégori/es » et
+  « Aujou… » constatées à police 2,0).
+- Suites du lot 6 : garantie OCR reformulée + 8 cas de caractérisation des montants ambigus (L1–L8, règle inchangée) ;
+  attente du démarrage fondée sur l'état réel de l'app (verdict APP / SYSTÈME) ; ancien test OCR conservé désactivé.
+- Tests Robolectric : tas 2 Go et nouvelle JVM toutes les 8 classes (OOM à 130 tests).
+- Version `1.7.0-lot7` (versionCode 8 ; build B de test : 9).
+
+#### Traçabilité commits ↔ exécutions CI (lot 7)
+
+| Commit | Nature | Run CI | Résultat |
+|---|---|---|---|
+| `7258c3f` | Tests : OCR ambigus, attente état réel | (poussé avec la suite) | — |
+| `defa346` + `9810a84` | Code budgets + tests | 36639939729 | build échoué (attribut `suffixText`) |
+| `152d65d` | Correctif ressource | 36640759058 | JVM : 1 échec (mémoire saturée) |
+| `74dd4c9`, `aad19fa`, `7ba0f85` | CI / configuration des tests | 36641665027 … 36642473284 | JVM 120/0/10 ; émulateurs : g02 (bouton sous le clavier, test) et **k04 : fenêtre de saisie recouverte par le clavier (défaut d'interface)** |
+| `b0954a5` | Code : barre, grande police | (enchaîné) | — |
+| `e5ded74` | Code : saisie en écran à barre haute | 36644079365 | JVM 121/0/10 ; 22/22 ×3 ; fr 5/5 ; petit écran 9/9 |
+| `aa8758a` | Code : titre de la saisie (taille auto) | **36645961271** | **référence** : JVM 121/0/10 ; 22/22 ×3 ; fr 5/5 ; petit écran 9/9 ; aucun plantage |
+| (suivants) | Documentation uniquement | — | — |
+
 ## Écarts restants avec iOS (référence `feature/home-hero-v2`)
 
 | Écran | Écart | Lot envisagé |
@@ -163,7 +192,8 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
 | Ajouter | Scanner indisponible ; pas de suggestion de catégorie (OCR / historique) | OCR |
 | Historique | Suppression par balayage (iOS) non portée | 5 |
 | Détail ticket | Aligné au lot 6 ; dégradé du montant iOS rendu en bleu uni ; pas de retour haptique | — |
-| Catégories | Budgets mensuels (barre, alerte, invitation, réglage) ; export | à planifier |
+| Catégories | Budgets portés (lot 7) ; export non porté | à planifier |
+| Accueil | Carte « Budget » et effet « budget tendu » sur la phrase (iOS `BudgetSummaryEngine`, `budgetTense`) | à planifier |
 | Détail catégorie | « Voir par magasin » (liste des magasins filtrée) et export non portés | à planifier |
 | Catégories | Choix provisoire « Autre » quand aucune catégorie n'est choisie à l'ajout (iOS : vide) → ces tickets apparaissent sous « Autre » | décision produit |
 | Magasins | Comparaison entre magasins, graphique « Historique des achats » | 5 |

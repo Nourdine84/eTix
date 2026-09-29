@@ -1,4 +1,4 @@
-# Validation sur émulateur — lots 1 à 6
+# Validation sur émulateur — lots 1 à 7
 
 **Ce n'est pas une validation sur téléphone physique.** Émulateurs Android officiels (Google) dans GitHub Actions,
 données fictives uniquement, build de test signé avec la clé de développement du runner
@@ -41,6 +41,32 @@ Run : https://github.com/Nourdine84/eTix/actions/runs/36601028467
 | c01 | Lot 4 : ajout avec date (sélecteur), catégorie « Carburant », description |
 | c02 | Lot 4 : sections, recherche « carbu », filtre date de début, réinitialisation |
 | c03 | Lot 4 : édition préremplie, catégorie libre « Péage fictif », reprise dans le sélecteur |
+
+## Lot 7 — budgets (branche `feature/android-lot7-budgets`)
+
+Commit testé : **`aa8758a`** — run https://github.com/Nourdine84/eTix/actions/runs/36645961271 (dernier commit de code).
+
+| Niveau | Environnement | Résultat |
+|---|---|---|
+| JVM + Robolectric | runner Ubuntu | **121 réussis, 0 échec, 10 désactivés** |
+| Émulateur API 36 / 34 / 21 | en-US | **22/22** chacun |
+| Émulateur API 34 fr-FR | clavier français | **5/5** (dont budget « 12,5 » → 12,50 € et « 1 200 » → 1 200 €) |
+| Émulateur API 36 petit écran | 360 dp police 1,3 et 2,0 ; 320 dp police 1,3 | **9/9** |
+| Mise à jour A → B | API 21, 34, 36 | budget « Autre » 20,50 € saisi avec le build A, conservé après `install -r` + processus tué ; tickets intacts |
+| Plantages | 5 émulateurs | aucun |
+
+Budgets vérifiés sur émulateur : dépassement (« Dépassé — 129% », 20 € / 15,50 €), attention (« Attention — 83% »),
+catégorie sans budget (pas de barre), « Cette année » sans barre, champ prérempli « 15,50 », « Annuler » sans effet,
+suppression d'UN budget (l'autre intact), thème sombre. « Appliquer » de la saisie mesuré au-dessus du clavier et
+réellement touché dans les 3 passes petit écran (barre haute : y ≈ 56–179 px, clavier à partir de 774–810 px).
+
+Défauts trouvés et corrigés pendant le lot (émulateur / aperçus) :
+- fenêtre de dialogue de saisie recouverte par le clavier (320 dp / 1,3 ; police 2,0) → écran à barre haute ;
+- barre Material 3 avec point final et espace (≠ capsule iOS) ;
+- titre « Catégori/es » coupé et libellés de période tronqués à police 2,0 → taille automatique.
+
+Changement de mois : vérifié en JVM (`BudgetRulesTest.changement_de_mois`, bornes 31/03 23:59 → 01/04 00:00), **pas**
+sur émulateur (horloge système non modifiée).
 
 ## Lot 6 — fiabilisation, détails (branche `feature/android-lot6-fiabilisation`)
 
@@ -89,7 +115,11 @@ Constats en cours de route :
 « Fenêtre sans focus » au 1er écran après démarrage à froid : 4 fois sur 42 exécutions standard (14 runs × API 21/34/36), uniquement sur API 34 et 36. Diagnostic ajouté
 (capture + `dumpsys window`) : au moment du diagnostic, l'app a bien le focus → lenteur de démarrage à froid après
 mise à jour (TotalTime mesuré : API 21 432 ms, API 34 839 ms, API 36 1 262 ms dans un run réussi). Attente du
-1er écran portée à 30 s (`a2e42a1`) ; non reproduit sur les runs suivants (échantillon faible). **À surveiller** ; démarrage à froid sur téléphone à mesurer.
+1er écran portée à 30 s (`a2e42a1`) ; non reproduit sur les runs suivants (échantillon faible).
+**Lot 7** : le délai rallongé est remplacé par une attente fondée sur l'**état réel** de l'app (`E2e.waitForAppReady` :
+activité eTix au premier plan, puis fenêtre avec le focus ; temps publiés dans l'annotation « Démarrages »). En cas
+d'échec, le verdict distingue « APP » (aucune activité au premier plan) de « SYSTÈME » (au premier plan sans focus).
+**Cause non démontrée** : ni défaut de test ni défaut d'application n'est retenu à ce stade ; diagnostics conservés.
 
 ## Lot 5 — résultat de référence (branche `feature/android-lot5-categories`)
 

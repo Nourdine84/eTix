@@ -86,5 +86,22 @@ occurrence, montant après le mot-clé, ligne suivante si colonnes séparées ; 
 espèces − rendu. Indépendant des catégories et de l'enseigne. 18 cas de régression synthétiques
 (`OCRAmountRegressionTest`). Inventaire des tests désactivés : `docs/TESTS_DESACTIVES.md`.
 
-Limites connues : quantité suivie d'un prix séparés par une espace (« 2 125,00 ») lue comme 2 125,00 ;
-ticket sans aucun mot-clé → plus grand montant (repli historique). À valider sur de vrais tickets.
+**Portée de la correction (reformulée au lot 7)** : les 18 cas de régression `OCRAmountRegressionTest` passent ;
+cela ne constitue **pas** une garantie générale de sélection du bon montant. Les limites ci-dessous restent ouvertes,
+et aucun ticket réel n'a encore été testé.
+
+## Limites connues — montants ambigus (tests de caractérisation `OCRAmountAmbiguityTest`)
+
+Ces tests **figent le comportement actuel** (parfois faux) pour qu'aucun changement de la règle ne passe inaperçu :
+ils ne valident pas ce comportement. Toute évolution de la règle devra modifier ces tests explicitement.
+
+| # | Texte (synthétique) | Lu aujourd'hui | Lecture probable / question |
+|---|---|---|---|
+| L1 | `TOTAL 2 125,00` / `2 125,00` | 2 125,00 | Milliers ou quantité 2 × 125,00 ? Ambigu sans contexte |
+| L2 | `CAFE 2,50` + `SANDWICH 6,00` (aucun mot-clé) | 6,00 (plus grand) | Somme 8,50 ? Ticket incomplet |
+| L3 | `TOTAL 1,234.56` (format anglo-saxon) | **234,56** | 1 234,56 — défaut probable (tickets étrangers) |
+| L4 | `TOTAL -5,00` (remboursement) | aucun | Un ticket négatif n'existe pas dans l'app : à décider |
+| L5 | `ESPECES 50,00` sans rendu ni total | 50,00 | Montant remis, pas forcément dû |
+| L6 | deux `TOTAL TTC` (10,00 puis 12,00) | 12,00 (dernier) | Ticket corrigé/dupliqué : dernier plausible |
+| L7 | `TOTAL 12,500` (3 décimales) + `CB 12,50` | 12,50 (repli carte) | Correct par chance ; 3 décimales non reconnues |
+| L8 | `TOTAL 12.345,67` | 12 345,67 | Correct |
