@@ -77,7 +77,7 @@ class E2eParcoursTest {
         onView(shown(R.id.btnScanTicket)).check(matches(not(isEnabled())))
 
         tab(R.id.menu_add)
-        waitFor(shown(R.id.btnSaveTicket))
+        waitFor(withId(R.id.inputStore))
         onView(shown(R.id.btnScanTicket)).check(matches(not(isEnabled())))
         shot("04_ajouter_vide")
 
@@ -114,7 +114,7 @@ class E2eParcoursTest {
         var saisi = ""
         onView(shown(R.id.inputAmount)).check { v, _ -> saisi = (v as EditText).text.toString() }
         closeSoftKeyboard()
-        onView(shown(R.id.btnSaveTicket)).perform(scrollTo(), click())
+        onView(withId(R.id.btnSaveTicket)).perform(scrollTo(), click())
 
         tab(R.id.menu_home)
         waitFor(withText("1 ticket enregistré"))

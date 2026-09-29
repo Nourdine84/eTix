@@ -106,7 +106,7 @@ class E2eLot4Test {
         onView(shown(R.id.inputDescription)).perform(scrollTo(), click(), typeText("Plein fictif"))
         closeSoftKeyboard()
         shot("32_ajout_formulaire_complet")
-        onView(shown(R.id.btnSaveTicket)).perform(scrollTo(), click())
+        onView(withId(R.id.btnSaveTicket)).perform(scrollTo(), click())
         // formulaire réinitialisé (iOS) : catégorie revenue à « Choisir une catégorie »
         waitFor(allOf(withId(R.id.tvCategoryValue), withText("Choisir une catégorie")))
     }
@@ -157,7 +157,9 @@ class E2eLot4Test {
         onView(inOverlay(R.id.inputAmount)).check(matches(withText("48,90")))
         shot("37_modification_prerempli")
 
+        closeSoftKeyboard()
         onView(inOverlay(R.id.rowCategory)).perform(scrollTo(), click())
+        shot("37b_dialogue_categorie_edition")
         onView(withText("Autre…")).inRoot(isDialog()).perform(click())
         onView(isAssignableFrom(EditText::class.java)).inRoot(isDialog()).perform(replaceText("Péage fictif"))
         onView(withText("OK")).inRoot(isDialog()).perform(click())
