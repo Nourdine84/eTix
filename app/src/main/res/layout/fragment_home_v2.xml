@@ -98,11 +98,13 @@
             android:layout_marginTop="20dp"
             android:minHeight="150dp">
 
+            <!-- Halo : dégradé radial créé dans HomeFragmentV2 (rayon en dp). Un rayon en « % » dans le
+                 drawable XML plante sur Android 5 (RadialGradient radius 0, constaté sur émulateur API 21). -->
             <View
+                android:id="@+id/heroGlow"
                 android:layout_width="match_parent"
                 android:layout_height="190dp"
                 android:layout_gravity="center"
-                android:background="@drawable/bg_v2_hero_glow"
                 android:importantForAccessibility="no" />
 
             <LinearLayout
