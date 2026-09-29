@@ -132,10 +132,16 @@ class E2eClavierPetitEcranTest {
         shot("k01_ajout_clavier_${passe}")
         assertTrue("Bouton Enregistrer masqué par le clavier après défilement : $apres", apres.visible)
         onView(withId(R.id.btnSaveTicket)).perform(click()) // vrai toucher à l'emplacement mesuré
-        val saved = runBlocking {
-            AppDatabase.getInstance(ctx).ticketDao().getAllFlow().first().any { it.store == store && it.amount == 4.20 }
+        // Enregistrement asynchrone (coroutine) : on attend jusqu'à 5 s
+        var saved = false
+        val end = SystemClock.uptimeMillis() + 5000
+        while (!saved && SystemClock.uptimeMillis() < end) {
+            saved = runBlocking {
+                AppDatabase.getInstance(ctx).ticketDao().getAllFlow().first().any { it.store == store && it.amount == 4.20 }
+            }
+            if (!saved) SystemClock.sleep(200)
         }
-        assertTrue("Ticket non enregistré après le toucher du bouton", saved)
+        assertTrue("Ticket non enregistré 5 s après le toucher du bouton", saved)
     }
 
     @Test
@@ -149,8 +155,10 @@ class E2eClavierPetitEcranTest {
         onView(withId(R.id.menu_history)).perform(click())
         onView(withId(R.id.inputSearch)).perform(replaceText("$store modif"))
         E2e.closeKeyboard()
-        waitFor(withText("$store modif"))
-        onView(allOf(withText("$store modif"), isDisplayed())).perform(click())
+        // Le champ de recherche contient aussi le texte : on vise la ligne de la liste
+        val row = allOf(withText("$store modif"), isDescendantOfA(withId(R.id.recyclerHistory)))
+        waitFor(row)
+        onView(allOf(row, isDisplayed())).perform(click())
         waitFor(allOf(withId(R.id.btnEdit), isDescendantOfA(withId(R.id.overlayContainer))))
         onView(allOf(withId(R.id.btnEdit), isDescendantOfA(withId(R.id.overlayContainer)))).perform(scrollTo(), click())
         val amount = allOf(withId(R.id.inputAmount), isDescendantOfA(withId(R.id.overlayContainer)))
