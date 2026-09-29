@@ -89,42 +89,6 @@ jobs:
           path: app/build/screenshots/
           if-no-files-found: ignore
 
-      - name: Install Pillow
-        if: always()
-        run: python3 -m pip install --quiet pillow
-
-      - name: Shot 01_accueil_reglages_light
-        if: always() && hashFiles('app/build/screenshots/01_accueil_reglages_light.png') != ''
-        run: python3 .github/scripts/emit_image.py app/build/screenshots/01_accueil_reglages_light.png
-
-      - name: Shot 02_magasins_mois_light
-        if: always() && hashFiles('app/build/screenshots/02_magasins_mois_light.png') != ''
-        run: python3 .github/scripts/emit_image.py app/build/screenshots/02_magasins_mois_light.png
-
-      - name: Shot 03_magasins_mois_dark
-        if: always() && hashFiles('app/build/screenshots/03_magasins_mois_dark.png') != ''
-        run: python3 .github/scripts/emit_image.py app/build/screenshots/03_magasins_mois_dark.png
-
-      - name: Shot 04_magasins_vide_aujourdhui_light
-        if: always() && hashFiles('app/build/screenshots/04_magasins_vide_aujourdhui_light.png') != ''
-        run: python3 .github/scripts/emit_image.py app/build/screenshots/04_magasins_vide_aujourdhui_light.png
-
-      - name: Shot 05_fiche_magasin_light
-        if: always() && hashFiles('app/build/screenshots/05_fiche_magasin_light.png') != ''
-        run: python3 .github/scripts/emit_image.py app/build/screenshots/05_fiche_magasin_light.png
-
-      - name: Shot 05b_fiche_magasin_bas_light
-        if: always() && hashFiles('app/build/screenshots/05b_fiche_magasin_bas_light.png') != ''
-        run: python3 .github/scripts/emit_image.py app/build/screenshots/05b_fiche_magasin_bas_light.png
-
-      - name: Shot 06_fiche_magasin_dark
-        if: always() && hashFiles('app/build/screenshots/06_fiche_magasin_dark.png') != ''
-        run: python3 .github/scripts/emit_image.py app/build/screenshots/06_fiche_magasin_dark.png
-
-      - name: Shot 07_reglages_depuis_accueil_light
-        if: always() && hashFiles('app/build/screenshots/07_reglages_depuis_accueil_light.png') != ''
-        run: python3 .github/scripts/emit_image.py app/build/screenshots/07_reglages_depuis_accueil_light.png
-
       # Récapitulatif des tests (lisible via l'API, succès comme échec)
       - name: Report test summary
         if: always()
@@ -170,3 +134,33 @@ jobs:
               msg = "%0A".join(x.replace("%", "%25") for x in out[n:n + chunk])
               print(f"::error title=Build errors {n // chunk + 1}::{msg}")
           PY
+
+  # Aperçu : une capture par job (limites d'annotations GitHub), lisible via l'API checks
+  preview:
+    needs: build
+    if: always()
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shot: [01_accueil_reglages_light, 02_magasins_mois_light, 03_magasins_mois_dark, 04_magasins_vide_aujourdhui_light, 05_fiche_magasin_light, 05b_fiche_magasin_bas_light, 06_fiche_magasin_dark, 07_reglages_depuis_accueil_light]
+    steps:
+      - name: Checkout scripts
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+
+      - name: Download screenshots
+        uses: actions/download-artifact@v4
+        with:
+          name: screenshots
+          path: shots
+
+      - name: Emit ${{ matrix.shot }}
+        run: |
+          python3 -m pip install --quiet pillow
+          if [ -f "shots/${{ matrix.shot }}.png" ]; then
+            python3 .github/scripts/emit_image.py "shots/${{ matrix.shot }}.png"
+          else
+            echo "::warning title=shot missing::${{ matrix.shot }}"
+          fi
