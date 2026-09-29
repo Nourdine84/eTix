@@ -64,17 +64,16 @@ object BudgetE2e {
     fun noBudgetOn(category: String) = row(withText(category),
         allOf(withId(R.id.budgetBlock), withEffectiveVisibility(Visibility.GONE)))
 
-    /** Réglage → ligne de la catégorie → saisie AU CLAVIER (après ouverture du clavier) → Appliquer. */
+    /** Réglage → ligne de la catégorie → saisie AU CLAVIER (après ouverture du clavier) → Appliquer (barre haute). */
     fun setBudget(category: String, typed: String) {
         onView(withId(R.id.btnBudgets)).perform(click())
         waitFor(withId(R.id.tvBudgetsTitle))
         onView(allOf(withId(R.id.tvBudgetCategory), withText(category))).perform(E2e.nestedScrollTo(), click())
         waitFor(withId(R.id.inputBudget))
         SystemClock.sleep(1500) // clavier ouvert automatiquement : laisser finir l'animation avant de taper
-        onView(withId(R.id.inputBudget)).inRoot(isDialog()).perform(
-            androidx.test.espresso.action.ViewActions.clearText(), typeText(typed))
-        onView(withId(R.id.inputBudget)).inRoot(isDialog()).check(matches(withText(typed)))
-        onView(withText("Appliquer")).inRoot(isDialog()).perform(click())
+        onView(withId(R.id.inputBudget)).perform(androidx.test.espresso.action.ViewActions.clearText(), typeText(typed))
+        onView(withId(R.id.inputBudget)).check(matches(withText(typed)))
+        onView(withId(R.id.btnBudgetApply)).perform(click())
     }
 
     fun settingsValue(category: String, value: String) =
@@ -148,13 +147,13 @@ class E2eBudgetsTest {
         onView(withId(R.id.btnBudgets)).perform(click())
         onView(allOf(withId(R.id.tvBudgetCategory), withText("E2E Hausse"))).perform(E2e.nestedScrollTo(), click())
         waitFor(withId(R.id.inputBudget))
-        onView(withId(R.id.inputBudget)).inRoot(isDialog()).check(matches(withText("15,50")))
+        onView(withId(R.id.inputBudget)).check(matches(withText("15,50")))
         shot("56_saisie_budget_preremplie")
-        onView(withText("Annuler")).inRoot(isDialog()).perform(click())
+        onView(withId(R.id.btnBudgetCancel)).perform(click())
 
         onView(allOf(withId(R.id.tvBudgetCategory), withText("E2E Baisse"))).perform(E2e.nestedScrollTo(), click())
         waitFor(withId(R.id.inputBudget))
-        onView(withId(R.id.btnDeleteBudget)).inRoot(isDialog()).perform(click())
+        onView(withId(R.id.btnDeleteBudget)).perform(androidx.test.espresso.action.ViewActions.scrollTo(), click())
         BudgetE2e.settingsValue("E2E Baisse", "—")
         BudgetE2e.settingsValue("E2E Hausse", "15,50 €")   // l'autre budget n'est pas touché
         assertNull(BudgetStore(ctx).limit("E2E Baisse"))

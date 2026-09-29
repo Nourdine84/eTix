@@ -119,6 +119,10 @@ class MainActivityV2 : AppCompatActivity() {
         push(com.etix.ui.budget.BudgetSettingsFragment(), BACKSTACK_BUDGETS)
     }
 
+    fun openBudgetEdit(category: String) {
+        push(com.etix.ui.budget.BudgetEditFragment.newInstance(category), BACKSTACK_BUDGET_EDIT)
+    }
+
     fun openStoreDetail(storeKey: String) {
         push(StoreDetailFragment.newInstance(storeKey), BACKSTACK_STORE)
     }
@@ -178,5 +182,6 @@ class MainActivityV2 : AppCompatActivity() {
         private const val BACKSTACK_STORE = "store_detail"
         private const val BACKSTACK_CATEGORY = "category_detail"
         private const val BACKSTACK_BUDGETS = "budget_settings"
+        private const val BACKSTACK_BUDGET_EDIT = "budget_edit"
     }
 }

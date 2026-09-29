@@ -4,7 +4,6 @@ import android.content.Context
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
-import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import com.etix.R
 import com.etix.data.AppDatabase
@@ -29,7 +28,6 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
-import org.robolectric.shadows.ShadowDialog
 
 /**
  * Lot 7 — budgets mensuels (iOS CategoryView / CategoryRowView / BudgetSettingsView) : barres correct / attention /
@@ -132,40 +130,51 @@ class Lot7ScreenshotTest {
         assertTrue(a.findViewById<View>(R.id.tvBudgetsTitle).isShown)
     }
 
-    private fun openEdit(a: MainActivityV2, category: String): AlertDialog {
+    private fun openEdit(a: MainActivityV2, category: String): View {
         a.openBudgetSettings(); idle()
         val rows = a.findViewById<android.view.ViewGroup>(R.id.budgetRows)
         waitFor { rows.childCount > 0 }
         val row = (0 until rows.childCount).map { rows.getChildAt(it) }
             .first { it.findViewById<TextView>(R.id.tvBudgetCategory)?.text?.toString() == category }
         row.performClick(); idle()
-        return ShadowDialog.getLatestDialog() as AlertDialog
+        org.robolectric.shadows.ShadowLooper.idleMainLooper(1, java.util.concurrent.TimeUnit.SECONDS); idle()
+        return a.findViewById<android.view.ViewGroup>(R.id.overlayContainer)
     }
 
     @Test fun saisie_francaise_appliquer_modifier_supprimer() {
         seed()
         val a = launchCategories()
-        val d = openEdit(a, "Loisirs")
-        val input = d.findViewById<EditText>(R.id.inputBudget)!!
-        val apply = d.getButton(AlertDialog.BUTTON_POSITIVE)
+        val o = openEdit(a, "Loisirs")
+        val input = o.findViewById<EditText>(R.id.inputBudget)
+        val apply = o.findViewById<View>(R.id.btnBudgetApply)
         assertFalse("Appliquer inactif sans montant", apply.isEnabled)
         input.setText("abc"); idle(); assertFalse(apply.isEnabled)
         input.setText("0"); idle(); assertFalse(apply.isEnabled)
         input.setText("12,50"); idle(); assertTrue(apply.isEnabled)
-        captureDialog(d, "l7_05_saisie_budget_light")
+        capture(a, "l7_05_saisie_budget_light")
         apply.performClick(); idle()
         assertEquals(12.5, BudgetStore(ctx).limit("Loisirs")!!, 0.0)
-        waitFor { a.findViewById<android.view.ViewGroup>(R.id.budgetRows).let { r ->
-            (0 until r.childCount).any { (r.getChildAt(it).findViewById<TextView>(R.id.tvBudgetValue))?.text?.toString() == "12,50 €" } } }
+        waitFor { a.findViewById<android.view.ViewGroup>(R.id.budgetRows)?.let { r ->
+            (0 until r.childCount).any { (r.getChildAt(it).findViewById<TextView>(R.id.tvBudgetValue))?.text?.toString() == "12,50 €" } } == true }
 
-        // Modification : champ prérempli « 12,50 » (iOS : « 13 », voir docs/BUDGETS.md)
-        val d2 = openEdit(a, "Loisirs")
-        assertEquals("12,50", d2.findViewById<EditText>(R.id.inputBudget)!!.text.toString())
-        val del = d2.findViewById<View>(R.id.btnDeleteBudget)!!
+        // Modification : champ prérempli « 12,50 » (iOS : « 13 », voir docs/BUDGETS.md A1)
+        a.onBackPressedDispatcher.onBackPressed(); idle()
+        val o2 = openEdit(a, "Loisirs")
+        assertEquals("12,50", o2.findViewById<EditText>(R.id.inputBudget).text.toString())
+        val del = o2.findViewById<View>(R.id.btnDeleteBudget)
         assertEquals(View.VISIBLE, del.visibility)
         del.performClick(); idle()
         assertEquals(null, BudgetStore(ctx).limit("Loisirs"))
         assertEquals(5, runBlocking { dao.getAllFlow().first().size }) // aucun ticket touché
+    }
+
+    @Test fun annuler_ne_modifie_rien() {
+        seed(); budgets()
+        val a = launchCategories()
+        val o = openEdit(a, "Courses")
+        o.findViewById<EditText>(R.id.inputBudget).setText("999"); idle()
+        o.findViewById<View>(R.id.btnBudgetCancel).performClick(); idle()
+        assertEquals(120.0, BudgetStore(ctx).limit("Courses")!!, 0.0)
     }
 
     @Test @Config(qualifiers = "w320dp-h640dp-hdpi")
@@ -175,9 +184,8 @@ class Lot7ScreenshotTest {
         val a = launchCategories()
         a.findViewById<RecyclerView>(R.id.recyclerViewCategories).scrollToPosition(2); idle()
         capture(a, "l7_06_categories_budgets_320dp_police_1_3_light")
-        val d = openEdit(a, "Courses")
-        captureDialog(d, "l7_07_saisie_budget_320dp_police_1_3_light")
-        d.dismiss(); idle()
+        openEdit(a, "Courses")
+        capture(a, "l7_07_saisie_budget_320dp_police_1_3_light")
     }
 
     @Test fun police_2_light() {
@@ -186,20 +194,8 @@ class Lot7ScreenshotTest {
         val a = launchCategories()
         a.findViewById<RecyclerView>(R.id.recyclerViewCategories).scrollToPosition(2); idle()
         capture(a, "l7_08_categories_budgets_police_2_light")
-        val d = openEdit(a, "Courses")
-        captureDialog(d, "l7_09_saisie_budget_police_2_light")
+        openEdit(a, "Courses")
+        capture(a, "l7_09_saisie_budget_police_2_light")
     }
 
-    /** La fenêtre de dialogue est distincte de celle de l'activité : capture de sa propre vue. */
-    private fun captureDialog(d: AlertDialog, name: String) {
-        idle()
-        val root = d.window!!.decorView
-        val bmp = android.graphics.Bitmap.createBitmap(root.width.coerceAtLeast(1), root.height.coerceAtLeast(1),
-            android.graphics.Bitmap.Config.ARGB_8888)
-        val c = android.graphics.Canvas(bmp)
-        c.drawColor(android.graphics.Color.parseColor("#80000000"))
-        root.draw(c)
-        val dir = java.io.File("build/screenshots").apply { mkdirs() }
-        java.io.FileOutputStream(java.io.File(dir, "$name.png")).use { bmp.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
-    }
 }

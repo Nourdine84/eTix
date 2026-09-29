@@ -21,7 +21,7 @@ Référence : `Nourdine84/etix-ios` branche `feature/home-hero-v2` (`988eaf4`) �
 | Invitation | « Définir des budgets mensuels » en fin de liste tant qu'**aucun** budget n'existe | Identique |
 | Accès au réglage | Bouton de la barre de navigation (curseurs) + invitation | Bouton en haut à droite de « Catégories » + invitation |
 | Liste du réglage | Catégories **distinctes des tickets**, non vides, triées ; budget ou « — » ; pied « Les budgets s'appliquent à la vue mensuelle. » | Identique ; si aucune catégorie : « Aucune catégorie : ajoutez d'abord un ticket. » |
-| Saisie | « Ex : 300 », virgule acceptée, > 0 ; « Appliquer » inactif sinon ; « Supprimer le budget » si un budget existe (sans confirmation) | Identique ; message « Montant invalide » sous le champ |
+| Saisie | Feuille avec barre haute « Annuler » / « Appliquer », « Ex : 300 », virgule acceptée, > 0 ; « Appliquer » inactif sinon ; « Supprimer le budget » si un budget existe (sans confirmation) | Écran poussé avec la même barre haute (boutons jamais sous le clavier) ; message « Montant invalide » sous le champ. Une fenêtre de dialogue a d'abord été essayée : sur 320 dp / police 1,3 et à police 2,0 le clavier recouvrait ses boutons (émulateur, run 36642473284) → abandonnée |
 
 ## Ambiguïtés et choix faits (à valider)
 

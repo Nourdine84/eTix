@@ -64,7 +64,7 @@ class BudgetSettingsFragment : Fragment() {
             row.tvBudgetCategory.text = cat
             row.tvBudgetValue.text = limit?.let { BudgetRules.formatEuro(it) } ?: "—"
             row.root.contentDescription = "$cat, " + (limit?.let { "budget ${BudgetRules.formatEuro(it)}" } ?: "aucun budget")
-            row.root.setOnClickListener { BudgetEditDialog.show(this, cat, store) }
+            row.root.setOnClickListener { (activity as? com.etix.ui.main.MainActivityV2)?.openBudgetEdit(cat) }
         }
     }
 
