@@ -22,14 +22,40 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // Clé QA dédiée et durable : fournie UNIQUEMENT par variables d'environnement
+    // (secrets GitHub en CI). Jamais de chemin, mot de passe ou keystore dans le dépôt.
+    val qaKeystoreFile = System.getenv("ETIX_QA_KEYSTORE_FILE")?.takeIf { it.isNotBlank() }
+    val qaSigningRequired = System.getenv("ETIX_QA_SIGNING_REQUIRED") == "true"
+    if (qaSigningRequired && qaKeystoreFile == null) {
+        throw GradleException("ETIX_QA_SIGNING_REQUIRED=true mais ETIX_QA_KEYSTORE_FILE absent : APK QA non signable avec la clé QA durable.")
+    }
+
+    signingConfigs {
+        if (qaKeystoreFile != null) {
+            create("qa") {
+                storeFile = file(qaKeystoreFile)
+                storePassword = System.getenv("ETIX_QA_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("ETIX_QA_KEY_ALIAS")?.takeIf { it.isNotBlank() } ?: "etix-qa"
+                // PKCS12 : mot de passe de clé = mot de passe du keystore
+                keyPassword = System.getenv("ETIX_QA_KEY_PASSWORD")?.takeIf { it.isNotBlank() }
+                    ?: System.getenv("ETIX_QA_KEYSTORE_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         // Build de test installable À CÔTÉ de l'app existante :
         // package com.etix.qa → données, signature et désinstallation totalement séparées de com.etix.
+        // Signature : clé QA durable si fournie (CI), sinon clé debug locale (build local non
+        // destiné à être installé par-dessus un APK QA de la CI).
         create("qa") {
             initWith(getByName("debug"))
             applicationIdSuffix = ".qa"
             versionNameSuffix = "-qa"
             matchingFallbacks += listOf("debug")
+            if (qaKeystoreFile != null) {
+                signingConfig = signingConfigs.getByName("qa")
+            }
         }
         release {
             isMinifyEnabled = false

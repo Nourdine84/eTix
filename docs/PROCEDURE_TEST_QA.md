@@ -30,17 +30,16 @@ adb pull <chemin>/base.apk etix-installee.apk
 apksigner verify --print-certs etix-installee.apk | grep SHA-256
 ```
 
-Comparez avec l'empreinte publiée par la CI (annotation « APK debug » du run).
-Elles seront **différentes** (clé CI ≠ clé de votre Mac) : c'est pourquoi l'artefact `app-debug-apk`
-(`app-debug.apk`, package `com.etix`) ne doit **pas** être utilisé — `adb install -r` échouerait avec
-`INSTALL_FAILED_UPDATE_INCOMPATIBLE`, et le seul contournement serait de désinstaller `com.etix`
-(perte des tickets). **Ne pas le faire.**
+Cette empreinte est celle de votre clé locale (Android Studio). Elle ne sera jamais celle de la CI :
+un APK `com.etix` produit par la CI ne pourrait pas remplacer votre app sans la désinstaller (perte des
+tickets). C'est pourquoi la CI ne publie plus d'APK `com.etix` : seul eTix QA (`com.etix.qa`) est livré.
 
 ## 2. Installer eTix QA
 
-1. GitHub → dépôt `Nourdine84/eTix` → Actions → run de la branche du lot → artefact `eTix-QA-<version>.apk`.
-2. L'artefact est un zip ; il contient le fichier `eTix-QA-<version>.apk`.
-3. Installation :
+1. Prérequis : signature QA durable configurée (`SIGNATURE_QA.md`). Sans elle, la CI ne publie aucun APK QA.
+2. GitHub → dépôt `Nourdine84/eTix` → Actions → run indiqué dans le compte rendu → artefact `eTix-QA-<version>.apk`.
+3. L'artefact est un zip ; il contient le fichier `eTix-QA-<version>.apk`.
+4. Première installation :
 
 ```bash
 unzip eTix-QA-1.2.0-lot2-qa.apk.zip
@@ -62,27 +61,19 @@ Sur le téléphone : deux icônes, « eTix » et « eTix QA ». Ouvrir « eTix �
 
 ## 4. Mises à jour de eTix QA
 
-- Lot suivant : `adb install -r eTix-QA-<nouvelle-version>.apk` (met à jour **uniquement** `com.etix.qa`).
-- Si `INSTALL_FAILED_UPDATE_INCOMPATIBLE` : la clé CI a changé (nouvelle branche sans secret `QA_KEYSTORE_B64`).
-  Seule option : `adb uninstall com.etix.qa` — **vérifier le `.qa`** — cela efface uniquement les données de test.
-- Pour une clé définitivement stable : voir « Clé de signature QA » ci-dessous.
-
-## 5. Nettoyage (quand vous le décidez)
-
 ```bash
-adb uninstall com.etix.qa     # jamais com.etix
+adb install -r eTix-QA-<nouvelle-version>.apk     # met à jour uniquement com.etix.qa, données QA conservées
 ```
 
-## Clé de signature QA (recommandé, action de votre part)
+- Tous les APK QA publiés sont signés par la clé QA durable (voir `SIGNATURE_QA.md`) ; la CI refuse de
+  publier un APK dont l'empreinte diffère de `QA_CERT_SHA256`.
+- Aucune désinstallation n'est prévue dans le processus de mise à jour.
+- Installer les lots dans l'ordre : un APK plus ancien (versionCode inférieur) est refusé par Android
+  (`INSTALL_FAILED_VERSION_DOWNGRADE`) ; ce n'est pas une panne, prendre le dernier APK publié.
+- Si `adb` répond `INSTALL_FAILED_UPDATE_INCOMPATIBLE` : **arrêter**, ne rien désinstaller, me transmettre
+  le message et l'empreinte affichée dans le run. C'est une anomalie à analyser, pas une étape normale.
 
-Sans secret, la CI garde la clé en cache **par branche** : chaque nouvelle branche de lot produit une
-nouvelle signature. Pour une signature stable sur tous les lots :
+## 5. Fin de campagne (décision de votre part uniquement)
 
-```bash
-keytool -genkeypair -v -keystore etix-qa.keystore -alias androiddebugkey \
-  -storepass android -keypass android -keyalg RSA -keysize 2048 -validity 10000 \
-  -dname "CN=eTix QA"
-base64 -i etix-qa.keystore | gh secret set QA_KEYSTORE_B64 -R Nourdine84/eTix
-```
-
-Clé de test uniquement (jamais pour une publication Play Store). Conservez `etix-qa.keystore` hors du dépôt.
+Retirer eTix QA du téléphone n'est jamais nécessaire au processus ; si vous le décidez un jour,
+la commande ne concerne que le package `.qa` : `adb uninstall com.etix.qa`.

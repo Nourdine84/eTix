@@ -48,7 +48,7 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
 
 ### Lot 2 — Magasins + Réglages (feature/android-lot2-magasins)
 - Build QA : `applicationIdSuffix = ".qa"`, nom « eTix QA », versionNameSuffix `-qa` → installable à côté de `com.etix`, données séparées.
-- CI : clé de signature stable (secret `QA_KEYSTORE_B64` si présent, sinon cache Actions), contrôle package/version/empreinte certificat, APK nommé `eTix-QA-<version>.apk`.
+- CI : contrôle package/version/empreinte certificat, APK nommé `eTix-QA-<version>.apk`. (Signature : remplacée ensuite par la clé QA durable, voir ci-dessous.)
 - Onglet Magasins (iOS `StoreListView`) : période Aujourd'hui/Ce mois/Cette année (défaut Ce mois), cartes classées (N°1-3), total, nb tickets, €/visite, part %, dernier passage, état vide.
 - Fiche magasin (iOS `StoreDetailView`) : total, stats (panier moyen, tickets, dernière visite, fréquence), comparaison mensuelle, top 3 catégories, tickets (5 + « voir les autres ») → détail ticket.
 - Réglages : icône engrenage sur l'Accueil → écran Réglages existant (inchangé), Retour → Accueil.
@@ -57,6 +57,12 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
 - CI : `ANDROID_USER_HOME` fixé (AGP rangeait la clé dans `~/.config/.android`, le cache ne la voyait pas → signature différente à chaque run).
 - Corrections issues des captures : libellés de période tronqués ; libellés de tous les onglets visibles (comme iOS) ; barre d'onglets sombre en thème sombre ; texte invisible de 3 boutons Réglages (texte bleu sur fond bleu).
 - Version : `1.2.0-lot2` (versionCode 3), APK QA `1.2.0-lot2-qa`.
+
+### Signature QA durable (sur lot 2, reprise par le lot 3)
+- `app/build.gradle.kts` : `signingConfig` QA alimentée uniquement par variables d'environnement ; `ETIX_QA_SIGNING_REQUIRED=true` fait échouer le build si la clé manque.
+- CI : secrets `QA_KEYSTORE_B64` + `QA_KEYSTORE_PASSWORD` ; keystore hors workspace, supprimé en fin de job ; variable `QA_CERT_SHA256` → toute empreinte différente bloque la publication. Cache de clé supprimé du workflow. Plus d'APK `com.etix` publié.
+- `GITHUB_TOKEN` limité à `contents: read`.
+- Procédure : `docs/SIGNATURE_QA.md` ; mises à jour QA par `adb install -r`, aucune désinstallation prévue.
 
 ## Test OCR désactivé — conditions de réactivation
 
@@ -104,4 +110,4 @@ Recommandation : A (ou B) pour la parité, puis C si la confidentialité des tic
 | 11 | Accueil V2 : fond blanc codé en dur (`#FFFFFF`) → illisible/incohérent en thème sombre | P2 |
 | 13 | Réglages : bouton « Vider tous les tickets » affiché mais **sans action** (non câblé) — trompeur ; iOS a « Supprimer tous les tickets » avec confirmation. Non modifié (action destructive → décision requise) | P2 |
 | 14 | Thème sombre global : `colorSurface` du thème figé en clair ; Accueil/Réglages V1 codés en dur | P2 |
-| 12 | Cache Actions de la clé QA : stable seulement par branche ; s'il est créé sur `dev`/`main`, des PR de forks (dépôt public) peuvent le restaurer. Préférer le secret `QA_KEYSTORE_B64` | P3 |
+| 12 | Signature QA : clé durable via secrets — **en attente de votre action** (`docs/SIGNATURE_QA.md`) ; tant qu'elle manque, aucun APK QA n'est publié | P1 |

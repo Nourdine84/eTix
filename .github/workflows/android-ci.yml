@@ -9,10 +9,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      QA_KEYSTORE_B64: ${{ secrets.QA_KEYSTORE_B64 }}
-      # Emplacement déterministe de debug.keystore (sinon AGP choisit ~/.config/.android)
-      ANDROID_USER_HOME: /home/runner/.android
+    # Permissions minimales du GITHUB_TOKEN : lecture du code uniquement
+    permissions:
+      contents: read
+    outputs:
+      shots: ${{ steps.shots.outputs.list }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -27,58 +28,81 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
-      # Clé de signature stable entre les runs : sans elle chaque APK CI a une signature
-      # différente et l'app QA ne peut pas être mise à jour d'un lot à l'autre.
-      # Recommandé : secret QA_KEYSTORE_B64 (keystore debug encodé base64, mdp "android").
-      # À défaut : cache Actions (stable seulement sur une même branche).
-      - name: Install QA keystore from secret
-        if: env.QA_KEYSTORE_B64 != ''
-        run: mkdir -p ~/.android && echo "$QA_KEYSTORE_B64" | base64 -d > ~/.android/debug.keystore
+      # ---------------------------------------------------------------
+      # Signature QA durable (voir docs/SIGNATURE_QA.md)
+      # Secrets : QA_KEYSTORE_B64 (keystore PKCS12 en base64), QA_KEYSTORE_PASSWORD.
+      # Variable (publique) : QA_CERT_SHA256 = empreinte attendue → tout écart bloque la publication.
+      # Sans secrets : aucun APK QA publié (pas de clé de secours, pas de cache).
+      # Le keystore est écrit hors du workspace, droits 600, supprimé en fin de job.
+      # ---------------------------------------------------------------
+      - name: Prepare QA signing
+        id: signing
+        env:
+          QA_KEYSTORE_B64: ${{ secrets.QA_KEYSTORE_B64 }}
+          QA_KEYSTORE_PASSWORD: ${{ secrets.QA_KEYSTORE_PASSWORD }}
+        run: |
+          if [ -z "$QA_KEYSTORE_B64" ] || [ -z "$QA_KEYSTORE_PASSWORD" ]; then
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+            echo "::warning title=Signature QA::Secrets QA_KEYSTORE_B64 / QA_KEYSTORE_PASSWORD absents : aucun APK QA publié (voir docs/SIGNATURE_QA.md)."
+            exit 0
+          fi
+          umask 077
+          KS="$RUNNER_TEMP/etix-qa.p12"
+          printf '%s' "$QA_KEYSTORE_B64" | base64 -d > "$KS"
+          echo "ETIX_QA_KEYSTORE_FILE=$KS" >> "$GITHUB_ENV"
+          echo "ready=true" >> "$GITHUB_OUTPUT"
 
-      - name: Restore debug keystore from cache
-        id: kscache
-        if: env.QA_KEYSTORE_B64 == ''
-        uses: actions/cache@v4
-        with:
-          path: ~/.android/debug.keystore
-          key: etix-ci-debug-keystore-v1
-
-      - name: Build Debug + QA APK
+      - name: Build APK
+        env:
+          ETIX_QA_KEYSTORE_PASSWORD: ${{ secrets.QA_KEYSTORE_PASSWORD }}
+          ETIX_QA_SIGNING_REQUIRED: ${{ steps.signing.outputs.ready }}
         run: |
           set -o pipefail
-          ./gradlew assembleDebug assembleQa --console=plain -Dorg.gradle.java.home="$JAVA_HOME" 2>&1 | tee build.log
+          TASKS="assembleDebug"
+          [ "${{ steps.signing.outputs.ready }}" = "true" ] && TASKS="$TASKS assembleQa"
+          ./gradlew $TASKS --console=plain -Dorg.gradle.java.home="$JAVA_HOME" 2>&1 | tee build.log
 
-      # Contrôles de l'APK QA : package distinct, version, empreinte du certificat
+      # Contrôles de l'APK QA : package, version, empreinte complète du certificat
       - name: Inspect QA APK
         id: qa
+        if: steps.signing.outputs.ready == 'true'
+        env:
+          EXPECTED_CERT: ${{ vars.QA_CERT_SHA256 }}
         run: |
           APK=app/build/outputs/apk/qa/app-qa.apk
           BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
-          PKG=$("$BT/aapt2" dump badging "$APK" | grep -oP "^package: name='\K[^']+")
-          VER=$("$BT/aapt2" dump badging "$APK" | grep -oP "versionName='\K[^']+")
-          LABEL=$("$BT/aapt2" dump badging "$APK" | grep -oP "^application-label:'\K[^']+")
+          BADGING=$("$BT/aapt2" dump badging "$APK")
+          PKG=$(echo "$BADGING" | grep -oP "^package: name='\K[^']+")
+          VER=$(echo "$BADGING" | grep -oP "versionName='\K[^']+")
+          CODE=$(echo "$BADGING" | grep -oP "versionCode='\K[^']+")
+          LABEL=$(echo "$BADGING" | grep -oP "^application-label:'\K[^']+")
           CERT=$("$BT/apksigner" verify --print-certs "$APK" | grep -oP 'SHA-256 digest: \K.*' | head -1)
           NAME="eTix-QA-$VER.apk"
           mkdir -p dist && cp "$APK" "dist/$NAME"
           echo "name=$NAME" >> "$GITHUB_OUTPUT"
-          echo "::notice title=APK QA::fichier=$NAME%0Apackage=$PKG%0Alabel=$LABEL%0AversionName=$VER%0Acert SHA-256=$CERT"
-          DCERT=$("$BT/apksigner" verify --print-certs app/build/outputs/apk/debug/app-debug.apk | grep -oP 'SHA-256 digest: \K.*' | head -1)
-          KS=$(ls -la ~/.android/debug.keystore 2>&1 | tr '\n' ' ')
-          echo "::notice title=Keystore::cache-hit=${{ steps.kscache.outputs.cache-hit }}%0Asecret=${{ env.QA_KEYSTORE_B64 != '' }}%0AANDROID_USER_HOME=${ANDROID_USER_HOME:-unset}%0AANDROID_SDK_HOME=${ANDROID_SDK_HOME:-unset}%0A~/.android/debug.keystore: $KS%0Afound: $(find / -name debug.keystore -not -path '/proc/*' 2>/dev/null | tr '\n' ' ')"
-          echo "::notice title=APK debug::package=com.etix (même que l'app installée)%0Acert SHA-256=$DCERT"
+          PIN="non épinglée (variable QA_CERT_SHA256 absente)"
+          if [ -n "$EXPECTED_CERT" ]; then
+            if [ "$(echo "$EXPECTED_CERT" | tr 'A-F:' 'a-f ' | tr -d ' ')" != "$CERT" ]; then
+              echo "::error title=Signature QA::Empreinte $CERT différente de QA_CERT_SHA256 : APK non publié (une mise à jour échouerait sur le téléphone)."
+              exit 1
+            fi
+            PIN="conforme à QA_CERT_SHA256"
+          fi
+          echo "::notice title=APK QA::commit=$GITHUB_SHA%0Afichier=$NAME%0AapplicationId=$PKG%0Alabel=$LABEL%0AversionName=$VER%0AversionCode=$CODE%0Acert SHA-256=$CERT%0Aempreinte=$PIN"
 
-      # APK publiés dès que le build passe, même si les tests échouent ensuite
+      # APK QA publié dès que le build passe, même si les tests échouent ensuite.
+      # L'APK debug (package com.etix) n'est plus publié : il ne peut pas être installé
+      # sans désinstaller l'app principale.
       - name: Upload QA APK (installable à côté de l'app)
+        if: steps.signing.outputs.ready == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: ${{ steps.qa.outputs.name }}
           path: dist/${{ steps.qa.outputs.name }}
 
-      - name: Upload debug APK (même package que l'app installée)
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+      - name: Remove QA keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/etix-qa.p12"
 
       - name: Run Unit Tests
         run: |
@@ -93,6 +117,13 @@ jobs:
           name: screenshots
           path: app/build/screenshots/
           if-no-files-found: ignore
+
+      - name: List screenshots
+        id: shots
+        if: always()
+        run: |
+          LIST=$(ls app/build/screenshots/*.png 2>/dev/null | xargs -rn1 basename | sed 's/\.png$//' | python3 -c "import sys,json;print(json.dumps([l.strip() for l in sys.stdin if l.strip()]))")
+          echo "list=${LIST:-[]}" >> "$GITHUB_OUTPUT"
 
       # Récapitulatif des tests (lisible via l'API, succès comme échec)
       - name: Report test summary
@@ -143,12 +174,14 @@ jobs:
   # Aperçu : une capture par job (limites d'annotations GitHub), lisible via l'API checks
   preview:
     needs: build
-    if: always()
+    if: always() && needs.build.outputs.shots != '' && needs.build.outputs.shots != '[]'
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        shot: [01_accueil_reglages_light, 02_magasins_mois_light, 03_magasins_mois_dark, 04_magasins_vide_aujourdhui_light, 05_fiche_magasin_light, 05b_fiche_magasin_bas_light, 06_fiche_magasin_dark, 07_reglages_depuis_accueil_light]
+        shot: ${{ fromJSON(needs.build.outputs.shots) }}
     steps:
       - name: Checkout scripts
         uses: actions/checkout@v4
