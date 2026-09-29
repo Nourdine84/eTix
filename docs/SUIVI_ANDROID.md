@@ -40,6 +40,7 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
 - Montants : virgule décimale acceptée (avant : refus à l'ajout, **0 € enregistré** à l'édition).
 - Test unitaire OCR recompilable (`guessCategory` renommé) ; test Robolectric de navigation ajouté.
 - Version : `1.1.0-lot1` (versionCode 2).
+- CI verte (run 36574333574, commit 8dedd75) : APK compilé, 4 tests Robolectric navigation OK. **Non testé sur appareil.**
 
 ## Points ouverts (non traités)
 
@@ -53,5 +54,5 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
 | 6 | `ETixApp` non déclarée dans le manifeste → journal de crash jamais alimenté | P4 |
 | 7 | Manifeste : `.TicketEditActivity` déclarée mais inexistante | P4 |
 | 8 | Room `fallbackToDestructiveMigration()` → perte de données à tout changement de schéma | P4 |
-| 10 | Test `OCRValidationTest` désactivé : datasets vers fichiers absents, attentes ≠ fixtures | P3 |
 | 9 | Login simulé : tout identifiant/mot de passe non vide est accepté, le mot de passe n'est ni stocké ni vérifié | Lié au #5 |
+| 10 | Test `OCRValidationTest` désactivé : datasets vers fichiers absents, attentes ≠ fixtures | P3 |
