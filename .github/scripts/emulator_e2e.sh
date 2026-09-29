@@ -63,6 +63,10 @@ T 300 adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTe
 
 run() { # $1 = classe de test, $2 = suffixe/passe facultatif (limite 12 min par classe)
   local extra="" suf=""
+  # Avant chaque classe : écran allumé, déverrouillé, sans dialogue système (perte de focus intermittente observée)
+  timeout 20 adb shell input keyevent KEYCODE_WAKEUP >/dev/null 2>&1 || true
+  timeout 20 adb shell wm dismiss-keyguard >/dev/null 2>&1 || true
+  timeout 20 adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS >/dev/null 2>&1 || true
   [ -n "${2:-}" ] && { extra="-e passe $2"; suf="_$2"; }
   T 720 adb shell am instrument -w -r $extra -e class "$1" com.etix.test/androidx.test.runner.AndroidJUnitRunner > "$OUT/instr_$(basename "${1//./_}")$suf.txt" 2>&1
   timeout 20 adb shell am force-stop com.etix.test >/dev/null 2>&1 || true

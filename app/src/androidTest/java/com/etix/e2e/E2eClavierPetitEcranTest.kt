@@ -65,13 +65,9 @@ class E2eClavierPetitEcranTest {
         waitFor(withId(R.id.bottomNav))
     }
 
-    private fun resumed(): Activity {
-        var a: Activity? = null
-        instr.runOnMainSync {
-            a = ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.RESUMED).firstOrNull()
-        }
-        return a!!
-    }
+    /** À appeler SUR le thread principal. */
+    private fun resumedOnMain(): Activity =
+        ActivityLifecycleMonitorRegistry.getInstance().getActivitiesInStage(Stage.RESUMED).first()
 
     /** Hauteur du clavier en px, stable sur deux lectures (fin d'animation) ; 0 si absent. */
     private fun waitImeStable(): Int {
@@ -80,7 +76,7 @@ class E2eClavierPetitEcranTest {
         while (SystemClock.uptimeMillis() < end) {
             var h = 0
             instr.runOnMainSync {
-                h = ViewCompat.getRootWindowInsets(resumed().window.decorView)
+                h = ViewCompat.getRootWindowInsets(resumedOnMain().window.decorView)
                     ?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
             }
             if (h > 0 && h == last) { if (++stable >= 2) return h } else stable = 0
@@ -97,7 +93,7 @@ class E2eClavierPetitEcranTest {
     private fun mesure(buttonId: Int): Mesure {
         var m: Mesure? = null
         instr.runOnMainSync {
-            val act = resumed()
+            val act = resumedOnMain()
             val decor = act.window.decorView
             val ins = ViewCompat.getRootWindowInsets(decor)
             val ime = ins?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
@@ -144,12 +140,17 @@ class E2eClavierPetitEcranTest {
 
     @Test
     fun k02_modification_bouton_enregistrer_atteignable_clavier_ouvert() {
+        // Ticket propre à ce test (indépendant de k01)
+        runBlocking {
+            AppDatabase.getInstance(ctx).ticketDao().insert(com.etix.model.Ticket(store = "$store modif", amount = 2.0,
+                category = "Autre", dateMillis = System.currentTimeMillis()))
+        }
         startMain()
         onView(withId(R.id.menu_history)).perform(click())
-        onView(withId(R.id.inputSearch)).perform(replaceText(store))
+        onView(withId(R.id.inputSearch)).perform(replaceText("$store modif"))
         E2e.closeKeyboard()
-        waitFor(withText(store))
-        onView(allOf(withText(store), isDisplayed())).perform(click())
+        waitFor(withText("$store modif"))
+        onView(allOf(withText("$store modif"), isDisplayed())).perform(click())
         waitFor(allOf(withId(R.id.btnEdit), isDescendantOfA(withId(R.id.overlayContainer))))
         onView(allOf(withId(R.id.btnEdit), isDescendantOfA(withId(R.id.overlayContainer)))).perform(scrollTo(), click())
         val amount = allOf(withId(R.id.inputAmount), isDescendantOfA(withId(R.id.overlayContainer)))
