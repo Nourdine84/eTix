@@ -65,9 +65,14 @@ if ua or ub:
            f"firstInstallTime inchangé (pas de désinstallation) : {same_first}")
 
 avant, apres = read(f"{out}/etix_avant_qa.txt").strip(), read(f"{out}/etix_apres_qa.txt").strip()
-notice("Isolation QA (émulateur)",
-       f"paquets installés:\n{read(f'{out}/packages.txt').strip()}\ninstall QA: {read(f'{out}/install_qa.txt').strip()[-200:]}\n"
-       f"com.etix avant: {avant}\ncom.etix après: {apres}\nidentique: {avant == apres and bool(avant)}")
+if avant or apres:
+  notice("Isolation QA (émulateur)",
+         f"paquets installés:\n{read(f'{out}/packages.txt').strip()}\ninstall QA: {read(f'{out}/install_qa.txt').strip()[-200:]}\n"
+         f"com.etix avant: {avant}\ncom.etix après: {apres}\nidentique: {avant == apres and bool(avant)}")
+
+mes = read(f"{out}/shots/mesures_clavier.txt").strip()
+if mes:
+    notice("Clavier petit écran (mesures)", mes)
 
 to = read(f"{out}/timeouts.txt").strip()
 if to:

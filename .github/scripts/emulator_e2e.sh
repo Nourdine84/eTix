@@ -61,8 +61,10 @@ pkginfo() { adb shell dumpsys package com.etix | grep -E "versionCode|versionNam
 T 300 adb install -r dist/app-A.apk > "$OUT/install.txt" 2>&1
 T 300 adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk >> "$OUT/install.txt" 2>&1
 
-run() { # $1 = classe de test (limite 12 min par classe)
-  T 720 adb shell am instrument -w -r -e class "$1" com.etix.test/androidx.test.runner.AndroidJUnitRunner > "$OUT/instr_$(basename "${1//./_}").txt" 2>&1
+run() { # $1 = classe de test, $2 = suffixe/passe facultatif (limite 12 min par classe)
+  local extra="" suf=""
+  [ -n "${2:-}" ] && { extra="-e passe $2"; suf="_$2"; }
+  T 720 adb shell am instrument -w -r $extra -e class "$1" com.etix.test/androidx.test.runner.AndroidJUnitRunner > "$OUT/instr_$(basename "${1//./_}")$suf.txt" 2>&1
   timeout 20 adb shell am force-stop com.etix.test >/dev/null 2>&1 || true
 }
 
@@ -73,6 +75,20 @@ collect() {
   timeout 120 adb logcat -d > "$OUT/logcat.txt" 2>&1 || true
   grep -n -A25 "FATAL EXCEPTION" "$OUT/logcat.txt" > "$OUT/crashes.txt" || true
 }
+
+if [ "$MODE" = "petit" ]; then
+  # Petit écran + grande police, clavier ouvert. Passes : a = 360x640 dp police 1,3 ; b = 360x640 dp police 2,0 ;
+  # c = 320x569 dp (densité 360) police 1,3. Réglages de l'émulateur uniquement (jetable).
+  for cfg in "a 720x1280 320 1.3" "b 720x1280 320 2.0" "c 720x1280 360 1.3"; do
+    set -- $cfg
+    adb shell wm size "$2"; adb shell wm density "$3"; adb shell settings put system font_scale "$4"
+    echo "passe $1 : wm size $2, densité $3, police $4" >> "$OUT/device.txt"
+    sleep 4
+    run com.etix.e2e.E2eClavierPetitEcranTest "$1"
+  done
+  collect
+  exit 0
+fi
 
 if [ "$MODE" = "fr" ]; then
   run com.etix.e2e.E2eFrancaisTest

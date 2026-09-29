@@ -66,4 +66,9 @@ object E2e {
                 clear(); set(c.get(java.util.Calendar.YEAR), c.get(java.util.Calendar.MONTH), c.get(java.util.Calendar.DAY_OF_MONTH))
             }.time)
     }
+
+    /** Ferme le clavier sans Espresso.closeSoftKeyboard (qui échoue si aucun clavier n'est ouvert sur certaines versions). */
+    fun closeKeyboard() {
+        try { androidx.test.espresso.Espresso.closeSoftKeyboard() } catch (_: Throwable) { }
+    }
 }
