@@ -67,7 +67,7 @@ Un test par fichier et par champ. Seules les attentes **établies par le texte**
 | `ticket_003.txt` | montant 58,20, pas de date | enseigne, catégorie | Q1 (« TOTAL » = libellé ?) ; moteur renvoie `TOTAL` |
 | `ticket_004.txt` | enseigne `ESSO`, montant 23,45 | date, catégorie | Q3/Q4 (lecture jj/mm, date dans les attentes) ; Q2 (`Carburant` iOS, inconnu du moteur Android) |
 | `synthetique/restaurant_synthetique.txt` | enseigne `LE PETIT BISTROT`, montant 16,70 | catégorie | Q2 (proposition : Restaurant) |
-| `synthetique/ticket_long_synthetique.txt` | enseigne `CARREFOUR MARKET` | montant, date, catégorie | **Échec moteur connu** (cas D1 iOS) : retient `SOUS-TOTAL 42,80` au lieu de `TOTAL TTC 40,80` ; Q4 ; Q2 |
+| `synthetique/ticket_long_synthetique.txt` | enseigne `CARREFOUR MARKET`, **montant 40,80 (lot 6)** | date, catégorie | Q4 ; Q2 (le défaut D1 `SOUS-TOTAL 42,80` est corrigé au lot 6) |
 
 Résultat CI (commit `747c558`, run 36619891801) : **13 actifs réussis, 11 désactivés** (bilan JVM global : 63 réussis, 0 échec, 11 désactivés) (10 `OCRFixturesTest` + `OCRValidationTest`).
 
@@ -77,3 +77,14 @@ Résultat CI (commit `747c558`, run 36619891801) : **13 actifs réussis, 11 dés
 scan. Ils couvrent des structures absentes des 4 fichiers (addition de restaurant avec TVA 10 %, ticket long avec
 15 articles, sous-total, remise, TVA). Ils **ne remplacent pas** une validation sur de vrais tickets photographiés
 (bruit OCR, colonnes, polices, caractères mal lus) : celle-ci reste à faire au lot OCR, avec vos tickets réels.
+
+## Lot 6 — correction du montant (cas D1)
+
+`OCRAmountExtractor` (utilisé par `OCRProcessor` et `OCRTicketDraft`) : lignes jamais retenues comme total
+(sous-total, HT, TVA, remise/réduction/bon, rendu, avoir) ; priorité NET À PAYER > TOTAL TTC > TOTAL, dernière
+occurrence, montant après le mot-clé, ligne suivante si colonnes séparées ; sans total : paiement carte, puis
+espèces − rendu. Indépendant des catégories et de l'enseigne. 18 cas de régression synthétiques
+(`OCRAmountRegressionTest`). Inventaire des tests désactivés : `docs/TESTS_DESACTIVES.md`.
+
+Limites connues : quantité suivie d'un prix séparés par une espace (« 2 125,00 ») lue comme 2 125,00 ;
+ticket sans aucun mot-clé → plus grand montant (repli historique). À valider sur de vrais tickets.

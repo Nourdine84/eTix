@@ -1,4 +1,4 @@
-# Validation sur émulateur — lots 1 à 5
+# Validation sur émulateur — lots 1 à 6
 
 **Ce n'est pas une validation sur téléphone physique.** Émulateurs Android officiels (Google) dans GitHub Actions,
 données fictives uniquement, build de test signé avec la clé de développement du runner
@@ -41,6 +41,55 @@ Run : https://github.com/Nourdine84/eTix/actions/runs/36601028467
 | c01 | Lot 4 : ajout avec date (sélecteur), catégorie « Carburant », description |
 | c02 | Lot 4 : sections, recherche « carbu », filtre date de début, réinitialisation |
 | c03 | Lot 4 : édition préremplie, catégorie libre « Péage fictif », reprise dans le sélecteur |
+
+## Lot 6 — fiabilisation, détails (branche `feature/android-lot6-fiabilisation`)
+
+Commit testé : **`095727b`** — run https://github.com/Nourdine84/eTix/actions/runs/36635957810
+(dernier commit de code ; les commits suivants ne sont que de la documentation). Données fictives, clé de test du runner.
+
+| Niveau | Environnement | Résultat |
+|---|---|---|
+| JVM + Robolectric | runner Ubuntu | **93 réussis, 0 échec, 10 désactivés** (`docs/TESTS_DESACTIVES.md`) |
+| Émulateur API 36 / 34 / 21 | en-US | **17/17** chacun (+ détails catégorie/ticket, suppression confirmée) |
+| Émulateur API 34 fr-FR | français | **4/4** |
+| Émulateur API 36 petit écran | 3 passes taille/police | **6/6** |
+| Mise à jour A → B sans désinstallation | API 21, 34, 36 | versionCode 7 → 8, `firstInstallTime` inchangé, tickets conservés |
+| Plantages | 5 émulateurs | aucun |
+
+### Clavier ouvert, petit écran, grande police (API 36, Android 16)
+
+Espresso `isDisplayed` ignore la fenêtre du clavier : le test **mesure** la position du bouton par rapport au haut du
+clavier (insets IME), puis **touche** le bouton et vérifie l'enregistrement (base) ou le montant affiché (modification).
+
+| Passe | Écran | Police | Écran | Bouton avant défilement | Après défilement | Haut du clavier | Accessible | Toucher |
+|---|---|---|---|---|---|---|---|---|
+| a | 360×616 dp | 1,3 | Ajouter | 1182–1286 px (sous le clavier) | 546–650 | 810 | oui | enregistré |
+| a | 360×616 dp | 1,3 | Modifier | 1158–1262 | 546–650 | 810 | oui | 5,30 € affiché |
+| b | 360×616 dp | 2,0 | Ajouter | 1359–1463 | 546–650 | 810 | oui | enregistré |
+| b | 360×616 dp | 2,0 | Modifier | 1442–1546 | 546–650 | 810 | oui | 5,30 € affiché |
+| c | 320×544 dp | 1,3 | Ajouter | 1202–1319 | 477–594 | 774 | oui | enregistré |
+| c | 320×544 dp | 1,3 | Modifier | 1288–1405 | 477–594 | 774 | oui | 5,30 € affiché |
+
+Conclusion : le bouton Enregistrer est **masqué** par le clavier à l'ouverture, **atteignable par défilement** dans
+les 6 cas ; aucune correction d'interface nécessaire pour ce point. La barre d'onglets reste visible au-dessus du
+clavier (réduit l'espace utile sur petit écran — à juger sur téléphone).
+
+Constats en cours de route :
+- 1er caractère perdu (« 4,20 » → « ,20 » → ticket à 0,20 €) : frappe **injectée par le test** avant la fin
+  d'ouverture du clavier ; corrigé dans le test (frappe après stabilisation + vérification du champ). Un humain ne peut
+  pas taper avant l'apparition du clavier : **non considéré comme un défaut de l'app**, mais le formulaire accepte
+  « ,20 » = 0,20 € (règle de saisie iOS reprise) — à confirmer.
+- **Défaut d'interface corrigé** : détail d'un ticket à police 2,0 (360 dp) et 1,3 (320 dp) — « DATE D'ACHAT »,
+  « MAGASIN », « CATÉGORIE », « Mardi » coupés lettre par lettre. Cartes empilées quand largeur / police < 300
+  (`e1feb6c`, `095727b`).
+- **Défaut d'interface corrigé** : « Évolution journalière » — dates superposées et dernière date rognée (`e1feb6c`).
+
+### Échecs intermittents (sans plantage)
+
+« Fenêtre sans focus » au 1er écran après démarrage à froid : 4 fois sur 42 exécutions standard (14 runs × API 21/34/36), uniquement sur API 34 et 36. Diagnostic ajouté
+(capture + `dumpsys window`) : au moment du diagnostic, l'app a bien le focus → lenteur de démarrage à froid après
+mise à jour (TotalTime mesuré : API 21 432 ms, API 34 839 ms, API 36 1 262 ms dans un run réussi). Attente du
+1er écran portée à 30 s (`a2e42a1`) ; non reproduit sur les runs suivants (échantillon faible). **À surveiller** ; démarrage à froid sur téléphone à mesurer.
 
 ## Lot 5 — résultat de référence (branche `feature/android-lot5-categories`)
 

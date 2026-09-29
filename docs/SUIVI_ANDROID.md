@@ -7,7 +7,7 @@ Document de reprise entre sessions. Concis : état, décisions, prochain lot.
 | Élément | Emplacement |
 |---|---|
 | Code Android (référence) | `Nourdine84/eTix`, branche `feature/android-v2` (dernier commit 16/01/2026) |
-| Branches de travail | Lot 1 `fix/android-v2-navigation` ; Lot 2 `feature/android-lot2-magasins` (contient lot 1) ; Lot 3 `feature/android-lot3-accueil-theme` (contient lots 1-2) ; Lot 4 `feature/android-lot4-formulaire-historique` ; **Lot 5 `feature/android-lot5-categories`** (créée depuis le lot 4 @ `c77f0ba`, base de continuation). Anciennes branches conservées. **Rien fusionné** — fusion uniquement après validation téléphone (`docs/REVUE_LOTS_1_2.md`). |
+| Branches de travail | Lot 1 `fix/android-v2-navigation` ; Lot 2 `feature/android-lot2-magasins` (contient lot 1) ; Lot 3 `feature/android-lot3-accueil-theme` (contient lots 1-2) ; Lot 4 `feature/android-lot4-formulaire-historique` ; Lot 5 `feature/android-lot5-categories` (depuis le lot 4 @ `c77f0ba`) ; **Lot 6 `feature/android-lot6-fiabilisation`** (depuis le lot 5 @ `959f41e`, base de continuation). Anciennes branches conservées. **Rien fusionné** — fusion uniquement après validation téléphone (`docs/REVUE_LOTS_1_2.md`). |
 | Historique Git | `feature/android-v2` et `dev` : ancêtre commun `ab7d6f8`, `dev` a 3 commits propres. `main` : racine distincte, sans ancêtre commun. Détail : `docs/REVUE_LOTS_1_2.md`. Intégration `dev`/`main` = décision séparée. |
 | `Nourdine84/etix-android` | Squelette Gradle sans module `app` — **pas** le dépôt de dev |
 | Copie locale Mac `~/AndroidStudioProjects/eTix` | Sur `dev` (19/12/2025), n'a pas `feature/android-v2` |
@@ -123,6 +123,37 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
 | `747c558` | Test a06 : attente de l'ouverture du clavier | **36619891801** | **référence finale** : JVM 63/0/11, API 36/34/21 14/14, fr 4/4, aucun plantage |
 | (suivants) | Documentation uniquement | — | — |
 
+### Lot 6 — Fiabilisation + détails (feature/android-lot6-fiabilisation)
+- **OCR, défaut D1 corrigé** : le montant n'est plus jamais pris sur sous-total / HT / TVA / remise / rendu
+  (`OCRAmountExtractor`, utilisé par `OCRProcessor` et `OCRTicketDraft`). Attente 40,80 du ticket long conservée et
+  réactivée ; 18 cas de régression synthétiques. Catégories et enseigne non touchées (Q1–Q4 ouvertes).
+- **Tests désactivés réconciliés** : 11 au lot 5 (10 + `OCRValidationTest` omis du compte rendu) → 10 au lot 6.
+  Inventaire, type (décision produit / défaut moteur / obsolète) et conditions : `docs/TESTS_DESACTIVES.md`.
+  Observation CI : 7 passeraient dès validation, 2 échoueraient (défauts moteur liés à Q1 et Q2), 1 obsolète.
+- **Clavier / petit écran / grande police** (Android 16) : bouton Enregistrer mesuré sous le clavier puis atteint par
+  défilement et réellement touché — 6/6 (Ajouter, Modifier ; 360 dp police 1,3 et 2,0 ; 320 dp police 1,3).
+- **Détail d'un ticket** (iOS `TicketDetailView`) : montant, carte date, Magasin / Catégorie, note, Modifier,
+  « Supprimer ce ticket » avec la même confirmation que l'édition (logique partagée), Retour.
+  Adaptation Android : cartes empilées si écran étroit / grande police.
+- **Détail d'une catégorie** (iOS `CategoryDetailView`) : depuis une ligne de l'onglet Catégories ; période, total,
+  nombre de tickets, « Évolution journalière », tickets par jour → détail du ticket, état vide ; Retour.
+- Aucune migration, aucune modification des catégories existantes ; « Autre » reste provisoire.
+- Version `1.6.0-lot6` (versionCode 7 ; build B de test : 8).
+- Résultats : `docs/VALIDATION_EMULATEUR.md` ; aperçus `docs/preview/lot6*`.
+
+#### Traçabilité commits ↔ exécutions CI (lot 6)
+
+| Commit | Nature | Run CI | Résultat |
+|---|---|---|---|
+| `ed702d0` | Code OCR (D1) + tests | 36627737568 | JVM 82/0/10 ; émulateurs 14/14 ×3 ; fr 4/4 |
+| `2f39beb`, `ffa04cd`, `bf3a2df` | Test/CI clavier petit écran | 36627961963, 36629217490, 36630124659 | mise au point du test (erreurs de test, puis 1er caractère perdu) ; 1 échec intermittent focus |
+| `9c926e0` | Code : détails ticket et catégorie | 36631237084 (avec `5741104`) | a04/c03 : « Modifier » sous la ligne de flottaison (tests à adapter) |
+| `2087d49` | Test : observation des cas OCR désactivés | 36631292574 | observation publiée |
+| `a2e42a1` | Tests adaptés | 36632203892 | 17/17 ×3, fr 4/4 ; petit écran : relancé (démarrage émulateur), 5/6 → **défaut police 2,0** |
+| `e1feb6c`, `390b43b` | Code : grande police, graphique ; tests | 36634872566 | tout vert ; **défaut restant 320 dp / 1,3** vu sur capture |
+| `095727b` | Code : seuil d'empilement | **36635957810** | **référence** : JVM 93/0/10, 17/17 ×3, fr 4/4, petit écran 6/6, aucun plantage |
+| (suivants) | Documentation uniquement | — | — |
+
 ## Écarts restants avec iOS (référence `feature/home-hero-v2`)
 
 | Écran | Écart | Lot envisagé |
@@ -131,8 +162,9 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
 | Accueil | Scanner indisponible (flux OCR non branché) | OCR |
 | Ajouter | Scanner indisponible ; pas de suggestion de catégorie (OCR / historique) | OCR |
 | Historique | Suppression par balayage (iOS) non portée | 5 |
-| Détail ticket | Mise en page V1 simple (iOS : carte montant, date détaillée, note) | 5 |
-| Catégories | Budgets mensuels (barre, alerte, invitation, réglage) ; détail d'une catégorie ; export ; graphique en barres | à planifier |
+| Détail ticket | Aligné au lot 6 ; dégradé du montant iOS rendu en bleu uni ; pas de retour haptique | — |
+| Catégories | Budgets mensuels (barre, alerte, invitation, réglage) ; export | à planifier |
+| Détail catégorie | « Voir par magasin » (liste des magasins filtrée) et export non portés | à planifier |
 | Catégories | Choix provisoire « Autre » quand aucune catégorie n'est choisie à l'ajout (iOS : vide) → ces tickets apparaissent sous « Autre » | décision produit |
 | Magasins | Comparaison entre magasins, graphique « Historique des achats » | 5 |
 | Réglages | V1 ; iOS : Apparence (système/clair/sombre), période par défaut, budgets, export CSV, suppression avec confirmation | 5 |
