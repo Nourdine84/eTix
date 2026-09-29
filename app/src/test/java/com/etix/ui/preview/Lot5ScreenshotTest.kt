@@ -90,16 +90,16 @@ class Lot5ScreenshotTest {
         val a = launchOnCategories()
         waitFor { (a.rows().childCount) > 1 }
         val donutTotal = a.findViewById<TextView>(R.id.tvDonutTotal).text.toString()
-        assertEquals("254,50 €", donutTotal.replace(' ', ' '))
+        assertEquals(expected(seeded, TimeRange.MONTH), donutTotal)
         capture(a, "l5_01_categories_mois_$suffix")
 
         a.rows().scrollToPosition(a.rows().adapter!!.itemCount - 1); idle()
         capture(a, "l5_02_categories_mois_bas_$suffix")
 
+        a.rows().scrollToPosition(0); idle() // la carte anneau (position 0) doit être attachée
         a.period(R.id.btnCatYear)
         waitFor { a.findViewById<TextView>(R.id.tvDonutTotal)?.text?.toString() == expected(seeded, TimeRange.YEAR) }
         assertEquals(expected(seeded, TimeRange.YEAR), a.findViewById<TextView>(R.id.tvDonutTotal).text.toString())
-        a.rows().scrollToPosition(0); idle()
         capture(a, "l5_03_categories_annee_$suffix")
 
         // Aucun ticket modifié ou supprimé par l'écran
