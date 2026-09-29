@@ -53,6 +53,8 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
 - Fiche magasin (iOS `StoreDetailView`) : total, stats (panier moyen, tickets, dernière visite, fréquence), comparaison mensuelle, top 3 catégories, tickets (5 + « voir les autres ») → détail ticket.
 - Réglages : icône engrenage sur l'Accueil → écran Réglages existant (inchangé), Retour → Accueil.
 - Tests : `StoreStatsTest` (JVM), navigation mise à jour, captures `Lot2ScreenshotTest` (aperçu, pas une validation).
+- Procédure de test sans risque pour `com.etix` : `docs/PROCEDURE_TEST_QA.md` ; plan de test : `docs/PLAN_TEST_LOT2.md`.
+- CI : `ANDROID_USER_HOME` fixé (AGP rangeait la clé dans `~/.config/.android`, le cache ne la voyait pas → signature différente à chaque run).
 - Corrections issues des captures : libellés de période tronqués ; libellés de tous les onglets visibles (comme iOS) ; barre d'onglets sombre en thème sombre ; texte invisible de 3 boutons Réglages (texte bleu sur fond bleu).
 - Version : `1.2.0-lot2` (versionCode 3), APK QA `1.2.0-lot2-qa`.
 
