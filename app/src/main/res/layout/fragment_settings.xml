@@ -49,7 +49,7 @@
             android:textAllCaps="false"
             android:layout_marginBottom="16dp"
             android:background="@drawable/bg_button_secondary"
-            android:textColor="@color/etix_blue"
+            android:textColor="@android:color/white"
             android:textSize="16sp"
             android:padding="12dp"
             style="@style/Shape" />
@@ -75,7 +75,7 @@
             android:textAllCaps="false"
             android:layout_marginBottom="8dp"
             android:background="@drawable/bg_button_secondary"
-            android:textColor="@color/etix_blue"
+            android:textColor="@android:color/white"
             android:textSize="16sp"
             android:padding="12dp"
             style="@style/Shape" />
@@ -88,7 +88,7 @@
             android:textAllCaps="false"
             android:layout_marginBottom="24dp"
             android:background="@drawable/bg_button_secondary"
-            android:textColor="@color/etix_blue"
+            android:textColor="@android:color/white"
             android:textSize="16sp"
             android:padding="12dp"
             style="@style/Shape" />

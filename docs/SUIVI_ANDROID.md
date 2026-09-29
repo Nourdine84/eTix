@@ -53,6 +53,7 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
 - Fiche magasin (iOS `StoreDetailView`) : total, stats (panier moyen, tickets, dernière visite, fréquence), comparaison mensuelle, top 3 catégories, tickets (5 + « voir les autres ») → détail ticket.
 - Réglages : icône engrenage sur l'Accueil → écran Réglages existant (inchangé), Retour → Accueil.
 - Tests : `StoreStatsTest` (JVM), navigation mise à jour, captures `Lot2ScreenshotTest` (aperçu, pas une validation).
+- Corrections issues des captures : libellés de période tronqués ; libellés de tous les onglets visibles (comme iOS) ; barre d'onglets sombre en thème sombre ; texte invisible de 3 boutons Réglages (texte bleu sur fond bleu).
 - Version : `1.2.0-lot2` (versionCode 3), APK QA `1.2.0-lot2-qa`.
 
 ## Test OCR désactivé — conditions de réactivation
@@ -99,4 +100,6 @@ Recommandation : A (ou B) pour la parité, puis C si la confidentialité des tic
 | 9 | Login simulé — voir section dédiée | Lié au #5 |
 | 10 | Test `OCRValidationTest` désactivé — voir section dédiée | P3 |
 | 11 | Accueil V2 : fond blanc codé en dur (`#FFFFFF`) → illisible/incohérent en thème sombre | P2 |
+| 13 | Réglages : bouton « Vider tous les tickets » affiché mais **sans action** (non câblé) — trompeur ; iOS a « Supprimer tous les tickets » avec confirmation. Non modifié (action destructive → décision requise) | P2 |
+| 14 | Thème sombre global : `colorSurface` du thème figé en clair ; Accueil/Réglages V1 codés en dur | P2 |
 | 12 | Cache Actions de la clé QA : stable seulement par branche ; s'il est créé sur `dev`/`main`, des PR de forks (dépôt public) peuvent le restaurer. Préférer le secret `QA_KEYSTORE_B64` | P3 |

@@ -12,5 +12,7 @@
     <color name="v2_fill">#1F787880</color>
     <color name="v2_divider">#33C6C6C8</color>
     <color name="v2_negative">#FF3B30</color>
+    <!-- Barre d'onglets : valeur claire inchangée (md_surface), variante sombre ajoutée -->
+    <color name="v2_tabbar">#FFFBFE</color>
     <color name="v2_positive">#34C759</color>
 </resources>

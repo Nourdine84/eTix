@@ -7,5 +7,6 @@
     <color name="v2_fill">#5C787880</color>
     <color name="v2_divider">#4D545458</color>
     <color name="v2_negative">#FF453A</color>
+    <color name="v2_tabbar">#1C1C1E</color>
     <color name="v2_positive">#30D158</color>
 </resources>
