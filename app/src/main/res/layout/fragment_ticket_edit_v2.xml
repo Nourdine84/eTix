@@ -19,6 +19,7 @@
             android:id="@+id/inputAmount"
             android:hint="Montant"
             android:inputType="numberDecimal"
+                android:digits="0123456789,."
             android:layout_width="match_parent"
             android:layout_height="wrap_content"/>
 

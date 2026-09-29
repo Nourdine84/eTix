@@ -73,6 +73,7 @@
                 android:background="@drawable/bg_input"
                 android:hint="Montant"
                 android:inputType="numberDecimal"
+                android:digits="0123456789,."
                 android:padding="16dp"
                 android:textColor="@color/md_onBackground"
                 android:textColorHint="@color/gray_500" />

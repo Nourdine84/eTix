@@ -11,6 +11,7 @@ import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.platform.app.InstrumentationRegistry
 import org.hamcrest.Matcher
+import org.hamcrest.Matchers.allOf
 import java.io.File
 import java.io.FileOutputStream
 
@@ -29,7 +30,8 @@ object E2e {
         var last: Throwable? = null
         while (SystemClock.uptimeMillis() < end) {
             try {
-                return onView(matcher).check(matches(isDisplayed()))
+                // Uniquement les vues visibles : les pages hors écran du ViewPager contiennent les mêmes textes
+                return onView(allOf(matcher, isDisplayed())).check(matches(isDisplayed()))
             } catch (e: NoMatchingViewException) {
                 last = e
             } catch (e: AssertionError) {

@@ -34,7 +34,8 @@ for f in sorted(glob.glob(f"{out}/instr_*.txt")):
                 rows.append(f"{state} {name}")
                 if code in (-1, -2):
                     stack = cur.get("stack", "").strip().splitlines()
-                    fails.append(f"{name}: " + " | ".join(stack[:4]))
+                    causes = [l.strip() for l in stack if l.strip().startswith("Caused by")]
+                    fails.append(f"{name}: " + " | ".join(stack[:2] + causes[:3]))
             cur, key = {}, None
             continue
         if key == "stack" and not line.startswith("INSTRUMENTATION"):

@@ -50,7 +50,6 @@
                 android:layout_width="48dp"
                 android:layout_height="48dp"
                 android:layout_gravity="end|center_vertical"
-                android:layout_marginEnd="-12dp"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:contentDescription="Réglages"
                 android:src="@drawable/ic_settings" />
