@@ -78,6 +78,10 @@ interface TicketDao {
     // --------------------
     // Lecture unitaire
     // --------------------
+    /** Lot 4 : catégories déjà utilisées (sélecteur, parité iOS). Lecture seule, sans changement de schéma. */
+    @Query("SELECT DISTINCT category FROM tickets")
+    fun distinctCategoriesFlow(): Flow<List<String>>
+
     @Query("SELECT * FROM tickets WHERE id = :id")
     fun getByIdFlow(id: Long): Flow<Ticket?>
 

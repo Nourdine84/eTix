@@ -52,6 +52,8 @@ class TicketDetailFragmentV2 : Fragment() {
 
                 binding.tvStore.text = ticket.store
                 binding.tvAmount.text = String.format(Locale.FRANCE, "%.2f €", ticket.amount)
+                binding.tvDate.text = java.text.DateFormat.getDateInstance(java.text.DateFormat.LONG)
+                    .format(java.util.Date(ticket.dateMillis))
                 binding.tvCategory.text = ticket.category
                 binding.tvDescription.text = ticket.description ?: "-"
             }

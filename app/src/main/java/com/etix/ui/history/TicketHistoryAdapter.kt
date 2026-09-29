@@ -1,55 +1,67 @@
 package com.etix.ui.history
 
 import android.view.LayoutInflater
-import android.view.View
 import android.view.ViewGroup
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import com.etix.R
+import com.etix.databinding.ItemHistorySectionBinding
+import com.etix.databinding.ItemTicketHistoryBinding
+import com.etix.features.history.HistoryRules
 import com.etix.model.Ticket
-import java.text.SimpleDateFormat
+import java.text.DateFormat
 import java.util.Date
 import java.util.Locale
 
+/** Liste sectionnée (en-têtes de période + cartes ticket) — iOS TicketHistoryView. */
 class TicketHistoryAdapter(
     private val onTicketClick: (Ticket) -> Unit = {}
-) : RecyclerView.Adapter<TicketHistoryAdapter.TicketViewHolder>() {
+) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    private val items = mutableListOf<Ticket>()
-    private val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.FRANCE)
+    private sealed class Row {
+        data class Header(val label: String) : Row()
+        data class Item(val ticket: Ticket) : Row()
+    }
 
-    fun submitList(list: List<Ticket>) {
-        items.clear()
-        items.addAll(list)
+    private var rows: List<Row> = emptyList()
+    private val dateFormat = DateFormat.getDateInstance(DateFormat.MEDIUM)
+
+    fun submitSections(sections: List<HistoryRules.Section>) {
+        rows = sections.flatMap { s -> listOf(Row.Header(s.label)) + s.tickets.map { Row.Item(it) } }
         notifyDataSetChanged()
     }
 
-    override fun onCreateViewHolder(
-        parent: ViewGroup,
-        viewType: Int
-    ): TicketViewHolder {
-        val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_ticket_history, parent, false)
-        return TicketViewHolder(view)
+    /** Compatibilité (appels existants) : liste simple sans sections. */
+    fun submitList(list: List<Ticket>) {
+        rows = list.map { Row.Item(it) }
+        notifyDataSetChanged()
     }
 
-    override fun onBindViewHolder(holder: TicketViewHolder, position: Int) {
-        holder.bind(items[position])
+    override fun getItemCount() = rows.size
+    override fun getItemViewType(position: Int) = if (rows[position] is Row.Header) 0 else 1
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        val inf = LayoutInflater.from(parent.context)
+        return if (viewType == 0) HeaderVH(ItemHistorySectionBinding.inflate(inf, parent, false))
+        else TicketVH(ItemTicketHistoryBinding.inflate(inf, parent, false))
     }
 
-    override fun getItemCount(): Int = items.size
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        when (val r = rows[position]) {
+            is Row.Header -> (holder as HeaderVH).b.tvSection.text = r.label
+            is Row.Item -> (holder as TicketVH).bind(r.ticket)
+        }
+    }
 
-    inner class TicketViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    class HeaderVH(val b: ItemHistorySectionBinding) : RecyclerView.ViewHolder(b.root)
 
-        private val tvStore: TextView = itemView.findViewById(R.id.tvStore)
-        private val tvAmount: TextView = itemView.findViewById(R.id.tvAmount)
-        private val tvDate: TextView = itemView.findViewById(R.id.tvDate)
-
-        fun bind(ticket: Ticket) {
-            tvStore.text = ticket.store
-            tvAmount.text = String.format(Locale.FRANCE, "%.2f €", ticket.amount)
-            tvDate.text = dateFormat.format(Date(ticket.dateMillis))
-            itemView.setOnClickListener { onTicketClick(ticket) }
+    inner class TicketVH(private val b: ItemTicketHistoryBinding) : RecyclerView.ViewHolder(b.root) {
+        fun bind(t: Ticket) {
+            val amount = String.format(Locale.FRANCE, "%.2f €", t.amount)
+            val date = dateFormat.format(Date(t.dateMillis))
+            b.tvStore.text = t.store
+            b.tvDate.text = if (t.category.isNotBlank()) "${t.category} · $date" else date
+            b.tvAmount.text = amount
+            b.root.contentDescription = "${t.store}, $amount, ${b.tvDate.text}"
+            b.root.setOnClickListener { onTicketClick(t) }
         }
     }
 }

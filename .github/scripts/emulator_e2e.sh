@@ -36,6 +36,9 @@ adb shell am force-stop com.etix.qa
 # Phase B : processus tué, QA installée à côté → données com.etix intactes
 run com.etix.e2e.E2ePersistanceTest
 
+# Phase C : lot 4 (date, catégorie, filtres et recherche de l'Historique) — sans suppression
+run com.etix.e2e.E2eLot4Test
+
 # Captures prises par les tests (run-as : app debuggable)
 for f in $(adb shell run-as com.etix ls files/shots 2>/dev/null | tr -d '\r'); do
   adb exec-out run-as com.etix cat "files/shots/$f" > "$OUT/shots/$f"

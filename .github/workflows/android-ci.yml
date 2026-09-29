@@ -256,7 +256,7 @@ jobs:
       max-parallel: 20
       matrix:
         api: [34, 21]
-        shot: [01_onboarding, 02_connexion, 03_accueil_vide, 04_ajouter_vide, 05_historique_vide, 06_categories_vide, 07_magasins_vide, 08_reglages, 09_ajout_clavier_ouvert, 10_accueil_un_ticket, 11_historique, 12_detail, 13_modification, 14_detail_apres_modification, 15_historique_apres_retour, 16_magasins_mois, 17_magasins_aujourdhui, 18_fiche_magasin, 19_accueil_defile, 20_ajouter_clavier, 21_reglages_sombre, 22_accueil_sombre, 23_historique_sombre, 24_magasins_sombre, 25_ajouter_sombre, 26_reglages_clair, 27_apres_redemarrage, 28_eTixQA_premier_lancement]
+        shot: [01_onboarding, 02_connexion, 03_accueil_vide, 04_ajouter_vide, 05_historique_vide, 06_categories_vide, 07_magasins_vide, 08_reglages, 09_ajout_clavier_ouvert, 10_accueil_un_ticket, 11_historique, 12_detail, 13_modification, 14_detail_apres_modification, 15_historique_apres_retour, 16_magasins_mois, 17_magasins_aujourdhui, 18_fiche_magasin, 19_accueil_defile, 20_ajouter_clavier, 21_reglages_sombre, 22_accueil_sombre, 23_historique_sombre, 24_magasins_sombre, 25_ajouter_sombre, 26_reglages_clair, 27_apres_redemarrage, 28_eTixQA_premier_lancement, 30_selecteur_date, 31_selecteur_categorie, 32_ajout_formulaire_complet, 33_historique_sections, 34_historique_recherche, 35_filtre_dates, 36_historique_filtre_actif, 37_modification_prerempli, 38_detail_apres_modification]
     steps:
       - uses: actions/checkout@v4
         with:

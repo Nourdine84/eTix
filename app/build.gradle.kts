@@ -16,8 +16,8 @@ android {
         applicationId = "com.etix"
         minSdk = 21
         targetSdk = 34
-        versionCode = 4
-        versionName = "1.3.0-lot3"
+        versionCode = 5
+        versionName = "1.4.0-lot4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

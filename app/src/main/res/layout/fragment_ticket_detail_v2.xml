@@ -19,6 +19,13 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"/>
 
+    <!-- Lot 4 : date d'achat affichée (iOS « DATE D'ACHAT ») -->
+    <TextView
+        android:id="@+id/tvDate"
+        android:layout_marginTop="8dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"/>
+
     <TextView
         android:id="@+id/tvCategory"
         android:layout_marginTop="8dp"
