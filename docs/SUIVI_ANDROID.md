@@ -53,4 +53,5 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
 | 6 | `ETixApp` non déclarée dans le manifeste → journal de crash jamais alimenté | P4 |
 | 7 | Manifeste : `.TicketEditActivity` déclarée mais inexistante | P4 |
 | 8 | Room `fallbackToDestructiveMigration()` → perte de données à tout changement de schéma | P4 |
+| 10 | Test `OCRValidationTest` désactivé : datasets vers fichiers absents, attentes ≠ fixtures | P3 |
 | 9 | Login simulé : tout identifiant/mot de passe non vide est accepté, le mot de passe n'est ni stocké ni vérifié | Lié au #5 |

@@ -40,6 +40,25 @@ jobs:
           set -o pipefail
           ./gradlew testDebugUnitTest --console=plain -Dorg.gradle.java.home="$JAVA_HOME" 2>&1 | tee test.log
 
+      # Récapitulatif des tests (lisible via l'API, succès comme échec)
+      - name: Report test summary
+        if: always()
+        run: |
+          python3 - <<'PY'
+          import glob, xml.etree.ElementTree as ET
+          rows = []
+          for f in sorted(glob.glob("app/build/test-results/testDebugUnitTest/*.xml")):
+              suite = ET.parse(f).getroot()
+              for tc in suite.iter("testcase"):
+                  state = "PASS"
+                  if tc.find("failure") is not None or tc.find("error") is not None:
+                      state = "FAIL"
+                  elif tc.find("skipped") is not None:
+                      state = "SKIP"
+                  rows.append(f"{state} {tc.get('classname').split('.')[-1]}.{tc.get('name')} ({tc.get('time')}s)")
+          print("::notice title=Tests::" + ("%0A".join(rows) if rows else "Aucun résultat de test"))
+          PY
+
       # Remonte les erreurs Gradle/Kotlin en annotations (lisibles sans télécharger les logs)
       - name: Report build errors as annotations
         if: failure()
