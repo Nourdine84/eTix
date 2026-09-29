@@ -152,7 +152,20 @@ jobs:
                   elif tc.find("skipped") is not None:
                       state = "SKIP"
                   rows.append(f"{state} {tc.get('classname').split('.')[-1]}.{tc.get('name')} ({tc.get('time')}s)")
-          print("::notice title=Tests::" + ("%0A".join(rows) if rows else "Aucun résultat de test"))
+          from collections import Counter
+          c = Counter(r.split(" ", 1)[0] for r in rows)
+          print(f"::notice title=Bilan tests JVM::{c['PASS']} réussis, {c['FAIL']} échecs, {c['SKIP']} désactivés, {len(rows)} au total")
+          # Détail par classe (une annotation par classe : limite de 4096 caractères par annotation)
+          by = {}
+          for r in rows:
+              by.setdefault(r.split(" ", 1)[1].split(".", 1)[0], []).append(r)
+          chunk = []
+          for k in sorted(by):
+              block = "%0A".join(by[k])
+              if chunk and len("%0A".join(chunk + [block])) > 3800:
+                  print("::notice title=Tests::" + "%0A".join(chunk)); chunk = []
+              chunk.append(block)
+          print("::notice title=Tests::" + ("%0A".join(chunk) if chunk else "Aucun résultat de test"))
           PY
 
       # Remonte les erreurs Gradle/Kotlin en annotations (lisibles sans télécharger les logs)
