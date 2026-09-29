@@ -84,10 +84,10 @@ android {
     testOptions {
         unitTests.isIncludeAndroidResources = true
         // Captures Robolectric (rendu natif) : mémoire saturée au-delà de ~120 tests dans une seule JVM (OOM constaté
-        // au lot 7). Tas élargi et nouvelle JVM toutes les 40 classes. N'affecte que les tests, pas l'application.
+        // au lot 7). Tas élargi et nouvelle JVM toutes les 8 classes. N'affecte que les tests, pas l'application.
         unitTests.all {
             it.maxHeapSize = "2g"
-            it.setForkEvery(40)
+            it.setForkEvery(8)
         }
     }
 
