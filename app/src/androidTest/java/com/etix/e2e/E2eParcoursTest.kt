@@ -107,12 +107,13 @@ class E2eParcoursTest {
         startMain()
         tab(R.id.menu_add)
         onView(shown(R.id.inputStore)).perform(click(), typeText("Boulangerie Test"))
-        onView(shown(R.id.inputAmount)).perform(click(), typeText("12,50"))
+        closeSoftKeyboard() // petit écran (API 21) : le clavier masque le champ suivant
+        onView(withId(R.id.inputAmount)).perform(scrollTo(), click(), typeText("12,50"))
         shot("09_ajout_clavier_ouvert")
 
         // Ce que le clavier a réellement laissé passer dans le champ
         var saisi = ""
-        onView(shown(R.id.inputAmount)).check { v, _ -> saisi = (v as EditText).text.toString() }
+        onView(withId(R.id.inputAmount)).check { v, _ -> saisi = (v as EditText).text.toString() }
         closeSoftKeyboard()
         onView(withId(R.id.btnSaveTicket)).perform(scrollTo(), click())
 
