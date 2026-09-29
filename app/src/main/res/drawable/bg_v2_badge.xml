@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- iOS EtixBadge : disque dégradé #409CFF → #007BFF + liseré blanc 35 % -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="oval">
+    <gradient android:angle="315" android:startColor="@color/v2_badge_top" android:endColor="@color/v2_primary" />
+    <stroke android:width="1dp" android:color="#59FFFFFF" />
+</shape>

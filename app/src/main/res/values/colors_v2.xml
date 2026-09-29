@@ -15,4 +15,17 @@
     <!-- Barre d'onglets : valeur claire inchangée (md_surface), variante sombre ajoutée -->
     <color name="v2_tabbar">#FFFBFE</color>
     <color name="v2_positive">#34C759</color>
+    <!-- Accueil (iOS Theme.Background.primary / surface) -->
+    <color name="v2_bg_home">#EEF2FF</color>
+    <color name="v2_surface_home">#FFFFFF</color>
+    <color name="v2_attention">#FF9500</color>
+    <color name="v2_primary_30">#4D007BFF</color>
+    <color name="v2_primary_glow">#2E007BFF</color>
+    <color name="v2_badge_top">#409CFF</color>
+    <color name="v2_negative_12">#1FFF3B30</color>
+    <color name="v2_positive_12">#1F34C759</color>
+    <color name="v2_neutral_12">#1F8A8A8E</color>
+    <!-- Bouton principal désactivé (Scanner indisponible) -->
+    <color name="v2_disabled_primary">#E0E6F5</color>
+    <color name="v2_disabled_on_primary">#8A94AB</color>
 </resources>

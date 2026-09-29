@@ -58,14 +58,30 @@
             android:id="@+id/btnClearAll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Vider tous les tickets"
+            android:text="Vider tous les tickets — indisponible"
+            android:enabled="false"
+            android:alpha="0.5"
+            android:contentDescription="Vider tous les tickets, indisponible dans cette version"
             android:textAllCaps="false"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="4dp"
             android:background="@drawable/bg_button"
-            android:textColor="@android:color/white"
+            android:textColor="@color/v2_text_secondary"
+            android:backgroundTint="@color/v2_neutral_12"
             android:textSize="16sp"
             android:padding="12dp"
             style="@style/Shape" />
+
+        <!-- Lot 3 : suppression globale non branchée (action destructive → décision produit).
+             Bouton volontairement désactivé pour ne pas sembler fonctionner. -->
+        <TextView
+            android:id="@+id/tvClearAllUnavailable"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:gravity="center"
+            android:text="Suppression de tous les tickets non disponible dans cette version"
+            android:textColor="@color/v2_text_secondary"
+            android:textSize="12sp" />
 
         <Button
             android:id="@+id/btnShowCrash"

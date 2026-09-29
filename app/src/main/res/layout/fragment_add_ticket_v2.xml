@@ -83,10 +83,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
-                android:text="Scanner un ticket"
+                android:text="Scanner un ticket — indisponible"
                 android:textAllCaps="false"
-                android:backgroundTint="@color/etix_blue"
-                android:textColor="@color/white" />
+                android:enabled="false"
+                android:contentDescription="Scanner un ticket, indisponible sur Android pour le moment"
+                android:backgroundTint="@color/v2_disabled_primary"
+                android:textColor="@color/v2_disabled_on_primary" />
+            <!-- Lot 3 : aucun flux scanner branché → désactivé pour ne pas sembler fonctionner -->
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSaveTicket"

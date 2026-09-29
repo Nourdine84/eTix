@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Material Icons "credit_card" (Apache 2.0) — équivalent SF Symbol creditcard -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="14dp" android:height="14dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:fillColor="@color/v2_text_secondary"
+        android:pathData="M20,4H4c-1.11,0 -1.99,0.89 -1.99,2L2,18c0,1.11 0.89,2 2,2h16c1.11,0 2,-0.89 2,-2V6c0,-1.11 -0.89,-2 -2,-2zM20,18H4v-6h16v6zM20,8H4V6h16v2z"/>
+</vector>

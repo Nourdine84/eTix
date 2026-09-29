@@ -125,6 +125,13 @@ jobs:
           LIST=$(ls app/build/screenshots/*.png 2>/dev/null | xargs -rn1 basename | sed 's/\.png$//' | python3 -c "import sys,json;print(json.dumps([l.strip() for l in sys.stdin if l.strip()]))")
           echo "list=${LIST:-[]}" >> "$GITHUB_OUTPUT"
 
+      - name: Report OCR observation
+        if: always()
+        run: |
+          if [ -f app/build/ocr-report.txt ]; then
+            echo "::notice title=OCR observé::$(sed ':a;N;$!ba;s/\n/%0A/g' app/build/ocr-report.txt)"
+          fi
+
       # Récapitulatif des tests (lisible via l'API, succès comme échec)
       - name: Report test summary
         if: always()
