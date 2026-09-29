@@ -26,7 +26,7 @@ class E2ePersistanceTest {
     @Test
     fun donnees_conservees_apres_arret_du_processus() {
         ctx.startActivity(Intent(ctx, SplashActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-        waitFor(withId(R.id.bottomNav))          // session conservée : pas d'onboarding ni de connexion
+        waitFor(withId(R.id.bottomNav), 30_000) // démarrage à froid (après mise à jour : compilation)          // session conservée : pas d'onboarding ni de connexion
         waitFor(withText("1 ticket enregistré"))
         onView(withId(R.id.menu_history)).perform(click())
         waitFor(allOf(withText("Boulangerie Test"), isDisplayed()))

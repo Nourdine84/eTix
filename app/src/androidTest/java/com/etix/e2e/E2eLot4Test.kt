@@ -51,7 +51,7 @@ class E2eLot4Test {
     private fun startMain() {
         ctx.startActivity(Intent(ctx, MainActivityV2::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK))
-        waitFor(withId(R.id.bottomNav))
+        waitFor(withId(R.id.bottomNav), 30_000) // démarrage à froid (après mise à jour : compilation)
     }
 
     private fun shown(id: Int) = allOf(withId(id), isDisplayed())
@@ -152,8 +152,8 @@ class E2eLot4Test {
         startMain()
         onView(withId(R.id.menu_history)).perform(click())
         onView(allOf(withText("Esso Test"), isDisplayed())).perform(click())
-        waitFor(inOverlay(R.id.btnEdit))
-        onView(inOverlay(R.id.btnEdit)).perform(click())
+        waitFor(inOverlay(R.id.tvAmount))
+        onView(inOverlay(R.id.btnEdit)).perform(E2e.nestedScrollTo(), click()) // lot 6 : sous la ligne de flottaison
         waitFor(allOf(inOverlay(R.id.tvCategoryValue), withText("Carburant")))
         onView(inOverlay(R.id.inputAmount)).check(matches(withText("48,90")))
         shot("37_modification_prerempli")

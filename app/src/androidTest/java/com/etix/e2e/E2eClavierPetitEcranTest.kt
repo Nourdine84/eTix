@@ -62,7 +62,7 @@ class E2eClavierPetitEcranTest {
     private fun startMain() {
         ctx.startActivity(Intent(ctx, MainActivityV2::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK))
-        waitFor(withId(R.id.bottomNav))
+        waitFor(withId(R.id.bottomNav), 30_000) // démarrage à froid (après mise à jour : compilation)
     }
 
     /** À appeler SUR le thread principal. */
@@ -122,8 +122,11 @@ class E2eClavierPetitEcranTest {
         startMain()
         onView(withId(R.id.menu_add)).perform(click())
         onView(allOf(withId(R.id.inputStore), isDisplayed())).perform(click(), replaceText(store))
-        onView(withId(R.id.inputAmount)).perform(scrollTo(), click(), typeText("4,20"))
+        onView(withId(R.id.inputAmount)).perform(scrollTo(), click())
+        // Taper seulement quand le clavier est prêt : sinon l'injection perd le 1er caractère (« ,20 » observé, run 36631237084)
         assertTrue("Clavier non affiché", waitImeStable() > 0)
+        onView(withId(R.id.inputAmount)).perform(typeText("4,20"))
+        onView(withId(R.id.inputAmount)).check(androidx.test.espresso.assertion.ViewAssertions.matches(withText("4,20")))
         val avant = mesure(R.id.btnSaveTicket)
         onView(withId(R.id.btnSaveTicket)).perform(scrollTo())
         waitImeStable()
@@ -169,12 +172,15 @@ class E2eClavierPetitEcranTest {
         val row = allOf(withText("$store modif"), isDescendantOfA(withId(R.id.recyclerHistory)))
         waitFor(row)
         onView(allOf(row, isDisplayed())).perform(click())
-        waitFor(allOf(withId(R.id.btnEdit), isDescendantOfA(withId(R.id.overlayContainer))))
+        // Lot 6 : « Modifier » est sous la carte montant / date → défilement avant le toucher
+        waitFor(allOf(withId(R.id.tvAmount), isDescendantOfA(withId(R.id.overlayContainer))))
         onView(allOf(withId(R.id.btnEdit), isDescendantOfA(withId(R.id.overlayContainer)))).perform(E2e.nestedScrollTo(), click())
         val amount = allOf(withId(R.id.inputAmount), isDescendantOfA(withId(R.id.overlayContainer)))
         waitFor(amount)
-        onView(amount).perform(scrollTo(), click(), clearText(), typeText("5,30"))
+        onView(amount).perform(scrollTo(), click(), clearText())
         assertTrue("Clavier non affiché", waitImeStable() > 0)
+        onView(amount).perform(typeText("5,30"))
+        onView(amount).check(androidx.test.espresso.assertion.ViewAssertions.matches(withText("5,30")))
         val save = allOf(withId(R.id.btnSave), isDescendantOfA(withId(R.id.overlayContainer)))
         val avant = mesure(R.id.btnSave)
         onView(save).perform(scrollTo())

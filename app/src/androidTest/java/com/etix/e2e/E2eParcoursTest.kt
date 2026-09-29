@@ -45,7 +45,7 @@ class E2eParcoursTest {
     private fun startMain() {
         ctx.startActivity(Intent(ctx, MainActivityV2::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK))
-        waitFor(withId(R.id.bottomNav))
+        waitFor(withId(R.id.bottomNav), 30_000) // démarrage à froid (après mise à jour : compilation)
     }
 
     private fun tab(id: Int) = onView(withId(id)).perform(click())
@@ -66,7 +66,7 @@ class E2eParcoursTest {
         closeSoftKeyboard()
         onView(withId(R.id.btnLogin)).perform(click())
 
-        waitFor(withId(R.id.bottomNav))
+        waitFor(withId(R.id.bottomNav), 30_000) // démarrage à froid (après mise à jour : compilation)
         waitFor(withText("Aucun ticket enregistré"))
         shot("03_accueil_vide")
     }
@@ -133,9 +133,9 @@ class E2eParcoursTest {
         shot("11_historique")
         onView(allOf(withText("Boulangerie Test"), isDisplayed())).perform(click())
 
-        waitFor(inOverlay(R.id.btnEdit))
+        waitFor(inOverlay(R.id.tvAmount))
         shot("12_detail")
-        onView(inOverlay(R.id.btnEdit)).perform(click())
+        onView(inOverlay(R.id.btnEdit)).perform(E2e.nestedScrollTo(), click()) // lot 6 : sous la ligne de flottaison
 
         // Bouton Enregistrer parfois sous la ligne de flottaison (API 36) : on attend le champ, scrollTo ensuite
         waitFor(inOverlay(R.id.inputAmount))

@@ -74,7 +74,7 @@ class E2eFrancaisTest {
     private fun startMain() {
         ctx.startActivity(Intent(ctx, MainActivityV2::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK))
-        waitFor(withId(R.id.bottomNav))
+        waitFor(withId(R.id.bottomNav), 30_000) // démarrage à froid (après mise à jour : compilation)
     }
 
     private fun seed(vararg t: Ticket) = runBlocking {

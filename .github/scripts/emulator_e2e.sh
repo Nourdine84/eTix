@@ -119,6 +119,10 @@ sleep 6
 adb exec-out screencap -p > "$OUT/shots/api${API}_28_eTixQA_premier_lancement.png"
 adb shell am force-stop com.etix.qa
 
+# Temps de démarrage à froid après mise à jour (mesure seule ; l'app est ensuite de nouveau arrêtée)
+{ echo "démarrage à froid après mise à jour :"; timeout 60 adb shell am start -W -n com.etix/.SplashActivity 2>&1 | grep -E "TotalTime|WaitTime|Status" | tr -d '\r'; } >> "$OUT/device.txt"
+sleep 3; adb shell am force-stop com.etix
+
 # Phase B : après mise à jour A→B + processus tué + QA installée à côté → données com.etix intactes
 run com.etix.e2e.E2ePersistanceTest
 
