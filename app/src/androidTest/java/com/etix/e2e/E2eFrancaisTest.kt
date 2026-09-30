@@ -253,4 +253,11 @@ class E2eFrancaisTest {
         BudgetE2e.row(withText("Autre"), withId(R.id.budgetBlock))
         shot("f10_categories_budget_fr")
     }
+
+    /** Lot 8 : carte Budget de l'Accueil en français (budget « Autre » de f05), textes = moteur. */
+    @Test
+    fun f06_accueil_carte_budget_fr() {
+        startMain()
+        AccueilBudgetE2e.checkCard("f11_accueil_budget_fr")
+    }
 }

@@ -227,4 +227,11 @@ class E2eClavierPetitEcranTest {
         val saved = com.etix.data.BudgetStore(ctx).limit("Clavier $passe")
         assertTrue("Budget non enregistré ($saved)", saved == 7.5)
     }
+
+    /** Lot 8 : carte Budget de l'Accueil sur petit écran / grande police (budget de k04). */
+    @Test
+    fun k05_accueil_carte_budget() {
+        startMain()
+        AccueilBudgetE2e.checkCard("k05_accueil_budget_${passe}")
+    }
 }

@@ -141,5 +141,8 @@ run com.etix.e2e.E2eDetailsTest
 # Phase F : lot 7 (budgets mensuels)
 run com.etix.e2e.E2eBudgetsTest
 
+# Phase G : lot 8 (carte Budget de l'Accueil)
+run com.etix.e2e.E2eAccueilBudgetTest
+
 collect
 exit 0
