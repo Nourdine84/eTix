@@ -7,7 +7,7 @@ Document de reprise entre sessions. Concis : état, décisions, prochain lot.
 | Élément | Emplacement |
 |---|---|
 | Code Android (référence) | `Nourdine84/eTix`, branche `feature/android-v2` (dernier commit 16/01/2026) |
-| Branches de travail | Lot 1 `fix/android-v2-navigation` ; Lot 2 `feature/android-lot2-magasins` (contient lot 1) ; Lot 3 `feature/android-lot3-accueil-theme` (contient lots 1-2) ; Lot 4 `feature/android-lot4-formulaire-historique` ; Lot 5 `feature/android-lot5-categories` (depuis le lot 4 @ `c77f0ba`) ; Lot 6 `feature/android-lot6-fiabilisation` (depuis le lot 5 @ `959f41e`) ; **Lot 7 `feature/android-lot7-budgets`** (depuis le lot 6 @ `8172881`, base de continuation). Anciennes branches conservées. **Rien fusionné** — fusion uniquement après validation téléphone (`docs/REVUE_LOTS_1_2.md`). |
+| Branches de travail | Lot 1 `fix/android-v2-navigation` ; Lot 2 `feature/android-lot2-magasins` (contient lot 1) ; Lot 3 `feature/android-lot3-accueil-theme` (contient lots 1-2) ; Lot 4 `feature/android-lot4-formulaire-historique` ; Lot 5 `feature/android-lot5-categories` (depuis le lot 4 @ `c77f0ba`) ; Lot 6 `feature/android-lot6-fiabilisation` (depuis le lot 5 @ `959f41e`) ; Lot 7 `feature/android-lot7-budgets` (depuis le lot 6 @ `8172881`). **Lots 1 à 7 fusionnés dans `feature/android-v2`** (PR #75, commit de fusion `8c1af76`, 30/09/2026). **Lot 8 `feature/android-lot8-accueil-budget`** (depuis `8c1af76`). Anciennes branches conservées. `main` et `dev` jamais modifiés. |
 | Historique Git | `feature/android-v2` et `dev` : ancêtre commun `ab7d6f8`, `dev` a 3 commits propres. `main` : racine distincte, sans ancêtre commun. Détail : `docs/REVUE_LOTS_1_2.md`. Intégration `dev`/`main` = décision séparée. |
 | `Nourdine84/etix-android` | Squelette Gradle sans module `app` — **pas** le dépôt de dev |
 | Copie locale Mac `~/AndroidStudioProjects/eTix` | Sur `dev` (19/12/2025), n'a pas `feature/android-v2` |
@@ -183,6 +183,18 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
 | `aa8758a` | Code : titre de la saisie (taille auto) | **36645961271** | **référence** : JVM 121/0/10 ; 22/22 ×3 ; fr 5/5 ; petit écran 9/9 ; aucun plantage |
 | (suivants) | Documentation uniquement | — | — |
 
+### Lot 8 — Carte Budget de l'Accueil (feature/android-lot8-accueil-budget)
+- Carte « Budgets du mois » (iOS `BudgetSummaryCardView`) sur « Ce mois » dès qu'un budget existe : « Il te reste » /
+  « Budgets dépassés de », « X dépensés sur Y prévus », barre et pourcentage globaux (50 / 80 / 100 %), jours restants,
+  3 lignes max + « et N autres ». Chaque budget compté une fois, dépenses cumulées par clé (casse ignorée).
+- « Budget tendu » (global critique ou dépassé) → phrase « Ton rythme de dépenses augmente » (règle iOS).
+- **Plantage Android 5 et 6 trouvé sur émulateur et corrigé** (`HashMap.putIfAbsent`, API 24). CI : rapport lint NewApi
+  non bloquant ajouté ; il signale aussi `OCRDateExtractor` (java.time, API 26), existant, non atteignable tant que le
+  scan n'est pas branché — **plantera sur Android 5 à 7 le jour où l'OCR sera branché** (à corriger avant).
+- Écarts / ambiguïtés B1–B6 : `docs/BUDGETS.md` (pas de carte Magasin ni d'insights, montants exacts, « dépassés de 0 € »
+  au seuil 100 %, état tendu global, animations).
+- Lecture seule ; tickets, catégories et budgets inchangés (vérifié). Version `1.8.0-lot8` (versionCode 9).
+
 ## Écarts restants avec iOS (référence `feature/home-hero-v2`)
 
 | Écran | Écart | Lot envisagé |
@@ -193,7 +205,7 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
 | Historique | Suppression par balayage (iOS) non portée | 5 |
 | Détail ticket | Aligné au lot 6 ; dégradé du montant iOS rendu en bleu uni ; pas de retour haptique | — |
 | Catégories | Budgets portés (lot 7) ; export non porté | à planifier |
-| Accueil | Carte « Budget » et effet « budget tendu » sur la phrase (iOS `BudgetSummaryEngine`, `budgetTense`) | à planifier |
+| Accueil | Carte Budget portée (lot 8) ; insights, carte Magasin, animations d'entrée non portés | à planifier |
 | Détail catégorie | « Voir par magasin » (liste des magasins filtrée) et export non portés | à planifier |
 | Catégories | Choix provisoire « Autre » quand aucune catégorie n'est choisie à l'ajout (iOS : vide) → ces tickets apparaissent sous « Autre » | décision produit |
 | Magasins | Comparaison entre magasins, graphique « Historique des achats » | 5 |

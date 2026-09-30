@@ -1,4 +1,4 @@
-# Validation sur émulateur — lots 1 à 7
+# Validation sur émulateur — lots 1 à 8
 
 **Ce n'est pas une validation sur téléphone physique.** Émulateurs Android officiels (Google) dans GitHub Actions,
 données fictives uniquement, build de test signé avec la clé de développement du runner
@@ -41,6 +41,28 @@ Run : https://github.com/Nourdine84/eTix/actions/runs/36601028467
 | c01 | Lot 4 : ajout avec date (sélecteur), catégorie « Carburant », description |
 | c02 | Lot 4 : sections, recherche « carbu », filtre date de début, réinitialisation |
 | c03 | Lot 4 : édition préremplie, catégorie libre « Péage fictif », reprise dans le sélecteur |
+
+## Lot 8 — carte Budget de l'Accueil (branche `feature/android-lot8-accueil-budget`)
+
+Commit testé : **`b48f5d0`** — run https://github.com/Nourdine84/eTix/actions/runs/36703532983 (dernier commit de code).
+
+| Niveau | Résultat |
+|---|---|
+| JVM + Robolectric | **146 réussis, 0 échec, 10 désactivés** (dont `BudgetSummaryEngineTest` : sans budget, 49,99 / 50 / 80 / 100 %, dépassement, budget partagé compté une fois, 31/08 → 01/09, jours restants, 3 lignes max, « budget tendu ») |
+| Émulateur API 36 / 34 / 21 | **26/26** chacun |
+| Émulateur API 34 fr-FR | **6/6** (carte Budget en français) |
+| Émulateur API 36 petit écran | **12/12** (carte Budget à 360 dp police 1,3 et 2,0, 320 dp police 1,3) |
+| Mise à jour A → B | API 21, 34, 36 : versionCode 9 → 10, tickets, catégories et budgets conservés |
+| Plantages | aucun (après correction) |
+| Lint NewApi (nouveau, non bloquant) | 8 signalements, tous dans `OCRDateExtractor` (java.time, API 26), code existant non atteignable aujourd'hui |
+
+Défauts trouvés sur émulateur / aperçus et corrigés :
+- **Plantage de l'Accueil sur Android 5** dès qu'un budget existe (`HashMap.putIfAbsent`, API 24), run 36700391736 → `da8aa93` ;
+- fond teinté transparent laissant voir l'ombre en gris (Android 14) → couleurs opaques (`b48f5d0`) ;
+- « 200 » et « € » séparés en fin de ligne à police 2,0 → espace insécable (`b12fa3a`).
+
+Changement de mois : vérifié en JVM seulement (horloge de l'émulateur non modifiée).
+Aperçus : `docs/preview/lot8/` (Robolectric) et `docs/preview/lot8-emulateur/`.
 
 ## Incident CI après fusion de la PR #75 (30/09/2026)
 

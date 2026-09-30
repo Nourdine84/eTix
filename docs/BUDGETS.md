@@ -67,7 +67,7 @@ Référence iOS : `BudgetSummaryEngine.swift`, `BudgetSummaryCardView.swift`, `H
 | « N jours restants dans le mois » (du début d'aujourd'hui au 1er du mois suivant : dernier jour = 1) | Identique |
 | 3 lignes max triées par ratio décroissant, « et N autres → » | Identique (égalité départagée par le nom, iOS indéterministe) |
 | Nom de ligne = casse du ticket le plus récent du mois, sinon clé capitalisée | Identique |
-| Fond teinté : orange 8 % (attention), rouge 8 % (critique / dépassé) | Identique en clair ; **16 % en sombre** (8 % invisible sur fond noir) |
+| Fond teinté : orange 8 % (attention), rouge 8 % (critique / dépassé) | Couleurs **opaques pré-mélangées** sur le fond de l’Accueil (8 % en clair, 16 % en sombre) : une teinte transparente laissait voir l’ombre de la carte en gris (Android 14) |
 | `budgetTense` = état global critique ou dépassé → phrase « Ton rythme de dépenses augmente » (priorité après la maturité des données) | Identique |
 
 ### Écarts et ambiguïtés (à valider)
