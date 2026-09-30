@@ -42,6 +42,17 @@ Run : https://github.com/Nourdine84/eTix/actions/runs/36601028467
 | c02 | Lot 4 : sections, recherche « carbu », filtre date de début, réinitialisation |
 | c03 | Lot 4 : édition préremplie, catégorie libre « Péage fictif », reprise dans le sélecteur |
 
+## Incident CI après fusion de la PR #75 (30/09/2026)
+
+Run 36695648030 (commit de fusion `8c1af76` sur `feature/android-v2`), tentative 1 : le job `emulator-api34-fr`
+a échoué à l'étape **« Build APKs (A, B, tests, QA de développement) »** (compilation Gradle), avant tout test ;
+les 11 aperçus dépendants ont échoué faute d'artefact. Les autres jobs, compilant le même code, ont réussi.
+Tentative 2 (relance des jobs en échec) : réussie (fr 5/5).
+**Cause : inconnue.** Les journaux ne sont pas accessibles depuis cette session (téléchargement refusé, HTTP 403) et
+l'annotation ne contient que « Process completed with exit code 1 ». La relance réussie ne démontre pas une panne
+d'environnement. À revoir si le journal devient accessible (onglet Actions du run, job `emulator-api34-fr`,
+tentative 1) ou si l'échec se reproduit.
+
 ## Lot 7 — budgets (branche `feature/android-lot7-budgets`)
 
 Commit testé : **`aa8758a`** — run https://github.com/Nourdine84/eTix/actions/runs/36645961271 (dernier commit de code).

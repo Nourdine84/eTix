@@ -51,9 +51,39 @@ Budget « Courses » = 40 € ; tickets du mois « Courses » 30 € et « cours
 | Agrégation des budgets (`BudgetRules.totals`, future carte Accueil) | chaque clé comptée **une fois** : total budgets 40 €, dépenses 50 € |
 | Tickets / catégories | inchangés |
 
+## Accueil : carte Budget et « budget tendu » (lot 8)
+
+Référence iOS : `BudgetSummaryEngine.swift`, `BudgetSummaryCardView.swift`, `HomeView.swift` (`resolveContextCard`,
+`budgetTense`), `HomeSnapshot.swift`, `FinancialStateEngine.swift`.
+
+| Règle iOS | Android lot 8 |
+|---|---|
+| Carte seulement sur « Ce mois » et s'il existe au moins un budget > 0 | Identique |
+| Toujours calculée sur le mois courant [1er 00:00, 1er du mois suivant[ | Identique (`BudgetSummaryEngine.compute`) |
+| Total des budgets = somme des budgets, **chaque clé une fois** ; dépenses = catégories budgétées seulement, cumulées par clé (casse ignorée), catégories vides ignorées | Identique (réutilise `BudgetRules.totals`) |
+| États globaux et par ligne : < 50 % confortable (bleu), 50–80 % attention (orange), 80–100 % critique (rouge), ≥ 100 % dépassé (rouge) | Identique |
+| Titre « Il te reste X » ; en dépassement « Budgets dépassés de X » (rouge) ; « X dépensés sur Y prévus » | Identique |
+| Pourcentage `Int(ratio × 100)` (troncature : 99,9 % → 99%) | Identique |
+| « N jours restants dans le mois » (du début d'aujourd'hui au 1er du mois suivant : dernier jour = 1) | Identique |
+| 3 lignes max triées par ratio décroissant, « et N autres → » | Identique (égalité départagée par le nom, iOS indéterministe) |
+| Nom de ligne = casse du ticket le plus récent du mois, sinon clé capitalisée | Identique |
+| Fond teinté : orange 8 % (attention), rouge 8 % (critique / dépassé) | Identique en clair ; **16 % en sombre** (8 % invisible sur fond noir) |
+| `budgetTense` = état global critique ou dépassé → phrase « Ton rythme de dépenses augmente » (priorité après la maturité des données) | Identique |
+
+### Écarts et ambiguïtés (à valider)
+
+| # | Sujet | Choix |
+|---|---|---|
+| B1 | iOS choisit UNE carte contextuelle : Budget si action nécessaire, sinon carte Magasin (StoreIntelligence), sinon Budget informatif ; carte masquée si elle répète l'insight « budget dépassé » | Android n'a ni insights ni carte Magasin : la carte Budget s'affiche dès qu'un budget existe (« Ce mois »). À revoir si ces cartes sont portées |
+| B2 | Montants iOS arrondis à l'euro (« %.0f € ») | Montants exacts si décimales (« 12,50 € »), comme au lot 7 (A1) |
+| B3 | À 100 % pile, iOS affiche « Budgets dépassés de 0 € » | Reproduit (test figé) ; libellé à décider |
+| B4 | L'état « tendu » dépend du total global : une catégorie à 125 % ne rend pas l'Accueil « tendu » si le global reste < 80 % | Reproduit (règle iOS) |
+| B5 | « et N autres → » n'est pas cliquable sur iOS | Identique (non cliquable) |
+| B6 | Animations d'entrée de l'Accueil iOS | Non portées |
+
 ## Écarts restants
 
-- Carte « Budget » de l'Accueil et effet « budget tendu » sur la phrase de l'Accueil (iOS `budgetTense`) : non portés.
+- Carte « Budget » de l'Accueil et « budget tendu » : portés au lot 8 (voir ci-dessus).
 - Rapport mensuel iOS (budgets) : non porté.
 
 ## Vérifications
