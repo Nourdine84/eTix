@@ -4,7 +4,9 @@ import com.etix.features.category.CategoryStats
 import com.etix.features.store.TimeRange
 import com.etix.model.Ticket
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.util.Calendar
 
@@ -105,25 +107,54 @@ class BudgetRulesTest {
     }
 
     /**
-     * Deux catégories ne différant que par la casse (« Courses » / « courses ») : UNE clé de budget (iOS), mais DEUX
-     * lignes de dépenses séparées dans Catégories. Budget 40 €, dépenses 30 € + 20 € = 50 € : aucune ligne n'est en
-     * dépassement (75 % et 50 %) alors que le total réel dépasse le budget. Comportement iOS conservé, documenté
-     * (docs/BUDGETS.md, A2) ; aucune catégorie fusionnée ni renommée.
+     * Deux catégories ne différant que par la casse partagent UN budget : la consommation est CUMULÉE
+     * (30 € + 20 € = 50 € pour 40 € → 125 %, dépassé) sur chaque ligne ; les totaux individuels et les noms restent.
      */
-    @Test fun deux_categories_differant_par_la_casse_partagent_le_budget_pas_les_depenses() {
+    @Test fun budget_partage_par_la_casse_consommation_cumulee() {
         val now = Calendar.getInstance().apply { clear(); set(2026, 8, 15, 12, 0) }.timeInMillis
         val tickets = listOf(
             Ticket(id = 1, store = "A", amount = 30.0, category = "Courses", dateMillis = now - 3_600_000),
             Ticket(id = 2, store = "B", amount = 20.0, category = "courses", dateMillis = now - 7_200_000),
+            Ticket(id = 3, store = "C", amount = 10.0, category = "Loisirs", dateMillis = now - 7_200_000),
         )
-        val budgets = mapOf(BudgetRules.key("Courses") to 40.0)
+        val budgets = mapOf(BudgetRules.key("Courses") to 40.0, "loisirs" to 100.0)
         val rows = CategoryStats.breakdown(tickets, TimeRange.MONTH, now).categories
-        assertEquals(listOf("Courses", "courses"), rows.map { it.name })         // deux lignes, noms intacts
-        val lines = rows.map { BudgetLine(BudgetRules.limitForRow(budgets, it.name, true)!!, it.total) }
-        assertEquals(listOf(BudgetStatus.OK, BudgetStatus.OK), lines.map { it.status }) // 75 % et 50 %
-        assertEquals(listOf(0.75, 0.5), lines.map { it.ratio })
-        // Total réel de la clé « courses » (agrégat de l'Accueil iOS, non porté) : 50 € / 40 € → dépassé
-        val combined = BudgetLine(40.0, tickets.sumOf { it.amount })
-        assertEquals(BudgetStatus.EXCEEDED, combined.status)
+        assertEquals(listOf("Courses", "courses", "Loisirs"), rows.map { it.name })     // aucune fusion, noms intacts
+        assertEquals(listOf(30.0, 20.0, 10.0), rows.map { it.total })                   // totaux individuels
+        val rb = BudgetRules.rowBudgets(rows.map { it.name to it.total }, budgets, isMonth = true)
+        for (n in listOf("Courses", "courses")) {
+            assertEquals(50.0, rb.getValue(n).line.spent, 0.0)
+            assertEquals(1.25, rb.getValue(n).line.ratio, 1e-9)
+            assertEquals(BudgetStatus.EXCEEDED, rb.getValue(n).line.status)
+            assertEquals("Dépassé — 125%", BudgetRules.statusLabel(rb.getValue(n).line))
+            assertEquals("50 € / 40 €", BudgetRules.progressLabel(rb.getValue(n).line))
+        }
+        assertEquals(listOf("courses"), rb.getValue("Courses").sharedWith)
+        assertEquals("Budget partagé avec « Courses »", BudgetRules.sharedLabel(rb.getValue("courses")))
+        assertFalse(rb.getValue("Loisirs").isShared)
+        assertNull(BudgetRules.sharedLabel(rb.getValue("Loisirs")))
+        assertEquals(10.0, rb.getValue("Loisirs").line.spent, 0.0)
+        assertTrue(BudgetRules.rowBudgets(rows.map { it.name to it.total }, budgets, isMonth = false).isEmpty())
+    }
+
+    @Test fun trois_variantes_de_casse_un_seul_budget() {
+        val rows = listOf("Courses" to 10.0, "courses" to 5.0, "COURSES" to 5.0)
+        val rb = BudgetRules.rowBudgets(rows, mapOf("courses" to 10.0), true)
+        assertEquals(3, rb.size)
+        rb.values.forEach { assertEquals(20.0, it.line.spent, 0.0); assertEquals(2, it.sharedWith.size) }
+        assertEquals("Budget partagé avec « courses », « COURSES »", BudgetRules.sharedLabel(rb.getValue("Courses")))
+    }
+
+    /** Agrégation des budgets : un budget partagé n'est compté qu'UNE fois ; catégories sans budget exclues. */
+    @Test fun agregation_budget_partage_compte_une_seule_fois() {
+        val rows = listOf("Courses" to 30.0, "courses" to 20.0, "Loisirs" to 10.0, "Transport" to 99.0)
+        val t = BudgetRules.totals(rows, mapOf("courses" to 40.0, "loisirs" to 100.0))
+        assertEquals(2, t.budgetCount)
+        assertEquals(140.0, t.totalBudget, 0.0)   // 40 + 100, pas 40 + 40 + 100
+        assertEquals(60.0, t.totalSpent, 0.0)     // 50 (courses cumulé) + 10 ; Transport sans budget exclu
+        assertEquals(80.0, t.remaining, 0.0)
+        // Budget sans dépense ce mois : compté dans le total des budgets, 0 dépensé
+        val t2 = BudgetRules.totals(emptyList(), mapOf("courses" to 40.0))
+        assertEquals(40.0, t2.totalBudget, 0.0); assertEquals(0.0, t2.totalSpent, 0.0)
     }
 }

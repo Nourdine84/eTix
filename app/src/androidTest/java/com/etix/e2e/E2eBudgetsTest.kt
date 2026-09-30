@@ -157,7 +157,15 @@ class E2eBudgetsTest {
         // Confirmation obligatoire ; « Annuler » sans effet
         onView(withId(R.id.btnDeleteBudget)).perform(androidx.test.espresso.action.ViewActions.scrollTo(), click())
         waitFor(withText("Supprimer le budget ?"))
+        SystemClock.sleep(800)
         shot("59_confirmation_suppression_budget")
+        if (android.os.Build.VERSION.SDK_INT >= 30) {   // clavier refermé derrière la confirmation
+            var imeVisible = true
+            onView(withText("Supprimer le budget ?")).inRoot(isDialog()).check { v, _ ->
+                imeVisible = ViewCompat.getRootWindowInsets(v)?.isVisible(WindowInsetsCompat.Type.ime()) == true
+            }
+            assertTrue("Clavier encore ouvert derrière la confirmation", !imeVisible)
+        }
         onView(withText("Annuler")).inRoot(isDialog()).perform(click())
         waitFor(withId(R.id.btnBudgetApply))
         assertEquals(12.0, BudgetStore(ctx).limit("E2E Baisse")!!, 0.0)
@@ -170,6 +178,29 @@ class E2eBudgetsTest {
         assertNull(BudgetStore(ctx).limit("E2E Baisse"))
         pressBack()
         BudgetE2e.noBudgetOn("E2E Baisse")
+    }
+
+    /** Budget partagé par deux catégories ne différant que par la casse : consommation cumulée 50 / 40 → 125 %. */
+    @Test fun g025_budget_partage_casse() {
+        runBlocking {
+            val dao = AppDatabase.getInstance(ctx).ticketDao()
+            dao.insert(com.etix.model.Ticket(store = "E2E Magasin", amount = 30.0, category = "E2E Casse",
+                dateMillis = System.currentTimeMillis() - 60_000))
+            dao.insert(com.etix.model.Ticket(store = "E2E Magasin", amount = 20.0, category = "e2e casse",
+                dateMillis = System.currentTimeMillis() - 90_000))
+        }
+        val before = BudgetE2e.tickets()
+        BudgetE2e.startMain()
+        BudgetE2e.openCategoriesMonth()
+        BudgetE2e.setBudget("E2E Casse", "40")
+        pressBack()
+        BudgetE2e.row(withText("E2E Casse"), withText("30,00 €"), withText("Dépassé — 125%"), withText("50 € / 40 €"),
+            withText("Budget partagé avec « e2e casse » · consommation cumulée"))
+        shot("60_budget_partage_casse")
+        BudgetE2e.row(withText("e2e casse"), withText("20,00 €"), withText("Dépassé — 125%"),
+            withText("Budget partagé avec « E2E Casse » · consommation cumulée"))
+        assertEquals(before, BudgetE2e.tickets())                       // aucun ticket ni catégorie modifié
+        assertEquals(40.0, BudgetStore(ctx).limit("e2e casse")!!, 0.0) // une seule clé de budget
     }
 
     @Test fun g03_theme_sombre() {

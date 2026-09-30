@@ -183,6 +183,36 @@ class Lot7ScreenshotTest {
         assertEquals(ticketsAvant, runBlocking { dao.getAllFlow().first() }.sortedBy { it.id }) // aucun ticket touché
     }
 
+    /** Budget partagé par deux catégories ne différant que par la casse : consommation cumulée, lignes distinctes. */
+    private fun sharedCase(suffix: String) {
+        TestDb.reset(ctx)
+        val now = System.currentTimeMillis()
+        val seeded = listOf(
+            Ticket(id = 1, store = "Lidl", amount = 30.0, category = "Courses", dateMillis = now - 60_000),
+            Ticket(id = 2, store = "Marché", amount = 20.0, category = "courses", dateMillis = now - 120_000),
+        )
+        TestDb.seed(ctx, seeded)
+        BudgetStore(ctx).set("Courses", 40.0)
+        val a = launchCategories()
+        a.findViewById<RecyclerView>(R.id.recyclerViewCategories).scrollToPosition(2); idle()
+        for ((name, own, other) in listOf(Triple("Courses", "30,00 €", "courses"), Triple("courses", "20,00 €", "Courses"))) {
+            val row = a.rowFor(name)!!
+            assertEquals(own, row.findViewById<TextView>(R.id.tvCategoryTotal).text.toString())          // total individuel
+            assertEquals("Dépassé — 125%", row.findViewById<TextView>(R.id.tvBudgetStatus).text.toString())
+            assertEquals("50 € / 40 €", row.findViewById<TextView>(R.id.tvBudgetAmounts).text.toString())
+            val shared = row.findViewById<TextView>(R.id.tvBudgetShared)
+            assertEquals(View.VISIBLE, shared.visibility)
+            assertEquals("Budget partagé avec « $other » · consommation cumulée", shared.text.toString())
+        }
+        capture(a, "l7_11_budget_partage_casse_$suffix")
+        assertEquals(seeded, runBlocking { dao.getAllFlow().first() }.sortedBy { it.id })          // tickets intacts
+    }
+
+    @Test fun budget_partage_casse_light() = sharedCase("light")
+
+    @Test @Config(qualifiers = "+night")
+    fun budget_partage_casse_dark() = sharedCase("dark")
+
     /** Écart A1 : valider sans retoucher conserve 12,50 € (iOS enregistrerait 13 €). */
     @Test fun valider_sans_modifier_conserve_le_montant_exact() {
         seed()
