@@ -6,6 +6,20 @@ import java.util.Locale
 /** État d'une ligne budget — iOS CategoryRowView.BudgetStatus (seuils 80 % et 100 %). */
 enum class BudgetStatus { OK, WARNING, EXCEEDED }
 
+/**
+ * Budget d'une ligne de l'écran Catégories. Si plusieurs catégories ne diffèrent que par la casse (« Courses »,
+ * « courses »), elles partagent la même clé donc le même budget : [spent] est alors la consommation CUMULÉE de toutes
+ * ces catégories et [sharedWith] liste les autres noms (catégories et tickets inchangés).
+ */
+data class RowBudget(val line: BudgetLine, val sharedWith: List<String>) {
+    val isShared: Boolean get() = sharedWith.isNotEmpty()
+}
+
+/** Agrégat de budgets : chaque budget (clé) compté UNE seule fois. */
+data class BudgetTotals(val totalBudget: Double, val totalSpent: Double, val budgetCount: Int) {
+    val remaining: Double get() = totalBudget - totalSpent
+}
+
 /** Budget d'une catégorie sur le mois courant. */
 data class BudgetLine(val limit: Double, val spent: Double) {
     /** iOS : total / limite (limite > 0 garantie par le stockage). */
@@ -77,4 +91,35 @@ object BudgetRules {
     /** Budget applicable à une ligne de l'écran Catégories : seulement sur « Ce mois » (iOS range == .month). */
     fun limitForRow(budgets: Map<String, Double>, category: String, isMonth: Boolean): Double? =
         if (isMonth) budgets[key(category)]?.takeIf { it > 0 } else null
+
+    /**
+     * Budgets des lignes de Catégories (« Ce mois » uniquement). Consommation = somme des totaux du mois de TOUTES les
+     * catégories de même clé (budget partagé) ; chaque ligne garde son propre total affiché ailleurs.
+     * Clé du résultat : nom exact de la catégorie de la ligne.
+     */
+    fun rowBudgets(rows: List<Pair<String, Double>>, budgets: Map<String, Double>, isMonth: Boolean): Map<String, RowBudget> {
+        if (!isMonth) return emptyMap()
+        val byKey = rows.groupBy { key(it.first) }
+        return rows.mapNotNull { (name, _) ->
+            val k = key(name)
+            val limit = budgets[k]?.takeIf { it > 0 } ?: return@mapNotNull null
+            val group = byKey.getValue(k)
+            name to RowBudget(BudgetLine(limit, group.sumOf { it.second }),
+                group.map { it.first }.filter { it != name })
+        }.toMap()
+    }
+
+    /**
+     * Agrégat de tous les budgets (futur « total des budgets », iOS BudgetSummaryEngine) : chaque clé de budget comptée
+     * UNE fois ; dépenses = uniquement catégories budgétées, cumulées par clé (casse ignorée). Non affiché à ce jour.
+     */
+    fun totals(rows: List<Pair<String, Double>>, budgets: Map<String, Double>): BudgetTotals {
+        val valid = budgets.filterValues { it > 0 }
+        val spentByKey = rows.groupBy({ key(it.first) }, { it.second }).mapValues { it.value.sum() }
+        return BudgetTotals(valid.values.sum(), valid.keys.sumOf { spentByKey[it] ?: 0.0 }, valid.size)
+    }
+
+    /** « Budget partagé avec « courses » » ; plusieurs noms séparés par des virgules. */
+    fun sharedLabel(rb: RowBudget): String? =
+        if (!rb.isShared) null else "Budget partagé avec " + rb.sharedWith.joinToString(", ") { "« $it »" }
 }

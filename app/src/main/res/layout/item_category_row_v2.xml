@@ -84,6 +84,15 @@
         android:orientation="vertical"
         android:visibility="gone">
 
+        <TextView
+            android:id="@+id/tvBudgetShared"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
+            android:textColor="@color/v2_text_secondary"
+            android:textSize="11sp"
+            android:visibility="gone" />
+
         <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/budgetBar"
             android:layout_width="match_parent"

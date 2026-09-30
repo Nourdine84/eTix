@@ -71,6 +71,8 @@ class BudgetEditFragment : Fragment() {
         // catégorie est retiré ; aucun ticket ni aucune catégorie n'est touché.
         binding.btnDeleteBudget.setOnClickListener {
             val limit = store.limit(category) ?: return@setOnClickListener
+            hideKeyboard() // le clavier ne reste pas ouvert derrière la confirmation
+            binding.inputBudget.clearFocus()
             MaterialAlertDialogBuilder(requireContext())
                 .setTitle("Supprimer le budget ?")
                 .setMessage("Le budget mensuel de ${BudgetRules.formatEuro(limit)} pour « $category » sera supprimé. " +

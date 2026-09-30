@@ -14,6 +14,7 @@ import com.etix.databinding.ItemCategoryRowV2Binding
 import com.etix.features.budget.BudgetLine
 import com.etix.features.budget.BudgetRules
 import com.etix.features.budget.BudgetStatus
+import com.etix.features.budget.RowBudget
 import com.etix.features.category.CategoryBreakdown
 import com.etix.features.category.CategoryStats
 import com.etix.features.category.CategoryTotal
@@ -32,11 +33,13 @@ class CategoryV2Adapter(
     private var data = CategoryBreakdown(emptyList(), 0.0)
     private var budgets: Map<String, Double> = emptyMap()
     private var isMonth = true
+    private var rowBudgets: Map<String, RowBudget> = emptyMap()
 
     fun submit(b: CategoryBreakdown, budgets: Map<String, Double> = emptyMap(), isMonth: Boolean = true) {
         data = b
         this.budgets = budgets
         this.isMonth = isMonth
+        this.rowBudgets = BudgetRules.rowBudgets(b.categories.map { it.name to it.total }, budgets, isMonth)
         notifyDataSetChanged()
     }
 
@@ -65,7 +68,7 @@ class CategoryV2Adapter(
             is ChartVH -> holder.bind(data)
             is RowVH -> {
                 val c = data.categories[position - 1]
-                holder.bind(c, data.percent(c), BudgetRules.limitForRow(budgets, c.name, isMonth))
+                holder.bind(c, data.percent(c), rowBudgets[c.name])
             }
         }
     }
@@ -93,7 +96,7 @@ class CategoryV2Adapter(
         private val b: ItemCategoryRowV2Binding,
         private val onClick: (CategoryTotal) -> Unit
     ) : RecyclerView.ViewHolder(b.root) {
-        fun bind(c: CategoryTotal, percent: Double, limit: Double?) {
+        fun bind(c: CategoryTotal, percent: Double, rb: RowBudget?) {
             val ctx = b.root.context
             val name = CategoryStats.displayName(c.name)
             b.tvCategoryName.text = name
@@ -109,13 +112,14 @@ class CategoryV2Adapter(
             }
             b.tvCategoryPercent.text = String.format(Locale.FRANCE, "%.0f %%", percent)
             b.root.setOnClickListener { onClick(c) } // lot 6 : détail de la catégorie (iOS NavigationLink)
-            val line = limit?.let { BudgetLine(it, c.total) }
-            bindBudget(line)
+            val line = rb?.line
+            bindBudget(rb)
             b.root.contentDescription = buildString {
                 append(name).append(", ").append(euro(c.total))
                 append(", ").append(String.format(Locale.FRANCE, "%.0f pour cent", percent))
                 if (delta != null) append(", ").append(String.format(Locale.FRANCE, "%+.0f pour cent vs période précédente", delta))
                 if (line != null) {
+                    BudgetRules.sharedLabel(rb)?.let { append(", ").append(it).append(", consommation cumulée ").append(BudgetRules.formatEuro(line.spent)) }
                     BudgetRules.statusLabel(line)?.let { append(", ").append(it.replace("%", " pour cent")) }
                     append(", ").append(BudgetRules.accessibilityText(line))
                 }
@@ -123,8 +127,9 @@ class CategoryV2Adapter(
         }
 
         /** iOS budgetBar : capsule 4 pt, vert / orange / rouge, libellé d'état, « dépensé / budget ». */
-        private fun bindBudget(line: BudgetLine?) {
-            if (line == null) { b.budgetBlock.visibility = View.GONE; return }
+        private fun bindBudget(rb: RowBudget?) {
+            if (rb == null) { b.budgetBlock.visibility = View.GONE; return }
+            val line = rb.line
             val ctx = b.root.context
             b.budgetBlock.visibility = View.VISIBLE
             val color = ContextCompat.getColor(ctx, when (line.status) {
@@ -138,6 +143,10 @@ class CategoryV2Adapter(
             b.tvBudgetStatus.text = label ?: ""
             b.tvBudgetStatus.setTextColor(color)
             b.tvBudgetAmounts.text = BudgetRules.progressLabel(line)
+            // Budget partagé (catégories ne différant que par la casse) : mention explicite, consommation cumulée
+            val shared = BudgetRules.sharedLabel(rb)
+            b.tvBudgetShared.visibility = if (shared == null) View.GONE else View.VISIBLE
+            b.tvBudgetShared.text = shared?.let { "$it · consommation cumulée" } ?: ""
         }
     }
 
