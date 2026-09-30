@@ -94,14 +94,17 @@ object BudgetSummaryEngine {
     }
 
     // ----- Textes de la carte (iOS BudgetSummaryCardView) -----
+    // Espace insécable avant « € » : sinon, en grande police, « 200 » et « € » peuvent être séparés en fin de ligne
+    // (constaté à police 2,0 sur les aperçus du lot 8).
+    private fun eur(v: Double) = BudgetRules.formatEuro(v).replace(" €", "\u00A0€")
 
     /** « Il te reste X » ou, en dépassement, « Budgets dépassés de X ». */
     fun headline(s: HomeBudgetSummary): String =
-        if (s.state == HomeBudgetState.EXCEEDED) "Budgets dépassés de ${BudgetRules.formatEuro(s.totalSpent - s.totalBudget)}"
-        else "Il te reste ${BudgetRules.formatEuro(s.remaining)}"
+        if (s.state == HomeBudgetState.EXCEEDED) "Budgets dépassés de ${eur(s.totalSpent - s.totalBudget)}"
+        else "Il te reste ${eur(s.remaining)}"
 
     fun caption(s: HomeBudgetSummary): String =
-        "${BudgetRules.formatEuro(s.totalSpent)} dépensés sur ${BudgetRules.formatEuro(s.totalBudget)} prévus"
+        "${eur(s.totalSpent)} dépensés sur ${eur(s.totalBudget)} prévus"
 
     /** iOS `Int(ratio * 100)` : troncature (99,9 % → « 99% »). */
     fun percent(ratio: Double): String = "${(ratio * 100).toInt()}%"

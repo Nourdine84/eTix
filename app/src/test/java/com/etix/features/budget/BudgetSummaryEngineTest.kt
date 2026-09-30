@@ -39,15 +39,15 @@ class BudgetSummaryEngineTest {
 
     @Test fun textes_de_la_carte() {
         val under = BudgetSummaryEngine.compute(listOf(t("Courses", 40.0)), mapOf("courses" to 100.0), now)!!
-        assertEquals("Il te reste 60 €", BudgetSummaryEngine.headline(under))
-        assertEquals("40 € dépensés sur 100 € prévus", BudgetSummaryEngine.caption(under))
+        assertEquals("Il te reste 60\u00A0€", BudgetSummaryEngine.headline(under))
+        assertEquals("40\u00A0€ dépensés sur 100\u00A0€ prévus", BudgetSummaryEngine.caption(under))
         assertEquals("40%", BudgetSummaryEngine.percent(under.globalRatio))
         val over = BudgetSummaryEngine.compute(listOf(t("Courses", 112.5)), mapOf("courses" to 100.0), now)!!
-        assertEquals("Budgets dépassés de 12,50 €", BudgetSummaryEngine.headline(over))
+        assertEquals("Budgets dépassés de 12,50\u00A0€", BudgetSummaryEngine.headline(over))
         assertEquals("112%", BudgetSummaryEngine.percent(over.globalRatio))
         // Au seuil exact (100 %) : iOS affiche « dépassés de 0 € » — reproduit, signalé (docs/BUDGETS.md B3)
         val exact = BudgetSummaryEngine.compute(listOf(t("Courses", 100.0)), mapOf("courses" to 100.0), now)!!
-        assertEquals("Budgets dépassés de 0 €", BudgetSummaryEngine.headline(exact))
+        assertEquals("Budgets dépassés de 0\u00A0€", BudgetSummaryEngine.headline(exact))
         // Troncature iOS : 99,99 % → « 99% »
         assertEquals("99%", BudgetSummaryEngine.percent(0.9999))
         assertEquals("1 jour restant dans le mois", BudgetSummaryEngine.daysLeft(1))
@@ -88,7 +88,7 @@ class BudgetSummaryEngineTest {
         assertEquals(30, sep.daysLeftInMonth)
         // Mois sans ticket : carte toujours présente (budget mensuel reconduit), 0 dépensé
         val oct = BudgetSummaryEngine.compute(tickets, b, at(2026, 9, 1, 8))!!
-        assertEquals(0.0, oct.totalSpent, 0.0); assertEquals("Il te reste 100 €", BudgetSummaryEngine.headline(oct))
+        assertEquals(0.0, oct.totalSpent, 0.0); assertEquals("Il te reste 100\u00A0€", BudgetSummaryEngine.headline(oct))
     }
 
     @Test fun trois_lignes_max_triees_par_ratio_puis_autres() {

@@ -86,36 +86,36 @@ class Lot8ScreenshotTest {
 
     // Budgets totaux 100 (Courses) + 100 (Loisirs) = 200 ; Loisirs 10 € dépensés.
     @Test fun sous_le_seuil_light() =
-        case("01_confort", courses = 60.0, limit = 100.0, headline = "Il te reste 130 €", percent = "35%",
+        case("01_confort", courses = 60.0, limit = 100.0, headline = "Il te reste 130\u00A0€", percent = "35%",
             narration = "Tes dépenses sont stables")                        // 70 / 200
     @Test fun attention_light() =
-        case("02_attention", courses = 100.0, limit = 100.0, headline = "Il te reste 90 €", percent = "55%",
+        case("02_attention", courses = 100.0, limit = 100.0, headline = "Il te reste 90\u00A0€", percent = "55%",
             narration = "Tes dépenses sont stables")                        // 110 / 200
     @Test fun au_seuil_critique_light() =
-        case("03_critique", courses = 150.0, limit = 100.0, headline = "Il te reste 40 €", percent = "80%",
+        case("03_critique", courses = 150.0, limit = 100.0, headline = "Il te reste 40\u00A0€", percent = "80%",
             narration = "Ton rythme de dépenses augmente")                  // 160 / 200 → budget tendu
     @Test fun depassement_light() =
-        case("04_depasse", courses = 230.0, limit = 100.0, headline = "Budgets dépassés de 40 €", percent = "120%",
+        case("04_depasse", courses = 230.0, limit = 100.0, headline = "Budgets dépassés de 40\u00A0€", percent = "120%",
             narration = "Ton rythme de dépenses augmente")                  // 240 / 200
     @Test @Config(qualifiers = "+night")
     fun depassement_dark() =
-        case("04_depasse", courses = 230.0, limit = 100.0, headline = "Budgets dépassés de 40 €", percent = "120%",
+        case("04_depasse", courses = 230.0, limit = 100.0, headline = "Budgets dépassés de 40\u00A0€", percent = "120%",
             narration = "Ton rythme de dépenses augmente", suffix = "dark")
     @Test @Config(qualifiers = "+night")
     fun attention_dark() =
-        case("02_attention", courses = 100.0, limit = 100.0, headline = "Il te reste 90 €", percent = "55%",
+        case("02_attention", courses = 100.0, limit = 100.0, headline = "Il te reste 90\u00A0€", percent = "55%",
             narration = "Tes dépenses sont stables", suffix = "dark")
 
     /** Budget partagé « Courses » / « courses » : compté une fois, dépenses cumulées 30 + 20 = 50 (+ Loisirs 10). */
     @Test fun budget_partage_light() {
-        case("05_partage", courses = 30.0, limit = 40.0, headline = "Il te reste 80 €", percent = "42%",
+        case("05_partage", courses = 30.0, limit = 40.0, headline = "Il te reste 80\u00A0€", percent = "42%",
             narration = "Tes dépenses sont stables", coursesMaj = 20.0)     // 60 / 140
         val a = Robolectric.buildActivity(MainActivityV2::class.java).setup().get().also { idle() }
         waitFor { a.findViewById<ViewGroup>(R.id.budgetLines)?.childCount == 2 }
         val first = a.findViewById<ViewGroup>(R.id.budgetLines).getChildAt(0)
         assertEquals("Courses", first.findViewById<TextView>(R.id.tvLineName).text.toString())
         assertEquals("125%", first.findViewById<TextView>(R.id.tvLinePercent).text.toString())
-        assertEquals("60 € dépensés sur 140 € prévus", a.text(R.id.tvBudgetCaption))
+        assertEquals("60\u00A0€ dépensés sur 140\u00A0€ prévus", a.text(R.id.tvBudgetCaption))
     }
 
     @Test fun sans_budget_pas_de_carte_light() {
@@ -137,13 +137,13 @@ class Lot8ScreenshotTest {
     @Test @Config(qualifiers = "w320dp-h640dp-hdpi")
     fun petit_ecran_police_1_3_light() {
         RuntimeEnvironment.setFontScale(1.3f)
-        case("07_320dp_police_1_3", courses = 230.0, limit = 100.0, headline = "Budgets dépassés de 40 €", percent = "120%",
+        case("07_320dp_police_1_3", courses = 230.0, limit = 100.0, headline = "Budgets dépassés de 40\u00A0€", percent = "120%",
             narration = "Ton rythme de dépenses augmente")
     }
 
     @Test fun police_2_light() {
         RuntimeEnvironment.setFontScale(2.0f)
-        case("08_police_2", courses = 150.0, limit = 100.0, headline = "Il te reste 40 €", percent = "80%",
+        case("08_police_2", courses = 150.0, limit = 100.0, headline = "Il te reste 40\u00A0€", percent = "80%",
             narration = "Ton rythme de dépenses augmente")
     }
 }
