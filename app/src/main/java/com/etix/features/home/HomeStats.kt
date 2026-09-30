@@ -9,8 +9,8 @@ import java.util.Calendar
  * HomeSnapshot (sous-ensemble utile), FinancialStateEngine, HomeFinancialCopy, TrendEngine.
  * Fonctions pures, sans Android, testées en JVM.
  *
- * Non porté : HomeInsightEngine, BudgetSummaryEngine, StoreIntelligenceEngine (cartes contextuelles)
- * — Android n'a pas encore de budgets ; voir docs/SUIVI_ANDROID.md.
+ * BudgetSummaryEngine : features/budget (lot 8). Non porté : HomeInsightEngine, StoreIntelligenceEngine (cartes contextuelles)
+ * — voir docs/SUIVI_ANDROID.md.
  */
 data class HomeSnapshot(
     val periodTotal: Double,

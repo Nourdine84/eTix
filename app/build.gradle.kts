@@ -18,8 +18,8 @@ android {
         targetSdk = 34
         // Build « B » de test de mise à jour (CI émulateur uniquement) : même code, versionCode + offset.
         val versionOffset = (project.findProperty("etixVersionCodeOffset") as String?)?.toInt() ?: 0
-        versionCode = 8 + versionOffset
-        versionName = "1.7.0-lot7" + ((project.findProperty("etixVersionNameSuffix") as String?) ?: "")
+        versionCode = 9 + versionOffset
+        versionName = "1.8.0-lot8" + ((project.findProperty("etixVersionNameSuffix") as String?) ?: "")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
