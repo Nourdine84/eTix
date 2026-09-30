@@ -13,10 +13,12 @@ import androidx.fragment.app.Fragment
 import com.etix.data.BudgetStore
 import com.etix.databinding.FragmentBudgetEditBinding
 import com.etix.features.budget.BudgetRules
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 /**
  * Saisie du budget mensuel d'une catégorie — iOS BudgetEditSheet. « Appliquer » inactif tant que le montant n'est pas
- * valide (> 0). « Supprimer le budget » retire le budget de CETTE catégorie seulement ; tickets et catégories intacts.
+ * valide (> 0). « Supprimer le budget » demande une confirmation (écart volontaire avec iOS, qui supprime
+ * directement) puis retire le budget de CETTE catégorie seulement ; tickets et catégories intacts.
  */
 class BudgetEditFragment : Fragment() {
 
@@ -65,9 +67,20 @@ class BudgetEditFragment : Fragment() {
             } else false
         }
         binding.btnBudgetCancel.setOnClickListener { close() }
+        // Suppression du budget : confirmation explicite ; « Annuler » ne modifie rien. Seul le budget de CETTE
+        // catégorie est retiré ; aucun ticket ni aucune catégorie n'est touché.
         binding.btnDeleteBudget.setOnClickListener {
-            store.set(category, null)
-            close()
+            val limit = store.limit(category) ?: return@setOnClickListener
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle("Supprimer le budget ?")
+                .setMessage("Le budget mensuel de ${BudgetRules.formatEuro(limit)} pour « $category » sera supprimé. " +
+                    "Les tickets ne sont pas modifiés.")
+                .setNegativeButton("Annuler", null)
+                .setPositiveButton("Supprimer") { _, _ ->
+                    store.set(category, null)
+                    close()
+                }
+                .show()
         }
         binding.inputBudget.requestFocus()
         binding.inputBudget.setSelection(binding.inputBudget.text?.length ?: 0)
