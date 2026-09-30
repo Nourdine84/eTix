@@ -62,7 +62,7 @@ Référence iOS : `BudgetSummaryEngine.swift`, `BudgetSummaryCardView.swift`, `H
 | Toujours calculée sur le mois courant [1er 00:00, 1er du mois suivant[ | Identique (`BudgetSummaryEngine.compute`) |
 | Total des budgets = somme des budgets, **chaque clé une fois** ; dépenses = catégories budgétées seulement, cumulées par clé (casse ignorée), catégories vides ignorées | Identique (réutilise `BudgetRules.totals`) |
 | États globaux et par ligne : < 50 % confortable (bleu), 50–80 % attention (orange), 80–100 % critique (rouge), ≥ 100 % dépassé (rouge) | Identique |
-| Titre « Il te reste X » ; en dépassement « Budgets dépassés de X » (rouge) ; « X dépensés sur Y prévus » | Identique |
+| Titre « Il te reste X » ; en dépassement « Budgets dépassés de X » (rouge) ; « X dépensés sur Y prévus » | Identique, sauf à 100 % pile : « Budget atteint » (écart B3) |
 | Pourcentage `Int(ratio × 100)` (troncature : 99,9 % → 99%) | Identique |
 | « N jours restants dans le mois » (du début d'aujourd'hui au 1er du mois suivant : dernier jour = 1) | Identique |
 | 3 lignes max triées par ratio décroissant, « et N autres → » | Identique (égalité départagée par le nom, iOS indéterministe) |
@@ -76,7 +76,7 @@ Référence iOS : `BudgetSummaryEngine.swift`, `BudgetSummaryCardView.swift`, `H
 |---|---|---|
 | B1 | iOS choisit UNE carte contextuelle : Budget si action nécessaire, sinon carte Magasin (StoreIntelligence), sinon Budget informatif ; carte masquée si elle répète l'insight « budget dépassé » | Android n'a ni insights ni carte Magasin : la carte Budget s'affiche dès qu'un budget existe (« Ce mois »). À revoir si ces cartes sont portées |
 | B2 | Montants iOS arrondis à l'euro (« %.0f € ») | Montants exacts si décimales (« 12,50 € »), comme au lot 7 (A1) |
-| B3 | À 100 % pile, iOS affiche « Budgets dépassés de 0 € » | Reproduit (test figé) ; libellé à décider |
+| B3 | À 100 % pile, iOS affiche « Budgets dépassés de 0 € » | **Écart volontaire (demande produit)** : « Budget atteint » quand les dépenses égalent le budget au centime près ; « Budgets dépassés de X » seulement si elles le dépassent réellement (≥ 1 centime). L'état n'est pas modifié : à 100 % la carte reste rouge et l'Accueil « tendu », comme sur iOS. Tests : `BudgetSummaryEngineTest.textes_de_la_carte` (100 %, 0,1 + 0,2 = 0,3, ±1 centime), `Lot8ScreenshotTest.budget_atteint_light` |
 | B4 | L'état « tendu » dépend du total global : une catégorie à 125 % ne rend pas l'Accueil « tendu » si le global reste < 80 % | Reproduit (règle iOS) |
 | B5 | « et N autres → » n'est pas cliquable sur iOS | Identique (non cliquable) |
 | B6 | Animations d'entrée de l'Accueil iOS | Non portées |

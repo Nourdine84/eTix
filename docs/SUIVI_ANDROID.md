@@ -189,11 +189,21 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
   3 lignes max + « et N autres ». Chaque budget compté une fois, dépenses cumulées par clé (casse ignorée).
 - « Budget tendu » (global critique ou dépassé) → phrase « Ton rythme de dépenses augmente » (règle iOS).
 - **Plantage Android 5 et 6 trouvé sur émulateur et corrigé** (`HashMap.putIfAbsent`, API 24). CI : rapport lint NewApi
-  non bloquant ajouté ; il signale aussi `OCRDateExtractor` (java.time, API 26), existant, non atteignable tant que le
-  scan n'est pas branché — **plantera sur Android 5 à 7 le jour où l'OCR sera branché** (à corriger avant).
+  non bloquant ajouté ; il signalait aussi `OCRDateExtractor` (java.time, API 26) — corrigé au durcissement ci-dessous.
 - Écarts / ambiguïtés B1–B6 : `docs/BUDGETS.md` (pas de carte Magasin ni d'insights, montants exacts, « dépassés de 0 € »
   au seuil 100 %, état tendu global, animations).
 - Lecture seule ; tickets, catégories et budgets inchangés (vérifié). Version `1.8.0-lot8` (versionCode 9).
+- **Durcissement** (version `1.8.1-lot8`, versionCode 10) :
+  - java.time : plantage **confirmé sur émulateur API 21** (`NoClassDefFoundError`) ; le désucrage a provoqué des
+    plantages natifs sur Android 5.0 → écarté ; lecteur réécrit sans java.time, équivalence stricte vérifiée contre
+    l'implémentation d'origine (JVM) et exécution sur API 21 / 34 / 36. Scanner toujours désactivé, Q1–Q4 ouvertes.
+    Détail : `docs/COMPATIBILITE_ANDROID.md`.
+  - Lint NewApi **bloquant** pour toute nouvelle incompatibilité ; 2 exceptions existantes documentées.
+  - Jobs émulateur en échec si un test échoue (avant : verts malgré les échecs).
+  - « Budget atteint » à 100 % pile (écart iOS B3 documenté) ; « Budgets dépassés de X » seulement en dépassement réel.
+  - Tendance 6 mois : libellés entiers sur petit écran et grande police (réduction ≤ 20 %, sinon 3 lettres),
+    zone du graphique agrandie au lieu de couper, libellé accessible complet (« septembre 2026 : 55,00 € »).
+  - PR brouillon vers `feature/android-v2` (non fusionnée).
 
 ## Écarts restants avec iOS (référence `feature/home-hero-v2`)
 

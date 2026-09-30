@@ -64,6 +64,37 @@ Défauts trouvés sur émulateur / aperçus et corrigés :
 Changement de mois : vérifié en JVM seulement (horloge de l'émulateur non modifiée).
 Aperçus : `docs/preview/lot8/` (Robolectric) et `docs/preview/lot8-emulateur/`.
 
+## Lot 8 — durcissement (compatibilité, « Budget atteint », Tendance 6 mois)
+
+Commit de code testé : **`3129344`** — run https://github.com/Nourdine84/eTix/actions/runs/36725776665.
+
+| Niveau | Résultat |
+|---|---|
+| JVM + Robolectric | **160 réussis, 0 échec, 10 désactivés** (dont équivalence stricte du lecteur de dates avec java.time, « Budget atteint », libellés de la Tendance à 360 dp / 320 dp, police 1,0 / 1,3 / 2,0) |
+| Lint NewApi (désormais **bloquant**) | aucune nouvelle incompatibilité ; 2 exceptions documentées (`docs/COMPATIBILITE_ANDROID.md`) |
+| Émulateur API 36 / 34 / 21 | **29/29** chacun, dont lecteur de dates OCR sur l'appareil (11 cas + traitement complet) et Tendance 6 mois |
+| Émulateur API 34 fr-FR | **6/6** |
+| Émulateur API 36 petit écran | **15/15** (Tendance : libellés entiers à 360 dp police 1,3 et 2,0, 320 dp police 1,3) |
+| Mise à jour A → B | API 21, 34, 36 : versionCode 10 → 11 sans désinstallation, données conservées |
+| Plantages | aucun |
+
+Compatibilité java.time, exécutions réelles :
+
+| Commit | Configuration | API 21 | API 34 / 36 |
+|---|---|---|---|
+| `21adde7` (run 36722937007) | code d'origine, sans désucrage | **11/11 cas en `NoClassDefFoundError`** (DateTimeFormatter), traitement OCR complet idem | 11/11 conformes |
+| `50e1558` / `b3a7fa7` (runs 36724140825, 36725178848) | désucrage `desugar_jdk_libs` 2.0.4 | dates conformes, mais **plantages natifs `SIGSEGV`** de l'app pendant 5 classes de test | conformes |
+| `3129344` (run 36725776665) | lecteur sans java.time, désucrage retiré | **11/11 conformes, 29/29 tests, aucun plantage** | conformes |
+
+Les jobs émulateur échouent désormais si un test échoue, si aucun résultat n'est produit ou en cas de plantage
+(étape « Verdict tests émulateur ») ; auparavant ils restaient verts et seules les annotations signalaient les échecs.
+
+Mesures Tendance 6 mois (largeur du libellé / largeur disponible, taille par rapport à la taille prévue) :
+360 dp police 2,0 → libellés iOS entiers réduits à 94 % ; 320 dp police 1,3 → entiers à 100 %.
+Robolectric 320 dp police 2,0 → repli sur 3 lettres (« JUN », « JUL », « AOÛ », « SEP »), non atteint sur émulateur.
+
+Aperçus : `docs/preview/lot8/l8_09_atteint_*`, `l8_10` à `l8_12` (Robolectric), `docs/preview/lot8-emulateur/*tendance*`.
+
 ## Incident CI après fusion de la PR #75 (30/09/2026)
 
 Run 36695648030 (commit de fusion `8c1af76` sur `feature/android-v2`), tentative 1 : le job `emulator-api34-fr`
