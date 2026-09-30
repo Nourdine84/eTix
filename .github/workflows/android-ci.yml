@@ -138,23 +138,48 @@ jobs:
 
       # Lint Android : signale les API trop récentes pour minSdk 21 (NewApi), comme HashMap.putIfAbsent (API 24)
       # qui a fait planter Android 5 au lot 8. Non bloquant : rapport en annotations.
-      - name: Lint NewApi (rapport)
+      # Compatibilité API (minSdk 21) : toute NOUVELLE alerte NewApi / InlinedApi fait échouer le job.
+      # Seules exceptions admises : celles listées ci-dessous (déjà présentes dans app/lint-baseline.xml,
+      # documentées dans docs/COMPATIBILITE_ANDROID.md). Toute autre entrée NewApi/InlinedApi ajoutée à la
+      # baseline fait aussi échouer le job. Les autres catégories lint restent en rapport (inchangé).
+      - name: Lint NewApi (bloquant)
         if: always()
         run: |
           ./gradlew :app:lintDebug --console=plain -Dorg.gradle.java.home=$JAVA_HOME > lint.log 2>&1 || true
           python3 - <<'PY'
-          import glob, xml.etree.ElementTree as ET
+          import glob, sys, xml.etree.ElementTree as ET
+          IDS = ("NewApi", "InlinedApi")
+          ALLOWED = {  # (id, fichier, attribut) — docs/COMPATIBILITE_ANDROID.md
+              ("NewApi", "src/main/res/values/themes.xml", "android:windowLightStatusBar"),
+              ("NewApi", "src/main/res/values/themes.xml", "android:windowLightNavigationBar"),
+          }
+          fail = False
+          base = [i for i in ET.parse("app/lint-baseline.xml").getroot().iter("issue") if i.get("id") in IDS]
+          seen = set()
+          for i in base:
+              f = i.find("location").get("file", "?")
+              key = next((k for k in ALLOWED if k[0] == i.get("id") and k[1] == f and k[2] in i.get("message", "")), None)
+              if key is None:
+                  fail = True
+                  print(f"::error title=Lint NewApi — exception non documentée dans la baseline::{i.get('id')} {f} {i.get('message','')[:160]}")
+              else:
+                  seen.add(key)
+          print("::notice title=Lint NewApi — exceptions documentées::" + "%0A".join(f"{k[0]} {k[1]} {k[2]}" + ("" if k in seen else " (plus présente)") for k in sorted(ALLOWED)))
           files = glob.glob("app/build/reports/lint-results-debug.xml")
           if not files:
-              print("::warning title=Lint NewApi::rapport lint absent (voir l'étape)")
-          else:
-              issues = [i for i in ET.parse(files[0]).getroot().iter("issue") if i.get("id") in ("NewApi", "InlinedApi")]
-              rows = []
-              for i in issues:
+              print("::error title=Lint NewApi::rapport lint absent : compatibilité non vérifiée (voir lint.log)")
+              sys.exit(1)
+          rows = []
+          for i in ET.parse(files[0]).getroot().iter("issue"):
+              if i.get("id") in IDS:
                   loc = i.find("location")
                   rows.append(f"{i.get('id')} {loc.get('file','?').split('/app/')[-1]}:{loc.get('line','?')} {i.get('message','')[:160]}")
-              title = "Lint NewApi" + (" — " + str(len(rows)) + " problème(s)" if rows else " — aucun")
-              print(f"::{'error' if rows else 'notice'} title={title}::" + ("%0A".join(rows[:20]) or "aucun appel d'API au-delà de minSdk 21"))
+          if rows:
+              print(f"::error title=Lint NewApi — {len(rows)} nouvelle(s) incompatibilité(s)::" + "%0A".join(rows[:20]))
+              fail = True
+          else:
+              print("::notice title=Lint NewApi — aucune nouvelle incompatibilité::aucun appel d'API au-delà de minSdk 21 hors exceptions documentées")
+          sys.exit(1 if fail else 0)
           PY
 
       # Récapitulatif des tests (lisible via l'API, succès comme échec)
