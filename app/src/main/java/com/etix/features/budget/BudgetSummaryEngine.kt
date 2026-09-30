@@ -61,7 +61,8 @@ object BudgetSummaryEngine {
             val k = BudgetRules.key(t.category)
             if (k.isEmpty()) continue
             spentByKey[k] = (spentByKey[k] ?: 0.0) + t.amount
-            displayName.putIfAbsent(k, t.category)
+            // Pas de HashMap.putIfAbsent : API 24+, plantage constaté sur Android 5 (émulateur, run 36700391736)
+            if (k !in displayName) displayName[k] = t.category
         }
 
         val totals = BudgetRules.totals(spentByKey.map { it.key to it.value }, valid)

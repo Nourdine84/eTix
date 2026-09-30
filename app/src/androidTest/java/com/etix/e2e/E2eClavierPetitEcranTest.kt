@@ -122,6 +122,7 @@ class E2eClavierPetitEcranTest {
         startMain()
         onView(withId(R.id.menu_add)).perform(click())
         onView(allOf(withId(R.id.inputStore), isDisplayed())).perform(click(), replaceText(store))
+        E2e.closeKeyboard() // clavier du champ Magasin fermé : sinon, à police 2,0, le champ montant reste masqué
         onView(withId(R.id.inputAmount)).perform(scrollTo(), click())
         // Taper seulement quand le clavier est prêt : sinon l'injection perd le 1er caractère (« ,20 » observé, run 36631237084)
         assertTrue("Clavier non affiché", waitImeStable() > 0)

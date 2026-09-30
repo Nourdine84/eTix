@@ -136,6 +136,27 @@ jobs:
             echo "::notice title=OCR observé::$(sed ':a;N;$!ba;s/\n/%0A/g' app/build/ocr-report.txt)"
           fi
 
+      # Lint Android : signale les API trop récentes pour minSdk 21 (NewApi), comme HashMap.putIfAbsent (API 24)
+      # qui a fait planter Android 5 au lot 8. Non bloquant : rapport en annotations.
+      - name: Lint NewApi (rapport)
+        if: always()
+        run: |
+          ./gradlew :app:lintDebug --console=plain -Dorg.gradle.java.home=$JAVA_HOME > lint.log 2>&1 || true
+          python3 - <<'PY'
+          import glob, xml.etree.ElementTree as ET
+          files = glob.glob("app/build/reports/lint-results-debug.xml")
+          if not files:
+              print("::warning title=Lint NewApi::rapport lint absent (voir l'étape)")
+          else:
+              issues = [i for i in ET.parse(files[0]).getroot().iter("issue") if i.get("id") in ("NewApi", "InlinedApi")]
+              rows = []
+              for i in issues:
+                  loc = i.find("location")
+                  rows.append(f"{i.get('id')} {loc.get('file','?').split('/app/')[-1]}:{loc.get('line','?')} {i.get('message','')[:160]}")
+              title = "Lint NewApi" + (" — " + str(len(rows)) + " problème(s)" if rows else " — aucun")
+              print(f"::{'error' if rows else 'notice'} title={title}::" + ("%0A".join(rows[:20]) or "aucun appel d'API au-delà de minSdk 21"))
+          PY
+
       # Récapitulatif des tests (lisible via l'API, succès comme échec)
       - name: Report test summary
         if: always()

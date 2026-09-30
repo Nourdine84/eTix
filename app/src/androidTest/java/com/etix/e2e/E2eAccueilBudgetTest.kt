@@ -33,7 +33,7 @@ object AccueilBudgetE2e {
         val s = expected()
         assertNotNull("Des budgets fictifs doivent exister pour ce test", s)
         onView(withId(R.id.menu_home)).perform(click())
-        onView(withId(R.id.btnHomeMonth)).perform(click())
+        onView(withId(R.id.btnHomeMonth)).perform(E2e.nestedScrollTo(), click())
         waitFor(withId(R.id.tvTicketCount))
         InstrumentationRegistry.getInstrumentation().runOnMainSync {
             val act = androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry.getInstance()
@@ -65,8 +65,14 @@ class E2eAccueilBudgetTest {
         // Budget partagé compté une fois : la ligne « E2E Casse » cumule 30 + 20 = 50 € pour 40 € → 125 %
         val casse = BudgetSummaryEngine.compute(BudgetE2e.tickets(), mapOf("e2e casse" to 40.0))!!.lines.single()
         assertEquals(50.0, casse.spent, 0.0)
-        // Phrase de l'Accueil : « budget tendu » si critique ou dépassé
-        if (s.isTense) waitFor(allOf(withId(R.id.tvNarration), withText("Ton rythme de dépenses augmente")))
+        // Phrase de l'Accueil : calculée comme l'app (maturité des données d'abord, puis « budget tendu »)
+        val snap = com.etix.features.home.HomeSnapshot.of(BudgetE2e.tickets(), com.etix.features.store.TimeRange.MONTH)
+        val expected = com.etix.features.home.HomeCopy.narration(
+            com.etix.features.home.FinancialStateEngine.evaluate(snap, budgetTense = s.isTense),
+            com.etix.features.store.TimeRange.MONTH)
+        if (s.isTense && snap.hasComparison) assertEquals("Ton rythme de dépenses augmente", expected)
+        onView(withId(R.id.tvNarration)).perform(E2e.nestedScrollTo())
+        waitFor(allOf(withId(R.id.tvNarration), withText(expected)))
         assertEquals(before, BudgetE2e.tickets()); assertEquals(budgetsBefore, BudgetStore(ctx).load())
     }
 
@@ -83,14 +89,14 @@ class E2eAccueilBudgetTest {
 
     @Test fun h03_theme_sombre() {
         BudgetE2e.startMain()
-        onView(withId(R.id.btnSettings)).perform(click())
+        onView(withId(R.id.btnSettings)).perform(E2e.nestedScrollTo(), click())
         waitFor(withId(R.id.btnToggleTheme))
         onView(withId(R.id.btnToggleTheme)).perform(click())
         waitFor(withId(R.id.btnToggleTheme))
         pressBack()
         E2e.waitForAppReady("E2eAccueilBudgetTest.h03"); waitFor(withId(R.id.tvTicketCount))
         AccueilBudgetE2e.checkCard("63_accueil_carte_budget_sombre")
-        onView(withId(R.id.btnSettings)).perform(click())
+        onView(withId(R.id.btnSettings)).perform(E2e.nestedScrollTo(), click())
         waitFor(withId(R.id.btnToggleTheme))
         onView(withId(R.id.btnToggleTheme)).perform(click())   // retour au clair
         waitFor(withId(R.id.btnToggleTheme))
