@@ -103,4 +103,27 @@ class BudgetRulesTest {
         // 1er mai : aucun ticket → pas de ligne (le budget reste enregistré, invisible dans Catégories comme sur iOS)
         assertNull(spentOn(at(2026, 4, 1, 8)))
     }
+
+    /**
+     * Deux catégories ne différant que par la casse (« Courses » / « courses ») : UNE clé de budget (iOS), mais DEUX
+     * lignes de dépenses séparées dans Catégories. Budget 40 €, dépenses 30 € + 20 € = 50 € : aucune ligne n'est en
+     * dépassement (75 % et 50 %) alors que le total réel dépasse le budget. Comportement iOS conservé, documenté
+     * (docs/BUDGETS.md, A2) ; aucune catégorie fusionnée ni renommée.
+     */
+    @Test fun deux_categories_differant_par_la_casse_partagent_le_budget_pas_les_depenses() {
+        val now = Calendar.getInstance().apply { clear(); set(2026, 8, 15, 12, 0) }.timeInMillis
+        val tickets = listOf(
+            Ticket(id = 1, store = "A", amount = 30.0, category = "Courses", dateMillis = now - 3_600_000),
+            Ticket(id = 2, store = "B", amount = 20.0, category = "courses", dateMillis = now - 7_200_000),
+        )
+        val budgets = mapOf(BudgetRules.key("Courses") to 40.0)
+        val rows = CategoryStats.breakdown(tickets, TimeRange.MONTH, now).categories
+        assertEquals(listOf("Courses", "courses"), rows.map { it.name })         // deux lignes, noms intacts
+        val lines = rows.map { BudgetLine(BudgetRules.limitForRow(budgets, it.name, true)!!, it.total) }
+        assertEquals(listOf(BudgetStatus.OK, BudgetStatus.OK), lines.map { it.status }) // 75 % et 50 %
+        assertEquals(listOf(0.75, 0.5), lines.map { it.ratio })
+        // Total réel de la clé « courses » (agrégat de l'Accueil iOS, non porté) : 50 € / 40 € → dépassé
+        val combined = BudgetLine(40.0, tickets.sumOf { it.amount })
+        assertEquals(BudgetStatus.EXCEEDED, combined.status)
+    }
 }

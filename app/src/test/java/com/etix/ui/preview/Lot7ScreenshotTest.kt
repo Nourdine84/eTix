@@ -163,9 +163,35 @@ class Lot7ScreenshotTest {
         assertEquals("12,50", o2.findViewById<EditText>(R.id.inputBudget).text.toString())
         val del = o2.findViewById<View>(R.id.btnDeleteBudget)
         assertEquals(View.VISIBLE, del.visibility)
+        BudgetStore(ctx).set("Transport", 50.0) // autre budget : ne doit pas être touché
+        val ticketsAvant = runBlocking { dao.getAllFlow().first() }.sortedBy { it.id }
+
+        // 1) Confirmation demandée ; « Annuler » ne modifie rien
         del.performClick(); idle()
+        val c1 = org.robolectric.shadows.ShadowDialog.getLatestDialog() as androidx.appcompat.app.AlertDialog
+        assertTrue(c1.isShowing)
+        c1.getButton(android.content.DialogInterface.BUTTON_NEGATIVE).performClick(); idle()
+        assertEquals(12.5, BudgetStore(ctx).limit("Loisirs")!!, 0.0)
+        assertTrue("Toujours sur l'écran de saisie", o2.findViewById<View>(R.id.btnBudgetApply).isShown)
+
+        // 2) « Supprimer » : seul le budget « Loisirs » disparaît
+        del.performClick(); idle()
+        val c2 = org.robolectric.shadows.ShadowDialog.getLatestDialog() as androidx.appcompat.app.AlertDialog
+        c2.getButton(android.content.DialogInterface.BUTTON_POSITIVE).performClick(); idle()
         assertEquals(null, BudgetStore(ctx).limit("Loisirs"))
-        assertEquals(5, runBlocking { dao.getAllFlow().first().size }) // aucun ticket touché
+        assertEquals(50.0, BudgetStore(ctx).limit("Transport")!!, 0.0)
+        assertEquals(ticketsAvant, runBlocking { dao.getAllFlow().first() }.sortedBy { it.id }) // aucun ticket touché
+    }
+
+    /** Écart A1 : valider sans retoucher conserve 12,50 € (iOS enregistrerait 13 €). */
+    @Test fun valider_sans_modifier_conserve_le_montant_exact() {
+        seed()
+        BudgetStore(ctx).set("Loisirs", 12.5)
+        val a = launchCategories()
+        val o = openEdit(a, "Loisirs")
+        assertEquals("12,50", o.findViewById<EditText>(R.id.inputBudget).text.toString())
+        o.findViewById<View>(R.id.btnBudgetApply).performClick(); idle()
+        assertEquals(12.5, BudgetStore(ctx).limit("Loisirs")!!, 0.0)
     }
 
     @Test fun annuler_ne_modifie_rien() {

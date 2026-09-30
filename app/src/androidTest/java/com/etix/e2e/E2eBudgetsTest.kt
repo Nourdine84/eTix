@@ -153,8 +153,19 @@ class E2eBudgetsTest {
 
         onView(allOf(withId(R.id.tvBudgetCategory), withText("E2E Baisse"))).perform(E2e.nestedScrollTo(), click())
         waitFor(withId(R.id.inputBudget))
+        val ticketsAvant = BudgetE2e.tickets()
+        // Confirmation obligatoire ; « Annuler » sans effet
         onView(withId(R.id.btnDeleteBudget)).perform(androidx.test.espresso.action.ViewActions.scrollTo(), click())
+        waitFor(withText("Supprimer le budget ?"))
+        shot("59_confirmation_suppression_budget")
+        onView(withText("Annuler")).inRoot(isDialog()).perform(click())
+        waitFor(withId(R.id.btnBudgetApply))
+        assertEquals(12.0, BudgetStore(ctx).limit("E2E Baisse")!!, 0.0)
+        // « Supprimer » : seul ce budget disparaît
+        onView(withId(R.id.btnDeleteBudget)).perform(androidx.test.espresso.action.ViewActions.scrollTo(), click())
+        onView(withText("Supprimer")).inRoot(isDialog()).perform(click())
         BudgetE2e.settingsValue("E2E Baisse", "—")
+        assertEquals(ticketsAvant, BudgetE2e.tickets())
         BudgetE2e.settingsValue("E2E Hausse", "15,50 €")   // l'autre budget n'est pas touché
         assertNull(BudgetStore(ctx).limit("E2E Baisse"))
         pressBack()
