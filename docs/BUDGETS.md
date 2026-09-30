@@ -21,21 +21,38 @@ Référence : `Nourdine84/etix-ios` branche `feature/home-hero-v2` (`988eaf4`) �
 | Invitation | « Définir des budgets mensuels » en fin de liste tant qu'**aucun** budget n'existe | Identique |
 | Accès au réglage | Bouton de la barre de navigation (curseurs) + invitation | Bouton en haut à droite de « Catégories » + invitation |
 | Liste du réglage | Catégories **distinctes des tickets**, non vides, triées ; budget ou « — » ; pied « Les budgets s'appliquent à la vue mensuelle. » | Identique ; si aucune catégorie : « Aucune catégorie : ajoutez d'abord un ticket. » |
-| Saisie | Feuille avec barre haute « Annuler » / « Appliquer », « Ex : 300 », virgule acceptée, > 0 ; « Appliquer » inactif sinon ; « Supprimer le budget » si un budget existe (sans confirmation) | Écran poussé avec la même barre haute (boutons jamais sous le clavier) ; message « Montant invalide » sous le champ. Une fenêtre de dialogue a d'abord été essayée : sur 320 dp / police 1,3 et à police 2,0 le clavier recouvrait ses boutons (émulateur, run 36642473284) → abandonnée |
+| Saisie | Feuille avec barre haute « Annuler » / « Appliquer », « Ex : 300 », virgule acceptée, > 0 ; « Appliquer » inactif sinon ; « Supprimer le budget » si un budget existe (**sans confirmation**) | Écran poussé avec la même barre haute (boutons jamais sous le clavier) ; message « Montant invalide » sous le champ. Une fenêtre de dialogue a d'abord été essayée : sur 320 dp / police 1,3 et à police 2,0 le clavier recouvrait ses boutons (émulateur, run 36642473284) → abandonnée |
 
 ## Ambiguïtés et choix faits (à valider)
 
 | # | Ambiguïté | Choix Android | Raison |
 |---|---|---|---|
-| A1 | iOS affiche et **préremplit** le budget arrondi à l'euro (« %.0f ») : 12,50 € s'affiche « 13 € » et « Appliquer » sans retouche enregistre **13** | Montant exact : « 12,50 € », champ « 12,50 » ; entier sans décimales (« 300 € ») | Éviter une modification silencieuse de la donnée |
-| A2 | « Courses » et « courses » (deux catégories distinctes des tickets) partagent la **même** clé de budget | Conservé (règle iOS) ; les deux lignes du réglage affichent le même budget | Pas de fusion ni de renommage des catégories existantes |
+| A1 | iOS affiche et **préremplit** le budget arrondi à l'euro (« %.0f ») : 12,50 € s'affiche « 13 € » et « Appliquer » sans retouche enregistre **13** | **Écart volontaire avec iOS, demandé** : montant exact — « 12,50 € », champ « 12,50 » ; entier sans décimales (« 300 € »). Valider sans retoucher conserve 12,50 € | Éviter une modification silencieuse de la donnée |
+| A2 | « Courses » et « courses » (deux catégories distinctes des tickets) partagent la **même** clé de budget, mais Catégories affiche leurs dépenses **séparément** | Conservé (règle iOS), aucune fusion ni renommage — voir « Casse » ci-dessous | Pas de modification des catégories existantes ; **décision en attente** |
 | A3 | Saisie iOS sans retrait des espaces (« 1 200 » refusé) | Règle de saisie Android des tickets : espaces retirés (« 1 200 » = 1 200 €) | Cohérence avec la saisie des montants de tickets |
 | A4 | « ,20 » accepté (0,20 €) | Conservé, **décision en attente** (même question que pour les tickets) | Non tranché |
 | A5 | Budget sur une catégorie **sans dépense ce mois** : aucune ligne dans Catégories, donc budget invisible hors réglage | Conservé | Règle iOS |
 | A6 | Budget d'une catégorie qui n'a plus aucun ticket : invisible même dans le réglage, mais conservé | Conservé (aucun nettoyage automatique) | Pas de suppression de données |
 | A7 | Libellé « Sans catégorie » (ticket à catégorie vide) | Exclu du réglage (iOS filtre les vides) | Règle iOS |
 | A8 | Seuils différents Catégories (80 / 100 %) et Accueil (50 / 80 / 100 %) | Seuls ceux de Catégories sont utilisés | Accueil non porté |
-| A9 | « Supprimer le budget » sans confirmation | Conservé (retire la limite de cette catégorie, aucun ticket touché) | Règle iOS ; à confirmer |
+| A9 | iOS supprime le budget **sans confirmation** | **Confirmation explicite** (« Supprimer le budget ? », montant et catégorie rappelés, « Annuler » sans effet) — écart volontaire avec iOS, demandé | Protection contre une suppression involontaire |
+
+## Casse : deux catégories, un budget (A2)
+
+Exemple (test `BudgetRulesTest.deux_categories_differant_par_la_casse_partagent_le_budget_pas_les_depenses`) :
+budget « Courses » = 40 € ; tickets du mois « Courses » 30 € et « courses » 20 €.
+
+| Où | Calcul | Résultat |
+|---|---|---|
+| Réglage des budgets | Deux lignes « Courses » et « courses », même clé | toutes deux affichent 40 € ; modifier l'une modifie l'autre |
+| Catégories (Android et iOS) | Chaque ligne compare SES dépenses au budget partagé | 30/40 = 75 % (vert) et 20/40 = 50 % (vert) : **aucune alerte** |
+| Total réel de la clé | 30 + 20 = 50 € pour 40 € | **dépassé** (125 %) |
+| Futur total des budgets (carte Accueil iOS, non portée) | iOS additionne les dépenses par clé en minuscules | la carte afficherait **dépassé** alors que les lignes sont vertes, et le budget compterait **une fois** dans le total des budgets |
+
+Conséquences : incohérence possible entre Catégories et une future carte Accueil ; aucune perte de données.
+Options (décision produit, non tranchée) : (a) garder iOS tel quel ; (b) comparer chaque ligne au total de la clé
+(affichage sans fusion des catégories) ; (c) proposer à l'utilisateur de renommer l'une des catégories (action
+explicite de sa part). Aucune n'est implémentée.
 
 ## Écarts restants
 
