@@ -92,3 +92,18 @@ if to:
 
 crash = read(f"{out}/crashes.txt").strip()
 notice("Plantages (logcat)", crash[:3500] if crash else "aucun FATAL EXCEPTION", "error" if crash else "notice")
+
+# Verdict lu par l'étape « Verdict tests émulateur » (le job échoue sinon)
+reasons = []
+if not rows:
+    reasons.append("aucun résultat de test")
+nfail = sum(1 for r in rows if r.startswith(("FAIL", "ERROR")))
+if nfail or fails:
+    reasons.append(f"{max(nfail, len(fails))} échec(s)")
+if crash:
+    reasons.append("plantage (logcat)")
+if to:
+    reasons.append("délai dépassé")
+os.makedirs(out, exist_ok=True)
+with open(f"{out}/verdict.txt", "w") as fh:
+    fh.write("OK" if not reasons else "ÉCHEC : " + ", ".join(reasons))
