@@ -99,10 +99,20 @@ object BudgetSummaryEngine {
     // (constaté à police 2,0 sur les aperçus du lot 8).
     private fun eur(v: Double) = BudgetRules.formatEuro(v).replace(" €", "\u00A0€")
 
-    /** « Il te reste X » ou, en dépassement, « Budgets dépassés de X ». */
-    fun headline(s: HomeBudgetSummary): String =
-        if (s.state == HomeBudgetState.EXCEEDED) "Budgets dépassés de ${eur(s.totalSpent - s.totalBudget)}"
-        else "Il te reste ${eur(s.remaining)}"
+    /**
+     * « Il te reste X » ; « Budget atteint » à 100 % pile ; « Budgets dépassés de X » seulement si les
+     * dépenses dépassent réellement le budget. Écart volontaire avec iOS, qui affiche « dépassés de 0 € »
+     * à 100 % pile (docs/BUDGETS.md B3). Comparaison au centime pour éviter les restes d'arrondi des sommes.
+     * L'état (couleur, « budget tendu ») n'est pas modifié : 100 % reste l'état « dépassé » comme sur iOS.
+     */
+    fun headline(s: HomeBudgetSummary): String {
+        val overCents = Math.round((s.totalSpent - s.totalBudget) * 100)
+        return when {
+            overCents > 0 -> "Budgets dépassés de ${eur(s.totalSpent - s.totalBudget)}"
+            overCents == 0L || s.state == HomeBudgetState.EXCEEDED -> "Budget atteint"
+            else -> "Il te reste ${eur(s.remaining)}"
+        }
+    }
 
     fun caption(s: HomeBudgetSummary): String =
         "${eur(s.totalSpent)} dépensés sur ${eur(s.totalBudget)} prévus"

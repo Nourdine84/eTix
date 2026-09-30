@@ -45,9 +45,20 @@ class BudgetSummaryEngineTest {
         val over = BudgetSummaryEngine.compute(listOf(t("Courses", 112.5)), mapOf("courses" to 100.0), now)!!
         assertEquals("Budgets dépassés de 12,50\u00A0€", BudgetSummaryEngine.headline(over))
         assertEquals("112%", BudgetSummaryEngine.percent(over.globalRatio))
-        // Au seuil exact (100 %) : iOS affiche « dépassés de 0 € » — reproduit, signalé (docs/BUDGETS.md B3)
+        // Au seuil exact (100 %) : « Budget atteint » (iOS : « dépassés de 0 € », écart documenté docs/BUDGETS.md B3)
         val exact = BudgetSummaryEngine.compute(listOf(t("Courses", 100.0)), mapOf("courses" to 100.0), now)!!
-        assertEquals("Budgets dépassés de 0\u00A0€", BudgetSummaryEngine.headline(exact))
+        assertEquals("Budget atteint", BudgetSummaryEngine.headline(exact))
+        assertEquals(HomeBudgetState.EXCEEDED, exact.state)            // état inchangé (couleur, budget tendu)
+        assertEquals("100%", BudgetSummaryEngine.percent(exact.globalRatio))
+        // Somme de décimales égale au budget au centime près (0,1 + 0,2 ≠ 0,3 en binaire) : toujours « atteint »
+        val sums = BudgetSummaryEngine.compute(listOf(t("Courses", 0.1), t("Courses", 0.2)), mapOf("courses" to 0.3), now)!!
+        assertEquals("Budget atteint", BudgetSummaryEngine.headline(sums))
+        // Un centime au-delà : dépassement réel
+        val cent = BudgetSummaryEngine.compute(listOf(t("Courses", 100.01)), mapOf("courses" to 100.0), now)!!
+        assertEquals("Budgets dépassés de 0,01\u00A0€", BudgetSummaryEngine.headline(cent))
+        // Un centime en dessous : reste affiché
+        val below = BudgetSummaryEngine.compute(listOf(t("Courses", 99.99)), mapOf("courses" to 100.0), now)!!
+        assertEquals("Il te reste 0,01\u00A0€", BudgetSummaryEngine.headline(below))
         // Troncature iOS : 99,99 % → « 99% »
         assertEquals("99%", BudgetSummaryEngine.percent(0.9999))
         assertEquals("1 jour restant dans le mois", BudgetSummaryEngine.daysLeft(1))
