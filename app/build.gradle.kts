@@ -69,10 +69,6 @@ android {
     }
 
     compileOptions {
-        // java.time (API 26) est utilisé par le lecteur de dates OCR ; minSdk 21. Sans désucrage,
-        // NoClassDefFoundError constaté sur émulateur API 21 (docs/COMPATIBILITE_ANDROID.md).
-        // Le désucrage embarque la même implémentation de java.time : règles OCR inchangées.
-        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
@@ -125,9 +121,6 @@ kapt {
 }
 
 dependencies {
-
-    // --- Compatibilité : java.time sur Android 5 à 7.1 (API 21 à 25) ---
-    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.4")
 
     // --- Core UI ---
     implementation("androidx.core:core-ktx:1.13.1")
