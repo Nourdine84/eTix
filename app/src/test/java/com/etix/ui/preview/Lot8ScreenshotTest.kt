@@ -17,6 +17,7 @@ import com.etix.ui.main.MainActivityV2
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -68,6 +69,31 @@ class Lot8ScreenshotTest {
         a.findViewById<NestedScrollView>(R.id.homeScroll).scrollTo(0, (card.top - 40).coerceAtLeast(0)); idle()
     }
 
+    /** Libellés « Tendance 6 mois » entiers (ni coupés ni sur deux lignes), taille ≥ 80 % de la taille prévue,
+     *  zone assez haute, libellé accessible complet (« septembre 2026 : 55,00 € »). */
+    private fun checkTrend(a: MainActivityV2) {
+        val bars = a.findViewById<ViewGroup>(R.id.trendBars)
+        assertEquals(6, bars.childCount)
+        val nominal = 9f * a.resources.displayMetrics.scaledDensity
+        for (i in 0 until bars.childCount) {
+            val col = bars.getChildAt(i) as ViewGroup
+            val label = col.getChildAt(1) as TextView
+            val t = label.text.toString()
+            assertTrue("libellé coupé : $t", label.paint.measureText(t) <= label.width - label.paddingLeft - label.paddingRight)
+            assertEquals("libellé sur une ligne : $t", 1, label.layout.lineCount)
+            assertTrue("libellé trop réduit : $t ${label.textSize}/$nominal", label.textSize >= nominal * 0.8f - 0.5f)
+            assertTrue("libellé coupé en hauteur : $t", label.bottom <= col.height)
+            assertTrue("accessibilité : ${col.contentDescription}",
+                Regex("""^[a-zéû]+ \d{4} : \d+,\d{2} €$""").matches(col.contentDescription.toString()))
+            assertEquals(View.IMPORTANT_FOR_ACCESSIBILITY_NO, label.importantForAccessibility)
+        }
+    }
+
+    private fun scrollToTrend(a: MainActivityV2) {
+        val card = a.findViewById<View>(R.id.cardTrend)
+        a.findViewById<NestedScrollView>(R.id.homeScroll).scrollTo(0, (card.top - 40).coerceAtLeast(0)); idle()
+    }
+
     private fun case(name: String, courses: Double, limit: Double, headline: String, percent: String,
                      narration: String, suffix: String = "light", coursesMaj: Double = 0.0) {
         val seeded = seed(courses, coursesMaj)
@@ -80,6 +106,7 @@ class Lot8ScreenshotTest {
         capture(a, "l8_${name}_haut_$suffix")
         scrollToBudget(a)
         capture(a, "l8_${name}_$suffix")
+        checkTrend(a)
         assertEquals(seeded.sortedBy { it.id }, runBlocking { dao.getAllFlow().first() }.sortedBy { it.id })
         assertEquals(limit, BudgetStore(ctx).limit("Courses")!!, 0.0)
     }
@@ -145,5 +172,44 @@ class Lot8ScreenshotTest {
         RuntimeEnvironment.setFontScale(2.0f)
         case("08_police_2", courses = 150.0, limit = 100.0, headline = "Il te reste 40\u00A0€", percent = "80%",
             narration = "Ton rythme de dépenses augmente")
+    }
+
+    /** 100 % pile : « Budget atteint » (et non « dépassés de 0 € »), état et couleur inchangés. */
+    @Test fun budget_atteint_light() =
+        case("09_atteint", courses = 190.0, limit = 100.0, headline = "Budget atteint", percent = "100%",
+            narration = "Ton rythme de dépenses augmente")                  // 200 / 200
+
+    /** Tendance 6 mois, cas le plus étroit : 320 dp et police 2,0 (libellés à 3 lettres attendus). */
+    @Test @Config(qualifiers = "w320dp-h640dp-hdpi")
+    fun tendance_320dp_police_2_light() {
+        RuntimeEnvironment.setFontScale(2.0f)
+        seed(60.0)
+        val a = launch()
+        scrollToTrend(a)
+        checkTrend(a)
+        capture(a, "l8_10_tendance_320dp_police_2_light")
+    }
+
+    @Test @Config(qualifiers = "w320dp-h640dp-hdpi-night")
+    fun tendance_320dp_police_1_3_dark() {
+        RuntimeEnvironment.setFontScale(1.3f)
+        seed(60.0)
+        val a = launch()
+        scrollToTrend(a)
+        checkTrend(a)
+        capture(a, "l8_11_tendance_320dp_police_1_3_dark")
+    }
+
+    @Test fun tendance_police_1_light() {
+        seed(60.0)
+        val a = launch()
+        scrollToTrend(a)
+        checkTrend(a)
+        // Taille prévue : libellés iOS inchangés
+        val bars = a.findViewById<ViewGroup>(R.id.trendBars)
+        val texts = (0 until 6).map { ((bars.getChildAt(it) as ViewGroup).getChildAt(1) as TextView).text.toString() }
+        val ios = com.etix.features.home.TrendEngine.monthlyTrend(emptyList()).map { it.month }
+        assertEquals(ios, texts)
+        capture(a, "l8_12_tendance_police_1_light")
     }
 }

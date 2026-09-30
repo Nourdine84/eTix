@@ -1,12 +1,14 @@
 package com.etix.ui.home
 
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -26,6 +28,7 @@ import com.etix.features.home.FinancialTone
 import com.etix.features.home.HomeCopy
 import com.etix.features.home.HomeSnapshot
 import com.etix.features.home.MonthlyTrendPoint
+import com.etix.features.home.TrendLabelFit
 import com.etix.features.home.TrendEngine
 import com.etix.features.store.TimeRange
 import com.etix.model.Ticket
@@ -214,21 +217,26 @@ class HomeFragmentV2 : Fragment() {
         container.removeAllViews()
         val maxValue = max(points.maxOfOrNull { it.total } ?: 1.0, 1.0)
         val density = resources.displayMetrics.density
+        val labels = ArrayList<TextView>(points.size)
         points.forEachIndexed { i, p ->
+            // Colonnes de même largeur (1/6) : le libellé dispose de toute la colonne ; l'espace de 8 dp
+            // entre les barres est porté par les barres elles-mêmes (4 dp de chaque côté).
             val column = LinearLayout(ctx).apply {
                 orientation = LinearLayout.VERTICAL
                 gravity = android.view.Gravity.BOTTOM or android.view.Gravity.CENTER_HORIZONTAL
-                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f).apply {
-                    if (i > 0) marginStart = (8 * density).toInt()
-                }
+                layoutParams = LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f)
+                // Accessibilité : un élément par mois, nom complet + montant, quel que soit le libellé affiché
+                contentDescription = "${TrendEngine.fullLabel(p)} : ${euro(p.total)}"
             }
             val bar = View(ctx).apply {
                 setBackgroundResource(R.drawable.bg_v2_bar)
                 backgroundTintList = ContextCompat.getColorStateList(
                     ctx, if (i == points.lastIndex) R.color.v2_primary else R.color.v2_primary_30
                 )
-                val h = max(6.0, p.total / maxValue * 70).toFloat() * density
-                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, h.toInt())
+                val h = max(6.0, p.total / maxValue * TREND_BAR_MAX_DP).toFloat() * density
+                layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, h.toInt()).apply {
+                    val half = (4 * density).toInt(); marginStart = half; marginEnd = half
+                }
             }
             val label = TextView(ctx).apply {
                 text = p.month
@@ -236,14 +244,43 @@ class HomeFragmentV2 : Fragment() {
                 setTextColor(ContextCompat.getColor(ctx, R.color.v2_text_secondary))
                 gravity = android.view.Gravity.CENTER
                 maxLines = 1
+                importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
                 layoutParams = LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
-                    .apply { topMargin = (6 * density).toInt() }
+                    .apply { topMargin = (TREND_LABEL_GAP_DP * density).toInt() }
             }
             column.addView(bar)
             column.addView(label)
-            column.contentDescription = "${p.month} : ${euro(p.total)}"
+            labels += label
             container.addView(column)
         }
+        container.doOnLayout { if (_binding != null) fitTrendLabels(points, labels, it.width) }
+    }
+
+    /**
+     * Libellés entiers sur écran étroit et en grande police : libellés iOS, légèrement réduits si besoin
+     * (au plus -20 %), sinon 3 lettres (TrendLabelFit). La zone du graphique grandit avec la hauteur
+     * du libellé au lieu de le couper (92 dp au minimum, comme avant).
+     */
+    private fun fitTrendLabels(points: List<MonthlyTrendPoint>, labels: List<TextView>, width: Int) {
+        if (points.isEmpty() || labels.size != points.size || width <= 0) return
+        val density = resources.displayMetrics.density
+        val available = width / points.size.toFloat() - 2 * density
+        val paint = labels[0].paint
+        val fit = TrendLabelFit.choose(
+            available,
+            points.maxOf { paint.measureText(it.month) },
+            points.maxOf { paint.measureText(TrendEngine.shortLabel(it)) }
+        )
+        val px = labels[0].textSize * fit.scale
+        labels.forEachIndexed { i, l ->
+            l.text = if (fit.useShort) TrendEngine.shortLabel(points[i]) else points[i].month
+            l.setTextSize(TypedValue.COMPLEX_UNIT_PX, px)
+        }
+        val line = labels[0].paint.fontMetricsInt.let { it.bottom - it.top }
+        val needed = ((TREND_BAR_MAX_DP + TREND_LABEL_GAP_DP + 2) * density).toInt() + line
+        val target = max((TREND_MIN_HEIGHT_DP * density).toInt(), needed)
+        val lp = binding.trendBars.layoutParams
+        if (lp.height != target) { lp.height = target; binding.trendBars.layoutParams = lp }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -266,5 +303,8 @@ class HomeFragmentV2 : Fragment() {
 
     companion object {
         private const val KEY_RANGE = "home_range"
+        private const val TREND_BAR_MAX_DP = 70
+        private const val TREND_LABEL_GAP_DP = 6
+        private const val TREND_MIN_HEIGHT_DP = 92
     }
 }

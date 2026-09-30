@@ -47,6 +47,50 @@ object AccueilBudgetE2e {
         waitFor(allOf(withId(R.id.tvBudgetDaysLeft), withText(BudgetSummaryEngine.daysLeft(s.daysLeftInMonth))))
         shot(shotName)
     }
+
+    /**
+     * « Tendance 6 mois » : libellés entiers (ni coupés ni sur deux lignes), taille ≥ 80 % de la taille prévue,
+     * zone assez haute et libellé accessible complet. Mesures consignées dans shots/mesures_clavier.txt.
+     */
+    fun checkTrend(shotName: String) {
+        onView(withId(R.id.menu_home)).perform(click())
+        waitFor(withId(R.id.tvTicketCount))
+        val problems = mutableListOf<String>()
+        val measures = StringBuilder()
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            val act = androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry.getInstance()
+                .getActivitiesInStage(androidx.test.runner.lifecycle.Stage.RESUMED).first()
+            val card = act.findViewById<View>(R.id.cardTrend)
+            act.findViewById<NestedScrollView>(R.id.homeScroll).scrollTo(0, (card.top - 24).coerceAtLeast(0))
+        }
+        Thread.sleep(600)
+        InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            val act = androidx.test.runner.lifecycle.ActivityLifecycleMonitorRegistry.getInstance()
+                .getActivitiesInStage(androidx.test.runner.lifecycle.Stage.RESUMED).first()
+            val bars = act.findViewById<android.view.ViewGroup>(R.id.trendBars)
+            val res = act.resources
+            val nominal = 9f * res.displayMetrics.scaledDensity
+            measures.append("tendance sdk=${android.os.Build.VERSION.SDK_INT} largeur=${res.configuration.screenWidthDp}dp " +
+                "police=${res.configuration.fontScale} zone=${bars.height}px :")
+            for (i in 0 until bars.childCount) {
+                val col = bars.getChildAt(i) as android.view.ViewGroup
+                val label = col.getChildAt(1) as android.widget.TextView
+                val t = label.text.toString()
+                val w = label.paint.measureText(t)
+                measures.append(" $t(${w.toInt()}/${label.width}px, ${"%.0f".format(100 * label.textSize / nominal)}%)")
+                if (w > label.width) problems += "coupé : $t"
+                if ((label.layout?.lineCount ?: 0) != 1) problems += "plusieurs lignes : $t"
+                if (label.textSize < nominal * 0.8f - 0.5f) problems += "trop réduit : $t"
+                if (label.bottom > col.height) problems += "coupé en hauteur : $t"
+                if (!Regex("""^[a-zéû]+ \d{4} : \d+,\d{2} €$""").matches(col.contentDescription.toString()))
+                    problems += "accessibilité : ${col.contentDescription}"
+            }
+        }
+        java.io.File(java.io.File(ctx.filesDir, "shots").apply { mkdirs() }, "mesures_clavier.txt")
+            .appendText(measures.toString() + "\n")
+        shot(shotName)
+        assertEquals("Tendance 6 mois", emptyList<String>(), problems)
+    }
 }
 
 /**
@@ -74,6 +118,11 @@ class E2eAccueilBudgetTest {
         onView(withId(R.id.tvNarration)).perform(E2e.nestedScrollTo())
         waitFor(allOf(withId(R.id.tvNarration), withText(expected)))
         assertEquals(before, BudgetE2e.tickets()); assertEquals(budgetsBefore, BudgetStore(ctx).load())
+    }
+
+    @Test fun h04_tendance_libelles_entiers() {
+        BudgetE2e.startMain()
+        AccueilBudgetE2e.checkTrend("64_accueil_tendance")
     }
 
     @Test fun h02_cette_annee_sans_carte() {

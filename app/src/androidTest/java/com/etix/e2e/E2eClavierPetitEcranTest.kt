@@ -235,4 +235,10 @@ class E2eClavierPetitEcranTest {
         startMain()
         AccueilBudgetE2e.checkCard("k05_accueil_budget_${passe}")
     }
+
+    @Test
+    fun k06_accueil_tendance() {
+        startMain()
+        AccueilBudgetE2e.checkTrend("k06_accueil_tendance_${passe}")
+    }
 }
