@@ -144,5 +144,8 @@ run com.etix.e2e.E2eBudgetsTest
 # Phase G : lot 8 (carte Budget de l'Accueil)
 run com.etix.e2e.E2eAccueilBudgetTest
 
+# Compatibilité : lecteur de dates OCR exécuté sur l'appareil (logique pure, aucune donnée touchée)
+run com.etix.e2e.E2eCompatDatesOcrTest
+
 collect
 exit 0
