@@ -70,6 +70,10 @@ run() { # $1 = classe de test, $2 = suffixe/passe facultatif (limite 12 min par 
   [ -n "${2:-}" ] && { extra="-e passe $2"; suf="_$2"; }
   T 720 adb shell am instrument -w -r $extra -e class "$1" com.etix.test/androidx.test.runner.AndroidJUnitRunner > "$OUT/instr_$(basename "${1//./_}")$suf.txt" 2>&1
   timeout 20 adb shell am force-stop com.etix.test >/dev/null 2>&1 || true
+  # Plantage natif (signal) : lignes fatales du journal relevées tout de suite (tampon limité sur API 21)
+  if grep -q "Native crash\|Process crashed" "$OUT/instr_$(basename "${1//./_}")$suf.txt" 2>/dev/null; then
+    { echo "== $1$suf"; timeout 30 adb logcat -d -v brief '*:F' 'DEBUG:*' 'art:E' 'AndroidRuntime:E' 2>/dev/null | tail -60; } >> "$OUT/native.txt"
+  fi
 }
 
 collect() {

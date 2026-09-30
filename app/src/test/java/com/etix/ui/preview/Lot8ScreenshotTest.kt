@@ -190,7 +190,7 @@ class Lot8ScreenshotTest {
         capture(a, "l8_10_tendance_320dp_police_2_light")
     }
 
-    @Test @Config(qualifiers = "w320dp-h640dp-hdpi-night")
+    @Test @Config(qualifiers = "w320dp-h640dp-night-hdpi")
     fun tendance_320dp_police_1_3_dark() {
         RuntimeEnvironment.setFontScale(1.3f)
         seed(60.0)

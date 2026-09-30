@@ -82,6 +82,11 @@ cd = read(f"{out}/shots/compat_dates.txt").strip()
 if cd:
     notice("Compatibilité dates OCR", cd[:3500], "warning" if ("ERREUR" in cd or "ÉCART" in cd) else "notice")
 
+nat = read(f"{out}/native.txt").strip()
+if nat:
+    for i in range(0, min(len(nat), 10500), 3500):
+        notice(f"Plantages natifs {i//3500+1}", nat[i:i+3500], "error")
+
 ech = read(f"{out}/shots/echec.txt").strip()
 if ech:
     notice("Diagnostic des échecs (focus fenêtre)", ech[:3500], "warning")
@@ -100,7 +105,7 @@ if not rows:
 nfail = sum(1 for r in rows if r.startswith(("FAIL", "ERROR")))
 if nfail or fails:
     reasons.append(f"{max(nfail, len(fails))} échec(s)")
-if crash:
+if crash or nat:
     reasons.append("plantage (logcat)")
 if to:
     reasons.append("délai dépassé")
