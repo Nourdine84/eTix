@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Formulaire ticket V2 (iOS TicketForm) -->
+    <style name="V2.FieldLabel" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:letterSpacing">0.14</item>
+        <item name="android:textColor">@color/v2_text_secondary</item>
+        <item name="android:textSize">11sp</item>
+    </style>
+
+    <style name="V2.FieldInput" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:background">@null</item>
+        <item name="android:minHeight">44dp</item>
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingBottom">8dp</item>
+        <item name="android:gravity">center_vertical|start</item>
+        <item name="android:textColor">@color/v2_text_primary</item>
+        <item name="android:textColorHint">@color/v2_text_secondary</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="V2.FieldDivider" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:layout_marginBottom">12dp</item>
+        <item name="android:background">@color/v2_divider</item>
+    </style>
+
+    <!-- Barre d'onglets : 5 libellés lisibles jusqu'à 320 dp de large -->
+    <style name="V2.TabLabel" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:textSize">11sp</item>
+    </style>
+</resources>

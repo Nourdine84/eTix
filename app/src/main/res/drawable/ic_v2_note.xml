@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Texte aligné à gauche (équivalent du symbole iOS « text.alignleft ») -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M3,5h18v2H3V5zM3,9h12v2H3V9zM3,13h18v2H3v-2zM3,17h12v2H3v-2z" />
+</vector>

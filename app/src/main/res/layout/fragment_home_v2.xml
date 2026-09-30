@@ -1,118 +1,338 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Accueil — référence iOS HomeView « Home V3 Cockpit » (feature/home-hero-v2).
+     Conformité aux maquettes validées NON confirmée (maquettes introuvables).
+     Porté : en-tête (badge, titre, salutation, compteur), hero (montant, delta, narration),
+     période, tendance 6 mois + panier moyen, actions.
+     Non porté : insights, carte budget / magasin, étoiles du header sombre, animations d'entrée,
+     lien vers le rapport mensuel. -->
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/homeScroll"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white">
+    android:background="@color/v2_bg_home"
+    android:scrollbars="none">
 
     <LinearLayout
         android:id="@+id/homeContainer"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="32dp">
 
-        <!-- 🏷️ Header -->
+        <!-- ===== HEADER : badge centré (iOS) + engrenage Réglages (Android, lot 2) ===== -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <TextView
+                android:id="@+id/homeBadge"
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/bg_v2_badge"
+                android:elevation="4dp"
+                android:fontFamily="sans-serif-black"
+                android:gravity="center"
+                android:importantForAccessibility="no"
+                android:includeFontPadding="false"
+                android:paddingBottom="3dp"
+                android:text="e"
+                android:textColor="@android:color/white"
+                android:textSize="28sp" />
+
+            <ImageButton
+                android:id="@+id/btnSettings"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="end|center_vertical"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="Réglages"
+                android:src="@drawable/ic_settings" />
+        </FrameLayout>
+
         <TextView
-            android:id="@+id/tvTitle"
+            android:id="@+id/tvHomeTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="eTix"
-            android:textSize="28sp"
+            android:layout_marginTop="12dp"
+            android:accessibilityHeading="true"
+            android:text="Accueil"
+            android:textColor="@color/v2_text_primary"
+            android:textSize="22sp"
             android:textStyle="bold"
-            android:textColor="#1C1C1E" />
+            tools:targetApi="p" />
 
         <TextView
-            android:id="@+id/tvSubtitle"
+            android:id="@+id/tvGreeting"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Vue d’ensemble"
-            android:textSize="16sp"
-            android:textColor="#8E8E93"
-            android:layout_marginTop="6dp" />
+            android:layout_marginTop="4dp"
+            android:textColor="@color/v2_text_secondary"
+            android:textSize="15sp" />
 
-        <!-- 📊 KPI Cards -->
-        <LinearLayout
-            android:id="@+id/kpiContainer"
+        <TextView
+            android:id="@+id/tvWish"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/v2_text_secondary"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/tvTicketCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/v2_text_secondary"
+            android:textSize="13sp" />
+
+        <!-- ===== HERO ===== -->
+        <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="24dp">
+            android:layout_marginTop="20dp"
+            android:minHeight="150dp">
 
-            <!-- Aujourd’hui -->
+            <!-- Halo : dégradé radial créé dans HomeFragmentV2 (rayon en dp). Un rayon en « % » dans le
+                 drawable XML plante sur Android 5 (RadialGradient radius 0, constaté sur émulateur API 21). -->
+            <View
+                android:id="@+id/heroGlow"
+                android:layout_width="match_parent"
+                android:layout_height="190dp"
+                android:layout_gravity="center"
+                android:importantForAccessibility="no" />
+
             <LinearLayout
+                android:id="@+id/heroContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical"
+                android:focusable="true"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="14dp"
+                        android:layout_height="14dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_v2_card" />
+
+                    <TextView
+                        android:id="@+id/tvHeroLabel"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="4dp"
+                        android:letterSpacing="0.14"
+                        android:textAllCaps="true"
+                        android:textColor="@color/v2_text_secondary"
+                        android:textSize="11sp" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvHeroAmount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:fontFamily="sans-serif-black"
+                    android:maxLines="1"
+                    android:textColor="@color/v2_text_primary"
+                    android:textSize="48sp"
+                    app:autoSizeMaxTextSize="48sp"
+                    app:autoSizeMinTextSize="24sp"
+                    app:autoSizeTextType="uniform" />
+
+                <TextView
+                    android:id="@+id/tvDeltaChip"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_v2_chip"
+                    android:paddingStart="10dp"
+                    android:paddingTop="5dp"
+                    android:paddingEnd="10dp"
+                    android:paddingBottom="5dp"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvNarration"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:maxLines="1"
+                    android:textSize="15sp" />
+            </LinearLayout>
+        </FrameLayout>
+
+        <!-- ===== PÉRIODE ===== -->
+        <com.google.android.material.button.MaterialButtonToggleGroup
+            android:id="@+id/homeTogglePeriod"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            app:selectionRequired="true"
+            app:singleSelection="true">
+
+            <Button
+                android:id="@+id/btnHomeToday"
+                style="?attr/materialButtonOutlinedStyle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:background="#F2F2F7"
-                android:padding="16dp"
-                android:orientation="vertical">
+                android:maxLines="1"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:text="Aujourd’hui"
+                android:textSize="13sp" />
 
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Aujourd’hui"
-                    android:textSize="14sp"
-                    android:textColor="#8E8E93" />
-
-                <TextView
-                    android:id="@+id/tvTodayAmount"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="0 €"
-                    android:textSize="22sp"
-                    android:textStyle="bold"
-                    android:textColor="#000000"
-                    android:layout_marginTop="4dp" />
-            </LinearLayout>
-
-            <Space
-                android:layout_width="16dp"
-                android:layout_height="wrap_content" />
-
-            <!-- Ce mois -->
-            <LinearLayout
+            <Button
+                android:id="@+id/btnHomeMonth"
+                style="?attr/materialButtonOutlinedStyle"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:background="#F2F2F7"
-                android:padding="16dp"
-                android:orientation="vertical">
+                android:maxLines="1"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:text="Ce mois"
+                android:textSize="13sp" />
+
+            <Button
+                android:id="@+id/btnHomeYear"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:maxLines="1"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:text="Cette année"
+                android:textSize="13sp" />
+        </com.google.android.material.button.MaterialButtonToggleGroup>
+
+        <!-- ===== TENDANCE 6 MOIS + PANIER MOYEN (masquée sans ticket, comme iOS) ===== -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardTrend"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            app:cardBackgroundColor="@color/v2_surface_home"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="@dimen/v2_card_elevation"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Ce mois"
-                    android:textSize="14sp"
-                    android:textColor="#8E8E93" />
+                    android:letterSpacing="0.14"
+                    android:text="TENDANCE 6 MOIS"
+                    android:textColor="@color/v2_text_secondary"
+                    android:textSize="11sp" />
+
+                <LinearLayout
+                    android:id="@+id/trendBars"
+                    android:layout_width="match_parent"
+                    android:layout_height="92dp"
+                    android:layout_marginTop="16dp"
+                    android:gravity="bottom"
+                    android:orientation="horizontal" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="16dp"
+                    android:background="@color/v2_divider" />
 
                 <TextView
-                    android:id="@+id/tvMonthAmount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="0 €"
-                    android:textSize="22sp"
-                    android:textStyle="bold"
-                    android:textColor="#000000"
-                    android:layout_marginTop="4dp" />
+                    android:layout_marginTop="16dp"
+                    android:letterSpacing="0.14"
+                    android:text="PANIER MOYEN"
+                    android:textColor="@color/v2_text_secondary"
+                    android:textSize="11sp" />
+
+                <TextView
+                    android:id="@+id/tvAverageBasket"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="@color/v2_text_primary"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
             </LinearLayout>
-        </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
 
-        <!-- ➕ Action : Ajouter ticket -->
-        <Button
+        <!-- ===== ACTIONS ===== -->
+        <!-- iOS : « Scanner un ticket » = action principale. Scanner non fonctionnel sur Android
+             (flux OCR non branché) → bouton désactivé et signalé comme indisponible. -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnScanTicket"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="20dp"
+            android:enabled="false"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:text="Scanner un ticket"
+            android:textColor="@color/v2_disabled_on_primary"
+            android:textSize="17sp"
+            app:backgroundTint="@color/v2_disabled_primary"
+            app:cornerRadius="14dp"
+            app:icon="@drawable/ic_v2_scan"
+            app:iconGravity="textStart"
+            app:iconTint="@color/v2_disabled_on_primary" />
+
+        <TextView
+            android:id="@+id/tvScanUnavailable"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:gravity="center"
+            android:text="Scanner indisponible sur Android pour le moment"
+            android:textColor="@color/v2_text_secondary"
+            android:textSize="12sp" />
+
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnAddTicket"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Ajouter un ticket"
-            android:layout_marginTop="32dp" />
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:text="Ajout manuel"
+            android:textColor="@color/v2_text_primary"
+            android:textSize="17sp"
+            app:backgroundTint="@color/v2_surface_home"
+            app:cornerRadius="14dp"
+            app:icon="@drawable/ic_v2_add"
+            app:iconGravity="textStart"
+            app:iconTint="@color/v2_text_primary" />
 
-        <!-- 📜 Action : Historique -->
-        <Button
+        <!-- Conservé (fonction existante Android, absente de l'Accueil iOS) -->
+        <com.google.android.material.button.MaterialButton
             android:id="@+id/btnHistory"
+            style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
             android:text="Voir l’historique"
-            android:layout_marginTop="12dp" />
-
+            android:textColor="@color/v2_primary" />
     </LinearLayout>
-</ScrollView>
+</androidx.core.widget.NestedScrollView>

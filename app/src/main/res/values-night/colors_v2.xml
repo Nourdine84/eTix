@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="v2_bg_grouped">#000000</color>
+    <color name="v2_surface_grouped">#1C1C1E</color>
+    <color name="v2_text_primary">#FFFFFF</color>
+    <color name="v2_text_secondary">#8D8D93</color>
+    <color name="v2_fill">#5C787880</color>
+    <color name="v2_divider">#4D545458</color>
+    <color name="v2_negative">#FF453A</color>
+    <color name="v2_tabbar">#1C1C1E</color>
+    <color name="v2_positive">#30D158</color>
+    <color name="v2_bg_home">#0A0E1A</color>
+    <color name="v2_surface_home">#141832</color>
+    <color name="v2_attention">#FF9F0A</color>
+    <color name="v2_negative_12">#1FFF453A</color>
+    <color name="v2_positive_12">#1F30D158</color>
+    <color name="v2_neutral_12">#1F8D8D93</color>
+
+    <!-- Thème sombre global (lot 3) : couleurs Material « md_* » figées en clair dans values/colors.xml,
+         utilisées par Ajouter / Catégories / Réglages. md_background / md_primaryContainer / md_onPrimaryContainer
+         existent déjà dans values-night-v8/colors-night.xml (inchangés). -->
+    <color name="md_onBackground">#E6E0E9</color>
+    <color name="md_surface">#121212</color>
+    <color name="md_onSurface">#E6E0E9</color>
+    <color name="md_surfaceVariant">#49454F</color>
+    <color name="md_onSurfaceVariant">#CAC4D0</color>
+    <color name="v2_disabled_primary">#23283F</color>
+    <color name="v2_disabled_on_primary">#6E7591</color>
+    <color name="v2_chart_1">#0A84FF</color>
+    <color name="v2_chart_2">#30D158</color>
+    <color name="v2_chart_3">#FF9F0A</color>
+    <color name="v2_chart_4">#BF5AF2</color>
+    <color name="v2_chart_5">#FF375F</color>
+    <color name="v2_chart_6">#FF453A</color>
+    <color name="v2_chart_7">#40C8E0</color>
+</resources>

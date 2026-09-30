@@ -45,7 +45,7 @@
         <item name="materialCardViewStyle">@style/Widget.eTix.Card</item>
 
         <!-- Système -->
-        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:statusBarColor">@color/v2_status_bar_light_theme</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:windowLightNavigationBar">true</item>

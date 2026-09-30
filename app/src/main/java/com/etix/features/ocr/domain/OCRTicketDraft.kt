@@ -109,43 +109,9 @@ object OCRTicketDraftMapper {
     // -----------------------------
     // AMOUNT
     // -----------------------------
-    private fun extractAmount(rawText: String): Double? {
-        val text = rawText.replace("\n", " ")
-
-        // On cible d'abord les lignes total / ttc
-        val amountCandidates = mutableListOf<Double>()
-
-        // Regex montant FR/EN : 12,34  | 12.34 | 1 234,56 | 1234.56
-        val amountRegex = Regex("""(\d{1,3}(?:[ .]\d{3})*(?:[.,]\d{2})|\d+(?:[.,]\d{2}))""")
-
-        // Petite priorité si on voit TOTAL/NET A PAYER/TT C
-        val priorityWords = listOf("total", "ttc", "net a payer", "montant", "a payer", "payer")
-
-        val chunks = rawText.lines().map { it.trim() }.filter { it.isNotBlank() }
-        for (line in chunks) {
-            val n = normalizeForSearch(line)
-
-            val isPriority = containsAny(n, priorityWords)
-            val matches = amountRegex.findAll(line)
-
-            for (m in matches) {
-                val value = parseAmount(m.value)
-                if (value != null && value > 0.0) {
-                    // on évite les montants aberrants (ex: TVA 0,20)
-                    if (value >= 1.0 && value <= 9999.99) {
-                        // boost si priority line
-                        amountCandidates.add(if (isPriority) value + 0.0001 else value)
-                    }
-                }
-            }
-        }
-
-        if (amountCandidates.isEmpty()) return null
-
-        // On prend le max plausible
-        val best = amountCandidates.maxOrNull() ?: return null
-        return round2(best)
-    }
+    // Lot 6 : même règle que OCRProcessor (sous-total / HT / TVA / remise / rendu jamais retenus)
+    private fun extractAmount(rawText: String): Double? =
+        com.etix.features.ocr.engine.OCRAmountExtractor.extract(rawText.lines())
 
     private fun parseAmount(s: String): Double? {
         // "1 234,56" -> "1234.56"

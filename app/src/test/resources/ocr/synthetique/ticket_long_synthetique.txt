@@ -1,0 +1,25 @@
+CARREFOUR MARKET
+AV DE LA REPUBLIQUE 78000 VERSAILLES
+15/09/2026 18:42
+LAIT DEMI ECREME 1L       1,09
+PAIN DE MIE               2,35
+BEURRE DOUX 250G          2,79
+OEUFS X12                 3,49
+PATES FUSILLI 500G        0,95
+RIZ BASMATI 1KG           2,69
+TOMATES GRAPPE            2,98
+POMMES GOLDEN             3,12
+YAOURTS NATURE X8         2,15
+CAFE MOULU 250G           3,85
+EAU MINERALE 6X1,5L       2,94
+LESSIVE LIQUIDE           6,99
+PAPIER TOILETTE X12       4,40
+EPONGES X4                1,29
+JUS D ORANGE 1L           1,72
+SOUS-TOTAL               42,80
+REMISE FIDELITE          -2,00
+TOTAL TTC                40,80 €
+TVA 5,5%                  2,13
+TOTAL HT                 38,67
+CB MASTERCARD            40,80
+RENDU                     0,00

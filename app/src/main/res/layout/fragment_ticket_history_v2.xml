@@ -1,35 +1,132 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Historique — référence iOS TicketHistoryView : titre, recherche (magasin / catégorie), filtre de dates,
+     sections Aujourd'hui / Hier / Cette semaine / Ce mois / Plus ancien, cartes ticket, états vides.
+     « Exporter CSV » : fonction Android existante conservée. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/v2_bg_grouped"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="24dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="12dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:accessibilityHeading="true"
+            android:text="Historique"
+            android:textColor="@color/v2_text_primary"
+            android:textSize="34sp"
+            android:textStyle="bold"
+            tools:targetApi="p" />
+
+        <ImageButton
+            android:id="@+id/btnFilter"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Filtrer par dates"
+            android:src="@drawable/ic_v2_filter"
+            app:tint="@color/v2_text_primary" />
+    </LinearLayout>
 
     <EditText
         android:id="@+id/inputSearch"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Rechercher"
-        android:layout_margin="12dp"/>
+        android:layout_height="40dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="24dp"
+        android:background="@drawable/bg_v2_search"
+        android:drawableStart="@drawable/ic_v2_search"
+        android:drawablePadding="8dp"
+        android:hint="Magasin ou catégorie"
+        android:contentDescription="Rechercher un magasin ou une catégorie"
+        android:imeOptions="actionSearch"
+        android:importantForAutofill="no"
+        android:inputType="text"
+        android:maxLines="1"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:textColor="@color/v2_text_primary"
+        android:textColorHint="@color/v2_text_secondary"
+        android:textSize="15sp" />
 
-    <Button
-        android:id="@+id/btnExportCsv"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Exporter CSV"
-        android:layout_marginHorizontal="12dp"/>
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="24dp"
+        android:paddingEnd="12dp">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recyclerHistory"
+        <TextView
+            android:id="@+id/tvFilterSummary"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="@color/v2_primary"
+            android:textSize="13sp"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/btnExportCsv"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Exporter CSV"
+            android:textColor="@color/v2_primary" />
+    </LinearLayout>
+
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:padding="12dp"/>
+        android:layout_weight="1">
 
-    <TextView
-        android:id="@+id/emptyState"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="Aucun ticket"
-        android:gravity="center"
-        android:visibility="gone"/>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recyclerHistory"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clipToPadding="false"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingBottom="40dp"
+            android:scrollbars="none" />
+
+        <LinearLayout
+            android:id="@+id/emptyState"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/tvEmptyTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Aucun ticket"
+                android:textColor="@color/v2_text_secondary"
+                android:textSize="15sp" />
+
+            <Button
+                android:id="@+id/btnClearFilters"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Effacer les filtres"
+                android:textColor="@color/v2_primary"
+                android:visibility="gone" />
+        </LinearLayout>
+    </FrameLayout>
 </LinearLayout>

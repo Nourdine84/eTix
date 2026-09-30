@@ -18,14 +18,34 @@
         app:layout_constraintEnd_toEndOf="parent"/>
 
     <!-- ========================= -->
+    <!-- OVERLAY (écrans poussés : détail / édition ticket) -->
+    <!-- Au-dessus du ViewPager, bottom nav conservée (comme la TabBar iOS) -->
+    <!-- ========================= -->
+    <FrameLayout
+        android:id="@+id/overlayContainer"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="?android:attr/colorBackground"
+        android:clickable="true"
+        android:focusable="true"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/bottomNav"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- ========================= -->
     <!-- BOTTOM NAV -->
     <!-- ========================= -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNav"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:background="@color/md_surface"
+        android:background="@color/v2_tabbar"
         app:menu="@menu/menu_bottom_nav"
+        app:labelVisibilityMode="labeled"
+        app:itemTextAppearanceActive="@style/V2.TabLabel"
+        app:itemTextAppearanceInactive="@style/V2.TabLabel"
         app:itemIconTint="@color/etix_blue"
         app:itemTextColor="@color/etix_blue"
         app:layout_constraintBottom_toBottomOf="parent"

@@ -68,6 +68,9 @@ class FakeTicketDao : TicketDao {
 
     override fun getAllFlow(): Flow<List<Ticket>> = flow
 
+    override fun distinctCategoriesFlow(): Flow<List<String>> =
+        flow.map { list -> list.map { it.category }.distinct() }
+
     // ----------------------
     // DATES
     // ----------------------

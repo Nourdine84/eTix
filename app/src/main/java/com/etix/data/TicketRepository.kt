@@ -38,6 +38,8 @@ class TicketRepository(
     // --------------------
     // Single ticket
     // --------------------
+    fun distinctCategoriesFlow(): Flow<List<String>> =
+        dao.distinctCategoriesFlow()
     fun getByIdFlow(id: Long): Flow<Ticket?> =
         dao.getByIdFlow(id)
 
