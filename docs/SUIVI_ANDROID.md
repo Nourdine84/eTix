@@ -229,13 +229,28 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
 - **Revue visuelle** : pour toute modification d'interface, poser `apercus` et examiner les aperçus concernés avant
   de déclarer la revue visuelle effectuée.
 
+### Lot 9 — Scanner (`feature/android-lot9-scanner`, depuis `457f49e`)
+- **Décisions OCR Q1 à Q4 validées** (01/10/2026) et appliquées : « TOTAL » seul n'est pas une enseigne
+  (TotalEnergies reste une enseigne) ; catégories de référence iOS (ESSO → Carburant), sans reclasser aucun ticket ;
+  dates jj/mm/aaaa vérifiées. 9 tests réactivés, attentes inchangées (7 passaient déjà, 2 ont demandé une
+  correction du moteur). Correction en plus : « 03.10.26 18:42 » lu comme l'année 2618. `OCRValidationTest`
+  (obsolète) reste désactivé. Détail : `docs/OCR_CAS_DE_REFERENCE.md`.
+- **Parcours de scan** (iOS ScannerFlowView) : Accueil ou Ajouter → intro → photo (appareil photo du système,
+  autorisation expliquée avant la demande, refus → Paramètres) ou image choisie → lecture ML Kit sur l'appareil
+  (étapes affichées) → formulaire « Ajouter » prérempli, badges « Vérifié » / « À vérifier », catégorie
+  « Suggéré par l'OCR » → **enregistrement uniquement par « Enregistrer »**. « Rien détecté » / erreur :
+  « Réessayer » ou « Saisir manuellement ». Annuler, Retour, « Annuler le scan » : aucun ticket.
+  Ancien écran de scan simulé (`OCRScannerFragment`, valeurs fictives) : jamais branché, conservé. Détail et
+  écarts iOS : `docs/SCANNER.md`.
+- Version `1.9.0-lot9` (versionCode 11).
+
 ## Écarts restants avec iOS (référence `feature/home-hero-v2`)
 
 | Écran | Écart | Lot envisagé |
 |---|---|---|
 | Accueil | Insights (≤ 2), carte Budget / Magasin, étoiles du header sombre, animations d'entrée, lien Tendance → rapport mensuel | 4 |
-| Accueil | Scanner indisponible (flux OCR non branché) | OCR |
-| Ajouter | Scanner indisponible ; pas de suggestion de catégorie (OCR / historique) | OCR |
+| Accueil | Scanner : branché au lot 9 (voir `docs/SCANNER.md` pour les écarts) | 9 |
+| Ajouter | Scanner et suggestion de catégorie (historique puis OCR) : lot 9 | 9 |
 | Historique | Suppression par balayage (iOS) non portée | 5 |
 | Détail ticket | Aligné au lot 6 ; dégradé du montant iOS rendu en bleu uni ; pas de retour haptique | — |
 | Catégories | Budgets portés (lot 7) ; export non porté | à planifier |
