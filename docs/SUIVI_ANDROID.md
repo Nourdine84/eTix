@@ -7,7 +7,7 @@ Document de reprise entre sessions. Concis : état, décisions, prochain lot.
 | Élément | Emplacement |
 |---|---|
 | Code Android (référence) | `Nourdine84/eTix`, branche `feature/android-v2` (dernier commit 16/01/2026) |
-| Branches de travail | Lot 1 `fix/android-v2-navigation` ; Lot 2 `feature/android-lot2-magasins` (contient lot 1) ; Lot 3 `feature/android-lot3-accueil-theme` (contient lots 1-2) ; Lot 4 `feature/android-lot4-formulaire-historique` ; Lot 5 `feature/android-lot5-categories` (depuis le lot 4 @ `c77f0ba`) ; Lot 6 `feature/android-lot6-fiabilisation` (depuis le lot 5 @ `959f41e`) ; Lot 7 `feature/android-lot7-budgets` (depuis le lot 6 @ `8172881`). **Lots 1 à 7 fusionnés dans `feature/android-v2`** (PR #75, commit de fusion `8c1af76`, 30/09/2026). **Lot 8 `feature/android-lot8-accueil-budget`** (depuis `8c1af76`). Anciennes branches conservées. `main` et `dev` jamais modifiés. |
+| Branches de travail | Lot 1 `fix/android-v2-navigation` ; Lot 2 `feature/android-lot2-magasins` (contient lot 1) ; Lot 3 `feature/android-lot3-accueil-theme` (contient lots 1-2) ; Lot 4 `feature/android-lot4-formulaire-historique` ; Lot 5 `feature/android-lot5-categories` (depuis le lot 4 @ `c77f0ba`) ; Lot 6 `feature/android-lot6-fiabilisation` (depuis le lot 5 @ `959f41e`) ; Lot 7 `feature/android-lot7-budgets` (depuis le lot 6 @ `8172881`). **Lots 1 à 7 fusionnés dans `feature/android-v2`** (PR #75, commit de fusion `8c1af76`, 30/09/2026). **Lot 8 `feature/android-lot8-accueil-budget`** (depuis `8c1af76`) **fusionné dans `feature/android-v2`** (PR #76, commit de fusion `ef40e1f`, 01/10/2026). CI : `chore/ci-apercus-a-la-demande` (depuis `ef40e1f`). Branche de démonstration `demo/ci-verdict` (non destinée à la fusion). Anciennes branches conservées. `main` et `dev` jamais modifiés. |
 | Historique Git | `feature/android-v2` et `dev` : ancêtre commun `ab7d6f8`, `dev` a 3 commits propres. `main` : racine distincte, sans ancêtre commun. Détail : `docs/REVUE_LOTS_1_2.md`. Intégration `dev`/`main` = décision séparée. |
 | `Nourdine84/etix-android` | Squelette Gradle sans module `app` — **pas** le dépôt de dev |
 | Copie locale Mac `~/AndroidStudioProjects/eTix` | Sur `dev` (19/12/2025), n'a pas `feature/android-v2` |
@@ -203,11 +203,31 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
   - « Budget atteint » à 100 % pile (écart iOS B3 documenté) ; « Budgets dépassés de X » seulement en dépassement réel.
   - Tendance 6 mois : libellés entiers sur petit écran et grande police (réduction ≤ 20 %, sinon 3 lettres),
     zone du graphique agrandie au lieu de couper, libellé accessible complet (« septembre 2026 : 55,00 € »).
-  - PR brouillon #76 vers `feature/android-v2` (non fusionnée).
+  - PR #76 vers `feature/android-v2` : fusionnée (voir ci-dessous).
   - **Fiabilité CI** (`docs/FIABILITE_CI.md`) : jobs émulateur verts malgré des échecs jusqu'au 30/09 (62 jobs,
     28 runs intermédiaires ; résultats de référence des lots, lus dans les annotations, confirmés sans échec).
     Verdict par attendus/observés, auto-test permanent, démonstration rouge sur `demo/ci-verdict` (branche de
     démonstration, non destinée à la fusion). Lecteur de dates exécuté sur API 22 à 25. Version livrable contrôlée.
+
+### Fusion du lot 8 dans `feature/android-v2` (PR #76, 01/10/2026)
+- PR https://github.com/Nourdine84/eTix/pull/76, commit de fusion **`ef40e1f10f13d8f7ad31a5b3f525225f63226291`**
+  (parents `8c1af76` et `9926185`, merge commit sans squash), contenu identique au résultat de fusion testé `e1e714d`.
+- Avant fusion : source `9926185`, cible `8c1af76` vérifiées ; runs 36890321511 (PR) et 36890313218 (push) verts.
+- **CI après fusion** : run https://github.com/Nourdine84/eTix/actions/runs/36892509302 — 315 jobs verts, 1 tentative.
+  JVM + Robolectric : 170 `@Test` déclarés et découverts, 160 exécutés et réussis, 0 échec, 10 ignorés (`@Ignore` :
+  9 `OCRFixturesTest` bloqués Q1–Q4, 1 `OCRValidationTest` obsolète). Émulateurs API 21 / 34 / 36 : 29/29 chacun ;
+  fr 6/6 ; petit écran 15/15 ; lecteur de dates API 22 à 25 : 2/2 chacun ; auto-test du verdict 10/10.
+  Mise à jour 10 → 11 sans désinstallation, données conservées (API 21 / 34 / 36). Aucun plantage, aucune relance.
+- Non validés par cette fusion : choix visuels (« Budget atteint » rouge, abréviations, retrait des barres),
+  Q1–Q4, « Autre », « ,20 ». Signature QA durable et tests sur téléphone physique : à faire séparément.
+- Suites « Vercel » et « claude » : en attente, 0 contrôle (voir `docs/FIABILITE_CI.md`).
+
+### CI : aperçus à la demande (`chore/ci-apercus-a-la-demande`)
+- Captures complètes toujours en artefacts (`screenshots`, `emulator-*`, 30 jours) ; aperçus en annotations
+  seulement si la PR porte le label **`apercus`** (posé à tout moment, sans commit), 4 captures par job.
+- Tests, verdict et auto-tests inchangés ; permissions inchangées (`contents: read`).
+- **Revue visuelle** : pour toute modification d'interface, poser `apercus` et examiner les aperçus concernés avant
+  de déclarer la revue visuelle effectuée.
 
 ## Écarts restants avec iOS (référence `feature/home-hero-v2`)
 
