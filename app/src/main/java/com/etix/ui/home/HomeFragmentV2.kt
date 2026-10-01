@@ -91,7 +91,8 @@ class HomeFragmentV2 : Fragment() {
         binding.btnSettings.setOnClickListener { main?.openSettings() }
         binding.btnAddTicket.setOnClickListener { main?.goToPage(MainActivityV2.PAGE_ADD) }
         binding.btnHistory.setOnClickListener { main?.goToPage(MainActivityV2.PAGE_HISTORY) }
-        // btnScanTicket : désactivé dans le layout (scanner non branché sur Android)
+        // Lot 9 : scanner branché (iOS : action principale de l'Accueil → Ajouter + scanner ouvert)
+        binding.btnScanTicket.setOnClickListener { main?.openScanFlow() }
 
         binding.homeTogglePeriod.check(buttonFor(range.value))
         binding.homeTogglePeriod.addOnButtonCheckedListener { _, id, checked ->

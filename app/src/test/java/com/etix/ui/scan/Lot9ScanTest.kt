@@ -1,0 +1,253 @@
+package com.etix.ui.scan
+
+import android.graphics.Bitmap
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.Paint
+import android.net.Uri
+import android.view.View
+import android.widget.EditText
+import android.widget.TextView
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
+import com.etix.R
+import com.etix.data.AppDatabase
+import com.etix.features.ocr.scan.MlKitTextReader
+import com.etix.features.ocr.scan.ScanServices
+import com.etix.features.ocr.scan.ScanTextReader
+import com.etix.model.Ticket
+import com.etix.testutil.Screens.capture
+import com.etix.testutil.Screens.idle
+import com.etix.testutil.Screens.waitFor
+import com.etix.testutil.TestDb
+import com.etix.ui.main.MainActivityV2
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.Robolectric
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.RuntimeEnvironment
+import org.robolectric.annotation.Config
+import org.robolectric.annotation.GraphicsMode
+import java.io.File
+import java.util.Calendar
+
+/**
+ * Lot 9 — parcours de scan (iOS ScannerFlowView + AddTicketViewModel.handleOCRResult) en Robolectric.
+ * La reconnaissance ML Kit est remplacée par un lecteur simulé (texte de ticket fourni) ; l'image, le parcours,
+ * l'analyse, le préremplissage et l'enregistrement sont réels. Exécution réelle d'ML Kit : E2eScanTest (émulateur).
+ * Aucun ticket n'est créé sans « Enregistrer » ; les tickets existants ne sont jamais modifiés.
+ */
+@RunWith(RobolectricTestRunner::class)
+@GraphicsMode(GraphicsMode.Mode.NATIVE)
+@Config(sdk = [33], qualifiers = "w360dp-h780dp-hdpi")
+class Lot9ScanTest {
+
+    private val ctx get() = RuntimeEnvironment.getApplication()
+    private val dao get() = AppDatabase.getInstance(ctx).ticketDao()
+    private val existing = listOf(
+        Ticket(id = 1, store = "Lidl", amount = 10.0, category = "Alimentation", dateMillis = System.currentTimeMillis() - 86_400_000),
+        Ticket(id = 2, store = "Carrefour", amount = 25.0, category = "Alimentation", dateMillis = System.currentTimeMillis() - 2 * 86_400_000),
+    )
+
+    private val ESSO = "ESSO\n12/01/2026\nTOTAL TTC 23,45 €\nCB VISA\nMERCI DE VOTRE VISITE"
+
+    @Before fun setUp() { TestDb.reset(ctx); TestDb.seed(ctx, existing) }
+    @After fun tearDown() { ScanServices.reader = MlKitTextReader }
+
+    private fun tickets() = runBlocking { dao.getAllFlow().first() }.sortedBy { it.id }
+
+    private fun image(name: String = "ticket.png"): Uri {
+        val bmp = Bitmap.createBitmap(600, 800, Bitmap.Config.ARGB_8888)
+        Canvas(bmp).apply {
+            drawColor(Color.WHITE)
+            val p = Paint().apply { color = Color.BLACK; textSize = 40f; isAntiAlias = true }
+            ESSO.lines().forEachIndexed { i, l -> drawText(l, 40f, 80f + i * 60f, p) }
+        }
+        val f = File(ctx.cacheDir, name)
+        f.outputStream().use { bmp.compress(Bitmap.CompressFormat.PNG, 100, it) }
+        return Uri.fromFile(f)
+    }
+
+    private fun launch(): MainActivityV2 = Robolectric.buildActivity(MainActivityV2::class.java).setup().get().also { idle() }
+
+    private fun MainActivityV2.scan(): ScanFlowFragment = supportFragmentManager.findFragmentById(R.id.overlayContainer) as ScanFlowFragment
+    private fun vm(f: Fragment) = ViewModelProvider(f)[ScanFlowViewModel::class.java]
+    private fun MainActivityV2.add(): View = supportFragmentManager.findFragmentByTag("f1")!!.requireView()
+    private fun MainActivityV2.text(id: Int) = add().findViewById<TextView>(id).text.toString()
+    private fun MainActivityV2.visible(id: Int) = add().findViewById<View>(id).visibility == View.VISIBLE
+
+    private fun openFromAdd(a: MainActivityV2) {
+        a.goToPage(MainActivityV2.PAGE_ADD); idle()
+        a.add().findViewById<View>(R.id.btnScanTicket).performClick(); idle()
+    }
+
+    /** Lecture simulée d'une image → retour au formulaire « Ajouter » prérempli. */
+    private fun scanInto(a: MainActivityV2, text: String = ESSO) {
+        ScanServices.reader = ScanTextReader { text }
+        vm(a.scan()).process(image(), deleteAfter = false)
+        waitFor { a.supportFragmentManager.findFragmentById(R.id.overlayContainer) == null && a.text(R.id.inputStore).isNotEmpty() }
+    }
+
+    @Test fun intro_puis_autorisation_camera_puis_refus() {
+        val a = launch()
+        openFromAdd(a)
+        assertEquals(View.VISIBLE, a.findViewById<View>(R.id.stepIntro).visibility)
+        capture(a, "l9_01_scan_intro_light")
+        // caméra non autorisée et jamais demandée : explication avant la demande système (iOS CameraPrimingView)
+        a.findViewById<View>(R.id.btnTakePhoto).performClick(); idle()
+        assertEquals(View.VISIBLE, a.findViewById<View>(R.id.stepPriming).visibility)
+        capture(a, "l9_02_scan_autorisation_light")
+        a.findViewById<View>(R.id.btnPrimingRefuse).performClick(); idle()
+        assertEquals(View.VISIBLE, a.findViewById<View>(R.id.stepIntro).visibility)
+        assertEquals(existing, tickets())
+    }
+
+    @Test @Config(qualifiers = "+night")
+    fun intro_dark() {
+        val a = launch()
+        openFromAdd(a)
+        capture(a, "l9_01_scan_intro_dark")
+    }
+
+    @Test fun lecture_en_cours_puis_formulaire_prerempli_sans_enregistrement() {
+        val a = launch()
+        openFromAdd(a)
+        val gate = CompletableDeferred<String>()
+        ScanServices.reader = ScanTextReader { gate.await() }
+        vm(a.scan()).process(image(), deleteAfter = false)
+        waitFor { a.findViewById<View>(R.id.stepProcessing)?.visibility == View.VISIBLE &&
+            a.findViewById<TextView>(R.id.tvStep2).text.startsWith("›") }
+        capture(a, "l9_03_scan_lecture_light")
+        gate.complete(ESSO)
+        waitFor { a.supportFragmentManager.findFragmentById(R.id.overlayContainer) == null && a.text(R.id.inputStore).isNotEmpty() }
+
+        assertEquals("ESSO", a.text(R.id.inputStore))
+        assertEquals("23,45", a.text(R.id.inputAmount))
+        val c = Calendar.getInstance().apply { timeInMillis = (a.supportFragmentManager.findFragmentByTag("f1") as com.etix.ui.add.AddTicketFragmentV2).let {
+            val f = it.javaClass.getDeclaredField("form").apply { isAccessible = true }
+            (f.get(it) as com.etix.ui.ticket.TicketFormController).dateMillis } }
+        assertEquals(12, c.get(Calendar.DAY_OF_MONTH)); assertEquals(Calendar.JANUARY, c.get(Calendar.MONTH)); assertEquals(2026, c.get(Calendar.YEAR))
+        assertEquals("Carburant", a.text(R.id.tvCategoryValue))
+        assertEquals("À vérifier", a.text(R.id.badgeStore))      // iOS : enseigne = confiance moyenne
+        assertEquals("Vérifié", a.text(R.id.badgeAmount))        // montant sur la ligne TOTAL TTC
+        assertEquals("Vérifié", a.text(R.id.badgeDate))
+        assertTrue(a.visible(R.id.tvCategorySuggested))
+        assertTrue(a.visible(R.id.scanBanner))
+        assertEquals("Aucun ticket tant que l'utilisateur n'a pas validé", existing, tickets())
+        capture(a, "l9_04_formulaire_prerempli_light")
+
+        // « Annuler le scan » : formulaire vidé, aucun ticket
+        a.add().findViewById<View>(R.id.btnDiscardScan).performClick(); idle()
+        assertEquals("", a.text(R.id.inputStore))
+        assertTrue(!a.visible(R.id.scanBanner) && !a.visible(R.id.badgeAmount) && !a.visible(R.id.tvCategorySuggested))
+        assertEquals(existing, tickets())
+    }
+
+    @Test @Config(qualifiers = "+night")
+    fun formulaire_prerempli_dark() {
+        val a = launch()
+        openFromAdd(a)
+        scanInto(a)
+        capture(a, "l9_04_formulaire_prerempli_dark")
+    }
+
+    @Test fun enregistrement_apres_validation_explicite() {
+        val a = launch()
+        openFromAdd(a)
+        scanInto(a)
+        // l'utilisateur corrige le montant avant de valider
+        a.add().findViewById<EditText>(R.id.inputAmount).setText("23,40")
+        a.add().findViewById<View>(R.id.btnSaveTicket).performClick()
+        waitFor { tickets().size == 3 }
+        val all = tickets()
+        assertEquals(existing, all.take(2))                     // tickets existants inchangés
+        val t = all.last()
+        assertEquals("ESSO", t.store); assertEquals(23.40, t.amount, 0.001); assertEquals("Carburant", t.category)
+        val c = Calendar.getInstance().apply { timeInMillis = t.dateMillis }
+        assertEquals(12, c.get(Calendar.DAY_OF_MONTH)); assertEquals(Calendar.JANUARY, c.get(Calendar.MONTH))
+        assertTrue(!a.visible(R.id.scanBanner))
+    }
+
+    /** iOS StoreCategoryMapper : l'historique du magasin passe avant le dictionnaire ; rien n'est reclassé. */
+    @Test fun historique_du_magasin_prioritaire_sans_reclasser() {
+        val esso = Ticket(id = 3, store = "Esso", amount = 50.0, category = "Transport", dateMillis = System.currentTimeMillis())
+        TestDb.seed(ctx, listOf(esso))
+        val a = launch()
+        openFromAdd(a)
+        scanInto(a)
+        assertEquals("Transport", a.text(R.id.tvCategoryValue))
+        assertTrue(a.visible(R.id.tvCategorySuggested))         // 1 seul ticket : suggestion signalée (iOS weakHistory)
+        assertEquals(existing + esso, tickets())
+    }
+
+    @Test fun rien_detecte_puis_reessayer() {
+        val a = launch()
+        openFromAdd(a)
+        ScanServices.reader = ScanTextReader { "" }
+        vm(a.scan()).process(image(), deleteAfter = false)
+        waitFor { a.findViewById<View>(R.id.stepFailure)?.visibility == View.VISIBLE }
+        assertEquals("Aucune information détectée", a.findViewById<TextView>(R.id.tvFailureTitle).text.toString())
+        capture(a, "l9_05_scan_rien_detecte_light")
+        a.findViewById<View>(R.id.btnRetry).performClick(); idle()
+        assertEquals(View.VISIBLE, a.findViewById<View>(R.id.stepIntro).visibility)
+        assertEquals(existing, tickets())
+    }
+
+    @Test fun erreur_de_lecture_puis_saisie_manuelle() {
+        val a = launch()
+        openFromAdd(a)
+        ScanServices.reader = ScanTextReader { throw IllegalStateException("échec simulé") }
+        vm(a.scan()).process(image(), deleteAfter = false)
+        waitFor { a.findViewById<View>(R.id.stepFailure)?.visibility == View.VISIBLE }
+        assertEquals("Lecture impossible", a.findViewById<TextView>(R.id.tvFailureTitle).text.toString())
+        capture(a, "l9_06_scan_erreur_light")
+        a.findViewById<View>(R.id.btnManualEntry).performClick(); idle()
+        assertNull(a.supportFragmentManager.findFragmentById(R.id.overlayContainer))
+        assertEquals("", a.text(R.id.inputStore))
+        assertEquals(existing, tickets())
+    }
+
+    @Test fun image_illisible() {
+        val a = launch()
+        openFromAdd(a)
+        val bad = File(ctx.cacheDir, "pas_une_image.png").apply { writeText("pas une image") }
+        vm(a.scan()).process(Uri.fromFile(bad), deleteAfter = false)
+        waitFor { a.findViewById<View>(R.id.stepFailure)?.visibility == View.VISIBLE }
+        assertTrue(a.findViewById<TextView>(R.id.tvFailureMessage).text.contains("n'a pas pu être ouverte"))
+        assertEquals(existing, tickets())
+    }
+
+    @Test fun retour_systeme_ferme_le_parcours_sans_ticket() {
+        val a = launch()
+        openFromAdd(a)
+        a.onBackPressedDispatcher.onBackPressed(); idle()
+        assertNull(a.supportFragmentManager.findFragmentById(R.id.overlayContainer))
+        assertEquals(existing, tickets())
+    }
+
+    @Test fun accueil_ouvre_ajouter_et_le_scanner() {
+        val a = launch()
+        a.supportFragmentManager.findFragmentByTag("f0")!!.requireView().findViewById<View>(R.id.btnScanTicket).performClick(); idle()
+        assertTrue(a.supportFragmentManager.findFragmentById(R.id.overlayContainer) is ScanFlowFragment)
+        assertEquals(MainActivityV2.PAGE_ADD, a.findViewById<androidx.viewpager2.widget.ViewPager2>(R.id.viewPager).currentItem)
+    }
+
+    @Test @Config(qualifiers = "w320dp-h640dp-hdpi")
+    fun petit_ecran_police_2() {
+        RuntimeEnvironment.setFontScale(2.0f)
+        val a = launch()
+        openFromAdd(a)
+        capture(a, "l9_07_scan_intro_320dp_police_2_light")
+        scanInto(a)
+        capture(a, "l9_08_formulaire_prerempli_320dp_police_2_light")
+        assertEquals(existing, tickets())
+    }
+}

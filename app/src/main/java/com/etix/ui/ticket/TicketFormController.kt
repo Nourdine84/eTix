@@ -7,6 +7,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.etix.R
 import com.etix.databinding.ViewTicketFormBinding
+import com.etix.features.ocr.scan.ScanConfidence
 import com.etix.features.ticket.TicketFormRules
 import com.etix.model.Ticket
 import com.google.android.material.datepicker.MaterialDatePicker
@@ -55,7 +56,59 @@ class TicketFormController(
         b.inputStore.setText(""); b.inputAmount.setText(""); b.inputDescription.setText("")
         dateMillis = System.currentTimeMillis(); category = ""
         setAmountInvalid(false)
+        clearScanMarks()
         render()
+    }
+
+    /**
+     * Lot 9 — préremplissage après un scan (iOS AddTicketViewModel.handleOCRResult) : magasin, montant et date
+     * remplacés s'ils ont été lus ; catégorie appliquée seulement si aucune n'est déjà choisie. Badges de
+     * confiance iOS (« Vérifié » / « À vérifier ») et « Suggéré par l'OCR ». Rien n'est enregistré ici.
+     */
+    fun applyScan(
+        store: String?, storeConfidence: ScanConfidence,
+        amount: Double?, amountConfidence: ScanConfidence,
+        dateMillisRead: Long?, dateConfidence: ScanConfidence,
+        suggestedCategory: String?, categoryBadge: Boolean
+    ) {
+        store?.let { b.inputStore.setText(it) }
+        amount?.let { b.inputAmount.setText(TicketFormRules.formatAmountForInput(it)) }
+        dateMillisRead?.let { dateMillis = TicketFormRules.combineDay(TicketFormRules.toPickerSelection(it), System.currentTimeMillis()) }
+        setBadge(b.badgeStore, if (store != null) storeConfidence else ScanConfidence.NONE)
+        setBadge(b.badgeAmount, if (amount != null) amountConfidence else ScanConfidence.NONE)
+        setBadge(b.badgeDate, if (dateMillisRead != null) dateConfidence else ScanConfidence.NONE)
+        if (category.isEmpty() && !suggestedCategory.isNullOrBlank()) {
+            category = suggestedCategory
+            b.tvCategorySuggested.visibility = if (categoryBadge) android.view.View.VISIBLE else android.view.View.GONE
+        }
+        setAmountInvalid(false)
+        render()
+    }
+
+    fun clearScanMarks() {
+        listOf(b.badgeStore, b.badgeAmount, b.badgeDate).forEach { it.visibility = android.view.View.GONE }
+        b.tvCategorySuggested.visibility = android.view.View.GONE
+    }
+
+    /** iOS FieldConfidence : HIGH → « Vérifié » ; MEDIUM / LOW → « À vérifier » ; NONE → aucun badge. */
+    private fun setBadge(v: android.widget.TextView, c: ScanConfidence) {
+        val ctx = v.context
+        when (c) {
+            ScanConfidence.NONE -> { v.visibility = android.view.View.GONE; return }
+            ScanConfidence.HIGH -> {
+                v.text = "Vérifié"
+                v.setTextColor(ContextCompat.getColor(ctx, R.color.v2_positive))
+                v.backgroundTintList = ContextCompat.getColorStateList(ctx, R.color.v2_positive_12)
+                v.contentDescription = "Lu sur le ticket : vérifié"
+            }
+            else -> {
+                v.text = "À vérifier"
+                v.setTextColor(ContextCompat.getColor(ctx, R.color.v2_attention))
+                v.backgroundTintList = ContextCompat.getColorStateList(ctx, R.color.v2_attention_12)
+                v.contentDescription = "Lu sur le ticket : à vérifier"
+            }
+        }
+        v.visibility = android.view.View.VISIBLE
     }
 
     fun read() = Values(
@@ -112,11 +165,14 @@ class TicketFormController(
             .setTitle("Catégorie")
             .setSingleChoiceItems(labels, checked) { d, which ->
                 d.dismiss()
+                b.tvCategorySuggested.visibility = android.view.View.GONE
                 if (which == items.size) pickCustomCategory() else { category = items[which]; render() }
             }
             .setNegativeButton("Fermer", null)
         if (category.isNotEmpty()) {
-            builder.setPositiveButton("Effacer") { _, _ -> category = ""; render() }
+            builder.setPositiveButton("Effacer") { _, _ ->
+                category = ""; b.tvCategorySuggested.visibility = android.view.View.GONE; render()
+            }
         }
         builder.show()
     }

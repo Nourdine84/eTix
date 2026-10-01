@@ -241,4 +241,21 @@ class E2eClavierPetitEcranTest {
         startMain()
         AccueilBudgetE2e.checkTrend("k06_accueil_tendance_${passe}")
     }
+
+    /** Lot 9 : écran d'accueil du scanner — tous les boutons atteignables sur petit écran / grande police. */
+    @Test
+    fun k07_scan_intro() {
+        startMain()
+        onView(withId(R.id.menu_add)).perform(click())
+        waitFor(withId(R.id.inputStore))
+        onView(allOf(withId(R.id.btnScanTicket), isDisplayed())).perform(click())
+        waitFor(withId(R.id.btnTakePhoto))
+        shot("k07_scan_intro_${passe}")
+        for (id in listOf(R.id.btnTakePhoto, R.id.btnPickImage, R.id.btnScanCancel)) {
+            onView(withId(id)).perform(androidx.test.espresso.action.ViewActions.scrollTo())
+                .check(androidx.test.espresso.assertion.ViewAssertions.matches(isDisplayed()))
+        }
+        onView(withId(R.id.btnScanCancel)).perform(click())
+        waitFor(withId(R.id.inputStore))
+    }
 }

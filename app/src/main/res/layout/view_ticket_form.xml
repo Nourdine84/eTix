@@ -15,7 +15,14 @@
         android:orientation="vertical"
         android:padding="20dp">
 
-        <TextView style="@style/V2.FieldLabel" android:labelFor="@id/inputStore" android:text="MAGASIN" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+            <TextView style="@style/V2.FieldLabel" android:layout_width="0dp" android:layout_weight="1" android:labelFor="@id/inputStore" android:text="MAGASIN" />
+            <TextView android:id="@+id/badgeStore" style="@style/V2.ScanBadge" />
+        </LinearLayout>
         <EditText
             android:id="@+id/inputStore"
             style="@style/V2.FieldInput"
@@ -26,7 +33,14 @@
 
         <View style="@style/V2.FieldDivider" />
 
-        <TextView style="@style/V2.FieldLabel" android:labelFor="@id/inputAmount" android:text="MONTANT" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+            <TextView style="@style/V2.FieldLabel" android:layout_width="0dp" android:layout_weight="1" android:labelFor="@id/inputAmount" android:text="MONTANT" />
+            <TextView android:id="@+id/badgeAmount" style="@style/V2.ScanBadge" />
+        </LinearLayout>
         <!-- digits : accepte « , » ET « . » quelle que soit la langue du clavier (numberDecimal seul refuse
              la virgule selon la locale / la version d'Android) -->
         <EditText
@@ -40,7 +54,14 @@
 
         <View style="@style/V2.FieldDivider" />
 
-        <TextView style="@style/V2.FieldLabel" android:text="DATE" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+            <TextView style="@style/V2.FieldLabel" android:layout_width="0dp" android:layout_weight="1" android:text="DATE" />
+            <TextView android:id="@+id/badgeDate" style="@style/V2.ScanBadge" />
+        </LinearLayout>
         <TextView
             android:id="@+id/inputDate"
             style="@style/V2.FieldInput"
@@ -61,7 +82,22 @@
             android:minHeight="48dp"
             android:orientation="vertical">
 
-            <TextView style="@style/V2.FieldLabel" android:text="CATÉGORIE" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+                <TextView style="@style/V2.FieldLabel" android:layout_width="0dp" android:layout_weight="1" android:text="CATÉGORIE" />
+                <!-- iOS : « Suggéré par l'OCR » quand la catégorie vient du scan -->
+                <TextView
+                    android:id="@+id/tvCategorySuggested"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Suggéré par l'OCR"
+                    android:textColor="@color/v2_primary_75"
+                    android:textSize="11sp"
+                    android:visibility="gone" />
+            </LinearLayout>
 
             <LinearLayout
                 android:layout_width="match_parent"

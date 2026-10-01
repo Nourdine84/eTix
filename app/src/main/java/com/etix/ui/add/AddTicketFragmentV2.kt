@@ -1,6 +1,5 @@
 package com.etix.ui.add
 
-import android.os.Build
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -15,8 +14,12 @@ import androidx.lifecycle.repeatOnLifecycle
 import com.etix.data.AppDatabase
 import com.etix.data.TicketRepository
 import com.etix.databinding.FragmentAddTicketV2Binding
-import com.etix.features.ocr.OCRKeys
-import com.etix.features.ocr.model.OCRResult
+import com.etix.features.ocr.engine.OCRCategoryGuesser
+import com.etix.features.ocr.scan.ScanCategoryResolver
+import com.etix.features.ocr.scan.ScanConfidence
+import com.etix.ui.main.MainActivityV2
+import com.etix.ui.scan.ScanFlowFragment
+import kotlinx.coroutines.flow.first
 import com.etix.model.Ticket
 import com.etix.ui.ticket.TicketFormController
 import kotlinx.coroutines.launch
@@ -25,6 +28,8 @@ import kotlinx.coroutines.launch
  * Ajouter un ticket — référence iOS AddTicketView : magasin, montant, date, catégorie, description.
  * Validation iOS : magasin non vide + montant > 0 (virgule acceptée). Après enregistrement : formulaire
  * réinitialisé, on reste sur l'écran (décision produit iOS, ROADMAP « retour Home différé »).
+ * Lot 9 : « Scanner un ticket » ouvre le parcours de scan ; son résultat préremplit ce formulaire (badges de
+ * confiance iOS) sans rien enregistrer ; « Annuler le scan » vide le formulaire.
  */
 class AddTicketFragmentV2 : Fragment() {
 
@@ -59,16 +64,38 @@ class AddTicketFragmentV2 : Fragment() {
             override fun afterTextChanged(s: Editable?) {}
         })
 
-        // 📥 OCR (flux non branché ; conservé pour le lot OCR)
-        parentFragmentManager.setFragmentResultListener(OCRKeys.REQUEST_KEY, viewLifecycleOwner) { _, bundle ->
-            @Suppress("DEPRECATION")
-            val result = if (Build.VERSION.SDK_INT >= 33) bundle.getParcelable(OCRKeys.RESULT_BUNDLE, OCRResult::class.java)
-                         else bundle.getParcelable(OCRKeys.RESULT_BUNDLE)
-            result?.merchant?.let { binding.form.inputStore.setText(it) }
-            result?.amount?.let { binding.form.inputAmount.setText(it.toString().replace('.', ',')) }
+        // Lot 9 : résultat du scan → formulaire prérempli, à vérifier ; rien n'est enregistré sans « Enregistrer »
+        parentFragmentManager.setFragmentResultListener(ScanFlowFragment.RESULT_KEY, viewLifecycleOwner) { _, bundle ->
+            applyScan(bundle)
         }
+        binding.btnScanTicket.setOnClickListener { (activity as? MainActivityV2)?.openScanFlow() }
+        binding.btnDiscardScan.setOnClickListener {
+            form.reset()
+            binding.scanBanner.visibility = View.GONE
+        }
+        if (savedInstanceState?.getBoolean(KEY_SCAN_BANNER) == true) binding.scanBanner.visibility = View.VISIBLE
 
         binding.btnSaveTicket.setOnClickListener { save() }
+    }
+
+    private fun applyScan(bundle: Bundle) {
+        fun conf(key: String) = runCatching { ScanConfidence.valueOf(bundle.getString(key).orEmpty()) }
+            .getOrDefault(ScanConfidence.NONE)
+        val store = bundle.getString("store")
+        val amount = if (bundle.get("amount") != null) bundle.getDouble("amount") else null
+        val date = if (bundle.get("date") != null) bundle.getLong("date") else null
+        val ocrCategory = bundle.getString("category")
+        viewLifecycleOwner.lifecycleScope.launch {
+            // iOS StoreCategoryMapper : historique du magasin (lecture seule), puis catégorie lue par l'OCR
+            val existing = repository.getAllFlow().first()
+            val suggestion = ScanCategoryResolver.resolve(store,
+                ocrCategory?.let { OCRCategoryGuesser.Guess(it, OCRCategoryGuesser.Source.STORE_DICTIONARY) }, existing)
+            if (_binding == null) return@launch
+            form.applyScan(store, conf("storeConf"), amount, conf("amountConf"), date, conf("dateConf"),
+                suggestion?.category, suggestion?.showBadge ?: false)
+            binding.scanBanner.visibility = View.VISIBLE
+            binding.scrollViewAdd.scrollTo(0, 0)
+        }
     }
 
     private fun save() {
@@ -84,6 +111,7 @@ class AddTicketFragmentV2 : Fragment() {
             repository.insert(ticket)
             Toast.makeText(requireContext(), "Ticket enregistré", Toast.LENGTH_SHORT).show()
             form.reset()
+            binding.scanBanner.visibility = View.GONE
         }
     }
 
@@ -92,6 +120,7 @@ class AddTicketFragmentV2 : Fragment() {
         if (::form.isInitialized && _binding != null) {
             outState.putLong(KEY_DATE, form.dateMillis)
             outState.putString(KEY_CATEGORY, form.category)
+            outState.putBoolean(KEY_SCAN_BANNER, binding.scanBanner.visibility == View.VISIBLE)
         }
     }
 
@@ -103,5 +132,6 @@ class AddTicketFragmentV2 : Fragment() {
     companion object {
         private const val KEY_DATE = "add_date"
         private const val KEY_CATEGORY = "add_category"
+        private const val KEY_SCAN_BANNER = "add_scan_banner"
     }
 }

@@ -9,6 +9,32 @@
         <item name="android:textSize">11sp</item>
     </style>
 
+    <!-- Badge de confiance après un scan (iOS : « Vérifié » vert, « À vérifier » orange) ; masqué par défaut -->
+    <style name="V2.ScanBadge" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/bg_v2_capsule</item>
+        <item name="android:paddingStart">7dp</item>
+        <item name="android:paddingEnd">7dp</item>
+        <item name="android:paddingTop">2dp</item>
+        <item name="android:paddingBottom">2dp</item>
+        <item name="android:textSize">10sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:visibility">gone</item>
+    </style>
+
+    <!-- Étape de lecture (iOS OCRProcessingView) -->
+    <style name="V2.ScanStep" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">10dp</item>
+        <item name="android:drawablePadding">10dp</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:textColor">@color/v2_text_secondary</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+
     <style name="V2.FieldInput" parent="">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>

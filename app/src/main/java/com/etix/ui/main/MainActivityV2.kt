@@ -123,6 +123,15 @@ class MainActivityV2 : AppCompatActivity() {
         push(com.etix.ui.budget.BudgetEditFragment.newInstance(category), BACKSTACK_BUDGET_EDIT)
     }
 
+    /**
+     * Lot 9 : parcours de scan (iOS ScannerFlowView), au-dessus de l'onglet « Ajouter » qui reçoit le résultat.
+     * Depuis l'Accueil (iOS : CTA « Scanner un ticket » → AddTicketView avec scanner ouvert).
+     */
+    fun openScanFlow() {
+        if (viewPager.currentItem != PAGE_ADD) goToPage(PAGE_ADD)
+        push(com.etix.ui.scan.ScanFlowFragment(), BACKSTACK_SCAN)
+    }
+
     fun openStoreDetail(storeKey: String) {
         push(StoreDetailFragment.newInstance(storeKey), BACKSTACK_STORE)
     }
@@ -183,5 +192,6 @@ class MainActivityV2 : AppCompatActivity() {
         private const val BACKSTACK_CATEGORY = "category_detail"
         private const val BACKSTACK_BUDGETS = "budget_settings"
         private const val BACKSTACK_BUDGET_EDIT = "budget_edit"
+        private const val BACKSTACK_SCAN = "scan_flow"
     }
 }

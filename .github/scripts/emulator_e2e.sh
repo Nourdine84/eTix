@@ -160,5 +160,8 @@ run com.etix.e2e.E2eAccueilBudgetTest
 # Compatibilité : lecteur de dates OCR exécuté sur l'appareil (logique pure, aucune donnée touchée)
 run com.etix.e2e.E2eCompatDatesOcrTest
 
+# Phase H : lot 9 (parcours de scan, ML Kit réel ; appareil photo et sélecteur d'image simulés)
+run com.etix.e2e.E2eScanTest
+
 collect
 exit 0

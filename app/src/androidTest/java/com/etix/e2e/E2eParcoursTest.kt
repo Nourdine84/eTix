@@ -75,11 +75,12 @@ class E2eParcoursTest {
     @Test
     fun a02_etats_vides_et_actions_indisponibles() {
         startMain()
-        onView(shown(R.id.btnScanTicket)).check(matches(not(isEnabled())))
+        // Lot 9 : scanner branché (parcours vérifié par E2eScanTest)
+        onView(shown(R.id.btnScanTicket)).check(matches(isEnabled()))
 
         tab(R.id.menu_add)
         waitFor(withId(R.id.inputStore))
-        onView(shown(R.id.btnScanTicket)).check(matches(not(isEnabled())))
+        onView(shown(R.id.btnScanTicket)).check(matches(isEnabled()))
         shot("04_ajouter_vide")
 
         tab(R.id.menu_history)

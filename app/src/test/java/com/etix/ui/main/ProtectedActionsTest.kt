@@ -10,6 +10,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -19,7 +20,7 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
 /**
- * Lot 3 — actions non disponibles : visibles mais désactivées, et sans effet.
+ * Lot 3 — actions non disponibles : visibles mais désactivées, et sans effet (scanner : branché au lot 9).
  * Garde-fou : aucune suppression globale branchée.
  */
 @RunWith(RobolectricTestRunner::class)
@@ -60,12 +61,19 @@ class ProtectedActionsTest {
         assertEquals(2, ticketCount())
     }
 
+    /** Lot 9 : scanner branché (décision produit) — ouvrir puis annuler le parcours ne crée aucun ticket. */
     @Test
-    fun scan_buttons_are_disabled_everywhere() {
+    fun scan_buttons_open_the_scan_flow_without_creating_tickets() {
         val a = Robolectric.buildActivity(MainActivityV2::class.java).setup().get(); idle()
         val home = a.supportFragmentManager.findFragmentByTag("f0")!!.requireView()
-        assertFalse(home.findViewById<View>(R.id.btnScanTicket).isEnabled)
+        assertTrue(home.findViewById<View>(R.id.btnScanTicket).isEnabled)
+        home.findViewById<View>(R.id.btnScanTicket).performClick(); idle()
+        assertTrue(a.supportFragmentManager.findFragmentById(R.id.overlayContainer) is com.etix.ui.scan.ScanFlowFragment)
+        assertEquals(MainActivityV2.PAGE_ADD, a.findViewById<androidx.viewpager2.widget.ViewPager2>(R.id.viewPager).currentItem)
+        a.findViewById<View>(R.id.btnScanCancel).performClick(); idle()
+        assertEquals(null, a.supportFragmentManager.findFragmentById(R.id.overlayContainer))
         val add = a.supportFragmentManager.findFragmentByTag("f1")!!.requireView()
-        assertFalse(add.findViewById<View>(R.id.btnScanTicket).isEnabled)
+        assertTrue(add.findViewById<View>(R.id.btnScanTicket).isEnabled)
+        assertEquals(2, ticketCount())
     }
 }
