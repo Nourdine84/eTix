@@ -3,6 +3,7 @@
 # Ne touche à aucun appareil réel. Signature : clé de développement du runner (build réservé aux tests).
 # MODE=standard (défaut) : parcours complet + mise à jour A→B + isolation QA + persistance + lot 4 + Catégories
 # MODE=fr : émulateur en français, tests de locale (saisie, dates, filtres inclusifs, limites de période)
+# MODE=petit : petit écran / grande police ; MODE=compat : lecteur de dates OCR seul (API 22 à 25)
 set -u
 MODE="${MODE:-standard}"
 
@@ -68,6 +69,7 @@ run() { # $1 = classe de test, $2 = suffixe/passe facultatif (limite 12 min par 
   timeout 20 adb shell wm dismiss-keyguard >/dev/null 2>&1 || true
   timeout 20 adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS >/dev/null 2>&1 || true
   [ -n "${2:-}" ] && { extra="-e passe $2"; suf="_$2"; }
+  echo "$1 ${2:-}" >> "$OUT/expected_runs.txt"   # attendu, comparé aux résultats par emu_report.py
   T 720 adb shell am instrument -w -r $extra -e class "$1" com.etix.test/androidx.test.runner.AndroidJUnitRunner > "$OUT/instr_$(basename "${1//./_}")$suf.txt" 2>&1
   timeout 20 adb shell am force-stop com.etix.test >/dev/null 2>&1 || true
   # Plantage natif (signal) : lignes fatales du journal relevées tout de suite (tampon limité sur API 21)
@@ -83,6 +85,13 @@ collect() {
   timeout 120 adb logcat -d > "$OUT/logcat.txt" 2>&1 || true
   grep -n -A25 "FATAL EXCEPTION" "$OUT/logcat.txt" > "$OUT/crashes.txt" || true
 }
+
+if [ "$MODE" = "compat" ]; then
+  # Compatibilité ciblée (API 22 à 25) : lecteur de dates OCR seulement, logique pure, aucune donnée touchée
+  run com.etix.e2e.E2eCompatDatesOcrTest
+  collect
+  exit 0
+fi
 
 if [ "$MODE" = "petit" ]; then
   # Petit écran + grande police, clavier ouvert. Passes : a = 360x640 dp police 1,3 ; b = 360x640 dp police 2,0 ;

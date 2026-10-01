@@ -62,6 +62,19 @@ jobs:
           [ "${{ steps.signing.outputs.ready }}" = "true" ] && TASKS="$TASKS assembleQa"
           ./gradlew $TASKS --console=plain -Dorg.gradle.java.home="$JAVA_HOME" 2>&1 | tee build.log
 
+      # Version livrable : APK construit SANS les propriétés de test (etixVersionCodeOffset / etixVersionNameSuffix),
+      # identique aux valeurs de app/build.gradle.kts. Le build « B » (+1, « -maj ») n'existe que dans les jobs émulateur.
+      - name: Version livrable (contrôle)
+        run: |
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          B=$("$BT/aapt2" dump badging app/build/outputs/apk/debug/app-debug.apk | head -1)
+          CODE=$(echo "$B" | grep -oP "versionCode='\K[^']+"); NAME=$(echo "$B" | grep -oP "versionName='\K[^']+")
+          WCODE=$(grep -oP 'versionCode = \K[0-9]+(?= \+ versionOffset)' app/build.gradle.kts)
+          WNAME=$(grep -oP 'versionName = "\K[^"]+(?=" \+)' app/build.gradle.kts)
+          MSG="APK debug : versionCode=$CODE versionName=$NAME ; app/build.gradle.kts : versionCode=$WCODE versionName=$WNAME"
+          if [ "$CODE" = "$WCODE" ] && [ "$NAME" = "$WNAME" ]; then echo "::notice title=Version livrable::$MSG"
+          else echo "::error title=Version livrable::$MSG"; exit 1; fi
+
       # Contrôles de l'APK QA : package, version, empreinte complète du certificat
       - name: Inspect QA APK
         id: qa
@@ -202,8 +215,18 @@ jobs:
                       state = "SKIP"
                   rows.append(f"{state} {tc.get('classname').split('.')[-1]}.{tc.get('name')} ({tc.get('time')}s)")
           from collections import Counter
+          import re as _re
           c = Counter(r.split(" ", 1)[0] for r in rows)
-          print(f"::notice title=Bilan tests JVM::{c['PASS']} réussis, {c['FAIL']} échecs, {c['SKIP']} désactivés, {len(rows)} au total")
+          declared = sum(len(_re.findall(r"@Test\b", open(p, errors="replace").read()))
+                         for p in glob.glob("app/src/test/**/*.kt", recursive=True))
+          skipped = [r.split(" ", 1)[1].split(" (")[0] for r in rows if r.startswith("SKIP")]
+          level = "notice" if (declared == len(rows) and c["FAIL"] == 0) else "error"
+          print(f"::{level} title=Bilan tests JVM::@Test déclarés dans les sources : {declared} ; découverts par Gradle : {len(rows)} ; "
+                f"exécutés : {c['PASS'] + c['FAIL']} (réussis {c['PASS']}, échecs {c['FAIL']}) ; ignorés (@Ignore) : {c['SKIP']}%0A"
+                + "%0A".join("ignoré : " + n for n in skipped))
+          if declared != len(rows):
+              print(f"::error title=Tests JVM non découverts::{declared} @Test déclarés, {len(rows)} découverts")
+              raise SystemExit(1)
           # Détail par classe (une annotation par classe : limite de 4096 caractères par annotation)
           by = {}
           for r in rows:
@@ -325,14 +348,12 @@ jobs:
           path: emu-out/
           if-no-files-found: ignore
 
-      # Verdict : le job échoue si un test a échoué, si aucun résultat n'a été produit ou en cas de plantage
-      # (les résultats et captures sont déjà publiés par les étapes précédentes).
+      # Verdict : le job échoue si un test a échoué, si un résultat attendu manque (nombre de tests réussis
+      # différent des @Test déclarés), en cas de plantage, de délai dépassé ou de mise à jour A→B non conforme.
+      # Mécanisme éprouvé par le job verdict-autotest (scénarios synthétiques).
       - name: Verdict tests émulateur
         if: always()
-        run: |
-          V=$(cat emu-out/verdict.txt 2>/dev/null || echo "ABSENT")
-          echo "verdict: $V"
-          [ "$V" = "OK" ] || { echo "::error title=Verdict émulateur (api34)::$V"; exit 1; }
+        run: bash .github/scripts/emu_verdict.sh emu-out "api34"
 
   preview-emu-api34:
     needs: emulator-api34
@@ -436,14 +457,12 @@ jobs:
           path: emu-out/
           if-no-files-found: ignore
 
-      # Verdict : le job échoue si un test a échoué, si aucun résultat n'a été produit ou en cas de plantage
-      # (les résultats et captures sont déjà publiés par les étapes précédentes).
+      # Verdict : le job échoue si un test a échoué, si un résultat attendu manque (nombre de tests réussis
+      # différent des @Test déclarés), en cas de plantage, de délai dépassé ou de mise à jour A→B non conforme.
+      # Mécanisme éprouvé par le job verdict-autotest (scénarios synthétiques).
       - name: Verdict tests émulateur
         if: always()
-        run: |
-          V=$(cat emu-out/verdict.txt 2>/dev/null || echo "ABSENT")
-          echo "verdict: $V"
-          [ "$V" = "OK" ] || { echo "::error title=Verdict émulateur (api36)::$V"; exit 1; }
+        run: bash .github/scripts/emu_verdict.sh emu-out "api36"
 
   preview-emu-api36:
     needs: emulator-api36
@@ -547,14 +566,12 @@ jobs:
           path: emu-out/
           if-no-files-found: ignore
 
-      # Verdict : le job échoue si un test a échoué, si aucun résultat n'a été produit ou en cas de plantage
-      # (les résultats et captures sont déjà publiés par les étapes précédentes).
+      # Verdict : le job échoue si un test a échoué, si un résultat attendu manque (nombre de tests réussis
+      # différent des @Test déclarés), en cas de plantage, de délai dépassé ou de mise à jour A→B non conforme.
+      # Mécanisme éprouvé par le job verdict-autotest (scénarios synthétiques).
       - name: Verdict tests émulateur
         if: always()
-        run: |
-          V=$(cat emu-out/verdict.txt 2>/dev/null || echo "ABSENT")
-          echo "verdict: $V"
-          [ "$V" = "OK" ] || { echo "::error title=Verdict émulateur (api21)::$V"; exit 1; }
+        run: bash .github/scripts/emu_verdict.sh emu-out "api21"
 
   preview-emu-api21:
     needs: emulator-api21
@@ -658,14 +675,12 @@ jobs:
           path: emu-out/
           if-no-files-found: ignore
 
-      # Verdict : le job échoue si un test a échoué, si aucun résultat n'a été produit ou en cas de plantage
-      # (les résultats et captures sont déjà publiés par les étapes précédentes).
+      # Verdict : le job échoue si un test a échoué, si un résultat attendu manque (nombre de tests réussis
+      # différent des @Test déclarés), en cas de plantage, de délai dépassé ou de mise à jour A→B non conforme.
+      # Mécanisme éprouvé par le job verdict-autotest (scénarios synthétiques).
       - name: Verdict tests émulateur
         if: always()
-        run: |
-          V=$(cat emu-out/verdict.txt 2>/dev/null || echo "ABSENT")
-          echo "verdict: $V"
-          [ "$V" = "OK" ] || { echo "::error title=Verdict émulateur (api34-fr)::$V"; exit 1; }
+        run: bash .github/scripts/emu_verdict.sh emu-out "api34-fr"
 
   preview-emu-api34-fr:
     needs: emulator-api34-fr
@@ -770,14 +785,12 @@ jobs:
           path: emu-out/
           if-no-files-found: ignore
 
-      # Verdict : le job échoue si un test a échoué, si aucun résultat n'a été produit ou en cas de plantage
-      # (les résultats et captures sont déjà publiés par les étapes précédentes).
+      # Verdict : le job échoue si un test a échoué, si un résultat attendu manque (nombre de tests réussis
+      # différent des @Test déclarés), en cas de plantage, de délai dépassé ou de mise à jour A→B non conforme.
+      # Mécanisme éprouvé par le job verdict-autotest (scénarios synthétiques).
       - name: Verdict tests émulateur
         if: always()
-        run: |
-          V=$(cat emu-out/verdict.txt 2>/dev/null || echo "ABSENT")
-          echo "verdict: $V"
-          [ "$V" = "OK" ] || { echo "::error title=Verdict émulateur (api36-petit)::$V"; exit 1; }
+        run: bash .github/scripts/emu_verdict.sh emu-out "api36-petit"
 
   preview-emu-api36-petit:
     needs: emulator-api36-petit
@@ -809,6 +822,82 @@ jobs:
           fi
 
   # Aperçu : une capture par job (limites d'annotations GitHub), lisible via l'API checks
+  # Auto-test du verdict des jobs émulateur : scénarios synthétiques (test en échec, résultat absent, aucun test,
+  # test manquant, plantage Java, plantage natif, délai dépassé, rapport absent) passés par la vraie chaîne
+  # emu_report.py → emu_verdict.sh. Réussit si chaque scénario donne le code attendu (aucun échec volontaire laissé).
+  verdict-autotest:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+      - name: Scénarios du verdict
+        run: bash .github/scripts/test_emu_verdict.sh
+
+  # Compatibilité ciblée Android 5.1 à 7.1 (API 22 à 25) : lecteur de dates OCR seul (logique pure)
+  emulator-compat-dates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        api: [22, 23, 24, 25]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Build APKs (app, tests)
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug assembleDebugAndroidTest --console=plain -Dorg.gradle.java.home=$JAVA_HOME
+          mkdir -p dist emu-out && cp app/build/outputs/apk/debug/app-debug.apk dist/app-A.apk
+
+      - name: Run date reader on emulator API ${{ matrix.api }}
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          MODE: compat
+        with:
+          api-level: ${{ matrix.api }}
+          target: default
+          arch: x86
+          emulator-boot-timeout: 900
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -no-snapshot
+          script: bash .github/scripts/emulator_e2e.sh
+
+      - name: Report
+        if: always()
+        run: python3 .github/scripts/emu_report.py emu-out "API ${{ matrix.api }}"
+
+      - name: Upload emulator results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: emulator-compat-api${{ matrix.api }}
+          path: emu-out/
+          if-no-files-found: ignore
+
+      - name: Verdict tests émulateur
+        if: always()
+        run: bash .github/scripts/emu_verdict.sh emu-out "API ${{ matrix.api }} dates"
+
   preview:
     needs: build
     if: always() && needs.build.outputs.shots != '' && needs.build.outputs.shots != '[]'
