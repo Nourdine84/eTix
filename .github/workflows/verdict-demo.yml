@@ -1,0 +1,32 @@
+# Démonstration isolée (branche demo/ci-verdict uniquement, jamais proposée à la fusion) :
+# chaque scénario passe par les étapes réelles des jobs émulateur (Report puis Verdict), SANS inversion.
+# Attendu : job « ok » vert, tous les autres jobs rouges.
+name: Démonstration du verdict émulateur
+
+on:
+  push:
+    branches: [ "demo/**" ]
+
+jobs:
+  scenario:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        scenario: [ok, test_en_echec, resultat_absent_fichier, resultat_absent_vide, aucun_test_execute, plantage_java, plantage_natif]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+      - name: Résultats synthétiques (${{ matrix.scenario }})
+        run: python3 .github/scripts/emu_verdict_scenarios.py gen ${{ matrix.scenario }} demo
+      - name: Report
+        if: always()
+        env:
+          ANDROID_TEST_SRC: demo/src
+        run: python3 .github/scripts/emu_report.py demo/emu-out "${{ matrix.scenario }}"
+      - name: Verdict tests émulateur
+        if: always()
+        run: bash .github/scripts/emu_verdict.sh demo/emu-out "${{ matrix.scenario }}"
