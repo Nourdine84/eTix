@@ -173,7 +173,8 @@ class Lot9ScanTest {
         assertEquals("ESSO", t.store); assertEquals(23.40, t.amount, 0.001); assertEquals("Carburant", t.category)
         val c = Calendar.getInstance().apply { timeInMillis = t.dateMillis }
         assertEquals(12, c.get(Calendar.DAY_OF_MONTH)); assertEquals(Calendar.JANUARY, c.get(Calendar.MONTH))
-        assertTrue(!a.visible(R.id.scanBanner))
+        // le bandeau disparaît quand l'écran a repris la main après l'insertion (coroutine de l'écran)
+        waitFor { !a.visible(R.id.scanBanner) && a.text(R.id.inputStore).isEmpty() }
     }
 
     /** iOS StoreCategoryMapper : l'historique du magasin passe avant le dictionnaire ; rien n'est reclassé. */
