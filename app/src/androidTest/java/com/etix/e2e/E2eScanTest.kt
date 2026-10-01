@@ -15,6 +15,7 @@ import android.provider.MediaStore
 import androidx.core.content.FileProvider
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.Espresso.pressBack
+import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.replaceText
 import androidx.test.espresso.action.ViewActions.scrollTo
@@ -110,9 +111,12 @@ class E2eScanTest {
     /** Formulaire « Ajouter » prérempli par le scan (ML Kit réel), en 60 s maximum (1re initialisation ML Kit). */
     private fun waitForPrefill() {
         waitFor(allOf(withId(R.id.scanBanner), isDisplayed()), 60_000)
-        onView(allOf(withId(R.id.inputStore), isDisplayed())).check { v, _ -> assertEquals("ESSO", (v as android.widget.EditText).text.toString()) }
-        onView(allOf(withId(R.id.inputAmount), isDisplayed())).check { v, _ -> assertEquals("23,45", (v as android.widget.EditText).text.toString()) }
-        onView(allOf(withId(R.id.tvCategoryValue), isDisplayed())).check { v, _ -> assertEquals("Carburant", (v as android.widget.TextView).text.toString()) }
+        // Le formulaire n'existe que sur la page « Ajouter » : identifiants uniques, sans exiger l'affichage
+        // (la catégorie peut être sous le bord de l'écran)
+        onView(withId(R.id.inputStore)).check(matches(withText("ESSO")))
+        onView(withId(R.id.inputAmount)).check(matches(withText("23,45")))
+        onView(withId(R.id.tvCategoryValue)).check(matches(withText("Carburant")))
+        onView(withId(R.id.badgeAmount)).check(matches(withText("Vérifié")))
     }
 
     @Before fun setUp() {
