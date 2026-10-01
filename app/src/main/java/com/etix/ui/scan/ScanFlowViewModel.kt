@@ -63,11 +63,15 @@ class ScanFlowViewModel(app: Application, private val saved: SavedStateHandle) :
             } catch (e: CancellationException) {
                 throw e
             } catch (e: ScanImageLoader.UnreadableImage) {
-                _step.value = ScanStep.Failed(ScanStep.Reason.UNREADABLE_IMAGE)
+                fail("image illisible", e, ScanStep.Reason.UNREADABLE_IMAGE)
+            } catch (e: java.io.IOException) {          // fichier absent, accès refusé par l'application source
+                fail("image inaccessible", e, ScanStep.Reason.UNREADABLE_IMAGE)
+            } catch (e: SecurityException) {
+                fail("image inaccessible", e, ScanStep.Reason.UNREADABLE_IMAGE)
             } catch (e: OutOfMemoryError) {
-                _step.value = ScanStep.Failed(ScanStep.Reason.UNREADABLE_IMAGE)
+                fail("image trop lourde", e, ScanStep.Reason.UNREADABLE_IMAGE)
             } catch (e: Exception) {
-                _step.value = ScanStep.Failed(ScanStep.Reason.RECOGNITION_ERROR)
+                fail("reconnaissance", e, ScanStep.Reason.RECOGNITION_ERROR)
             } finally {
                 // Photo temporaire (cache de l'app) : supprimée après lecture. Une image choisie n'est jamais touchée.
                 if (deleteAfter) withContext(Dispatchers.IO + kotlinx.coroutines.NonCancellable) {
@@ -75,6 +79,12 @@ class ScanFlowViewModel(app: Application, private val saved: SavedStateHandle) :
                 }
             }
         }
+    }
+
+    /** Échec consigné dans le journal (diagnostic, sans le contenu du ticket) puis affiché. */
+    private fun fail(what: String, e: Throwable, reason: ScanStep.Reason) {
+        android.util.Log.w("eTixScan", "échec du scan ($what) : ${e.javaClass.simpleName}")
+        _step.value = ScanStep.Failed(reason)
     }
 
     /** Le résultat a été remis au formulaire : ne pas le remettre une 2e fois (rotation). */

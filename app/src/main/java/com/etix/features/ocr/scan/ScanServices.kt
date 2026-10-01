@@ -42,8 +42,9 @@ object ScanImageLoader {
     fun load(context: Context, uri: Uri, maxSide: Int = 2048): Bitmap {
         val resolver = context.contentResolver
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        resolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, bounds) }
-            ?: throw UnreadableImage("image introuvable")
+        // decodeStream renvoie null en mode « bornes seules » : seule l'absence de flux signifie « introuvable »
+        val stream = resolver.openInputStream(uri) ?: throw UnreadableImage("image introuvable")
+        stream.use { BitmapFactory.decodeStream(it, null, bounds) }
         if (bounds.outWidth <= 0 || bounds.outHeight <= 0) throw UnreadableImage("format d'image non reconnu")
         var sample = 1
         while (maxOf(bounds.outWidth, bounds.outHeight) / (sample * 2) >= maxSide) sample *= 2
