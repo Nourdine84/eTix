@@ -129,9 +129,50 @@ Exemple : run 36887839853 (tentative 1) = **315 jobs**, dont **11 jobs de test**
 4 jobs `emulator-compat-dates`, `verdict-autotest`) et **304 jobs `preview`** qui publient chacun une capture
 en annotation (85 Robolectric, 219 émulateur). Le nombre de jobs n'est pas un nombre de tests.
 
+## 6. Aperçus à la demande (branche `chore/ci-apercus-a-la-demande`, PR #77)
+
+- Les captures complètes restent publiées à chaque run en artefacts, avant le verdict et même en cas d'échec :
+  `screenshots` (Robolectric) et `emulator-*` (émulateur, avec les résultats bruts des tests), conservés 30 jours.
+  Une annotation par job indique le nombre de captures et l'artefact.
+- Les aperçus en annotations (lisibles via l'API, 4 captures par job) ne sont produits que si la PR porte le
+  label **`apercus`**. Poser le label après l'ouverture relance le workflow (événement `labeled`), sans commit ;
+  tant que le label reste posé, chaque nouveau push de la PR produit aussi les aperçus. Les autres labels ne
+  lancent aucun job. Les runs de `push` n'en produisent jamais.
+- Captures d'échec (`zz_echec`) : toujours publiées par le job de test lui-même, avec ou sans label.
+- Inchangés : tests, verdict, auto-tests, permissions (`contents: read`).
+- **Revue visuelle** : pour toute modification d'interface, poser `apercus` et examiner les aperçus concernés avant
+  de déclarer la revue visuelle effectuée.
+- Relance d'un seul job : les aperçus restent consultables dans la tentative d'origine (les jobs recopiés dans la
+  nouvelle tentative n'ont pas d'annotations).
+
+Mesures (commit `ebe9cd7`) :
+
+| Parcours | Run | Jobs exécutés | Captures publiées en annotations |
+|---|---|---|---|
+| Avant (PR #76, `9926185`) | 36890321511 | 315 (11 de test + 304 d'aperçu) | 304 |
+| PR ouverte, sans label | [36895506486](https://github.com/Nourdine84/eTix/actions/runs/36895506486) | **11** (+ 6 aperçus ignorés) | 0 (captures en artefacts) |
+| Push de la branche | [36895485490](https://github.com/Nourdine84/eTix/actions/runs/36895485490) | **11** (+ 6 ignorés) | 0 |
+| Label « QA » ajouté | [36895560872](https://github.com/Nourdine84/eTix/actions/runs/36895560872) | **0** (14 ignorés) | 0 |
+| Label `apercus` ajouté après l'ouverture | [36895642561](https://github.com/Nourdine84/eTix/actions/runs/36895642561) | **89** (11 de test + 78 d'aperçu) | 304, au plus 42 annotations par job |
+
+Preuves en cas d'échec : run de démonstration [36895728587](https://github.com/Nourdine84/eTix/actions/runs/36895728587)
+(branche `demo/ci-verdict`, `e0aa782`) — les 6 jobs rouges ont leurs annotations et leur artefact (30 jours) ;
+cas réel : `emulator-compat-dates (25)` du run 36895642561, rouge, avec annotations et artefact.
+
+## 7. Suites « Vercel » et « claude » en attente (constat en lecture seule)
+
+Sur chaque commit poussé depuis le premier run (`8dedd75`), GitHub crée une suite de contrôles pour chaque
+application GitHub installée ayant la permission « checks » : **Vercel** (application de l'éditeur Vercel) et
+**Claude** (application GitHub d'Anthropic). Aucune des deux n'a jamais publié de contrôle sur ce dépôt (0 contrôle,
+statut « queued »), aucun déploiement ni statut n'est enregistré. Elles ne bloquent pas les fusions (PR #75 et #76
+« clean »). Origine probable : applications installées sur le compte sans projet Vercel ni workflow Claude
+configuré pour ce dépôt — non vérifiable d'ici (réglages d'installation et protections de branche non lisibles).
+Rien n'a été désactivé ni supprimé.
+
 ## Limites
 
 - Les journaux complets et les artefacts ne sont pas téléchargeables depuis cette session (HTTP 403) ; l'audit
   repose sur les annotations, conservées par GitHub.
-- Échecs d'environnement possibles (installation bloquée API 24, focus perdu au démarrage) : désormais rouges,
-  à relancer et consigner, jamais à ignorer.
+- Échecs d'environnement possibles (focus perdu au démarrage ; installation de l'APK bloquée plus de 300 s sur
+  API 24 une fois et API 25 deux fois le 01/10/2026, cause non établie) : désormais rouges, à relancer et
+  consigner, jamais à ignorer.

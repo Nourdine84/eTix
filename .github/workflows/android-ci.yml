@@ -3,11 +3,16 @@ name: Android CI (PR APK)
 on:
   pull_request:
     branches: [ "dev", "main", "feature/android-v2" ]
+    # « labeled » : poser le label « apercus » sur une PR relance le workflow avec les aperçus (sans commit).
+    # Les autres labels ne lancent aucun job (condition « if » de chaque job).
+    types: [ opened, synchronize, reopened, labeled ]
   push:
     branches: [ "dev", "feature/**", "chore/**", "fix/**" ]
 
 jobs:
   build:
+    # Labels autres que « apercus » : aucun job (tests déjà exécutés à l'ouverture / au push)
+    if: github.event.action != 'labeled' || github.event.label.name == 'apercus'
     runs-on: ubuntu-latest
     # Permissions minimales du GITHUB_TOKEN : lecture du code uniquement
     permissions:
@@ -134,13 +139,14 @@ jobs:
           name: screenshots
           path: app/build/screenshots/
           if-no-files-found: ignore
+          retention-days: 30
 
       - name: List screenshots
         id: shots
         if: always()
         run: |
-          LIST=$(ls app/build/screenshots/*.png 2>/dev/null | xargs -rn1 basename | sed 's/\.png$//' | python3 -c "import sys,json;print(json.dumps([l.strip() for l in sys.stdin if l.strip()]))")
-          echo "list=${LIST:-[]}" >> "$GITHUB_OUTPUT"
+          echo "list=$(python3 .github/scripts/shot_groups.py app/build/screenshots)" >> "$GITHUB_OUTPUT"
+          echo "::notice title=Captures Robolectric::$(ls app/build/screenshots/*.png 2>/dev/null | wc -l) capture(s) dans l'artefact « screenshots » (30 jours). Aperçus en annotations : label « apercus » sur la PR."
 
       - name: Report OCR observation
         if: always()
@@ -276,6 +282,10 @@ jobs:
   # api34-fr : émulateur en français (fr-FR) pour la saisie, les dates et les filtres.
   # ------------------------------------------------------------------
   emulator-api34:
+    # Labels autres que « apercus » : aucun job (tests déjà exécutés à l'ouverture / au push)
+    if: github.event.action != 'labeled' || github.event.label.name == 'apercus'
+    outputs:
+      groups: ${{ steps.groups.outputs.list }}
     runs-on: ubuntu-latest
     timeout-minutes: 85
     permissions:
@@ -347,6 +357,15 @@ jobs:
           name: emulator-api34
           path: emu-out/
           if-no-files-found: ignore
+          retention-days: 30
+
+      # Captures complètes : artefact ci-dessus. Aperçus en annotations (groupes de 4) : label « apercus ».
+      - name: Groupes d'aperçus
+        id: groups
+        if: always()
+        run: |
+          echo "list=$(python3 .github/scripts/shot_groups.py emu-out/shots)" >> "$GITHUB_OUTPUT"
+          echo "::notice title=Captures émulateur (api34)::$(ls emu-out/shots/*.png 2>/dev/null | wc -l) capture(s) dans l'artefact « emulator-api34 » (30 jours). Aperçus en annotations : label « apercus » sur la PR."
 
       # Verdict : le job échoue si un test a échoué, si un résultat attendu manque (nombre de tests réussis
       # différent des @Test déclarés), en cas de plantage, de délai dépassé ou de mise à jour A→B non conforme.
@@ -355,9 +374,10 @@ jobs:
         if: always()
         run: bash .github/scripts/emu_verdict.sh emu-out "api34"
 
+  # Aperçus à la demande : seulement si la PR porte le label « apercus » (4 captures par job).
   preview-emu-api34:
     needs: emulator-api34
-    if: always()
+    if: always() && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'apercus') && needs.emulator-api34.outputs.groups != '' && needs.emulator-api34.outputs.groups != '[]'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -365,7 +385,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        shot: [01_onboarding, 02_connexion, 03_accueil_vide, 04_ajouter_vide, 05_historique_vide, 06_categories_vide, 07_magasins_vide, 08_reglages, 09_ajout_clavier_ouvert, 10_accueil_un_ticket, 11_historique, 12_detail, 13_modification, 14_detail_apres_modification, 15_historique_apres_retour, 16_magasins_mois, 17_magasins_aujourdhui, 18_fiche_magasin, 19_accueil_defile, 20_ajouter_clavier, 21_reglages_sombre, 22_accueil_sombre, 23_historique_sombre, 24_magasins_sombre, 25_ajouter_sombre, 26_reglages_clair, 27_apres_redemarrage, 28_eTixQA_premier_lancement, 30_selecteur_date, 31_selecteur_categorie, 32_ajout_formulaire_complet, 33_historique_sections, 34_historique_recherche, 35_filtre_dates, 36_historique_filtre_actif, 37_modification_prerempli, 37b_dialogue_categorie_edition, 38_detail_apres_modification, 40_categories_mois, 41_categories_annee, 42_categories_aujourdhui, 43_categories_sombre, 44_categories_sombre_lignes, 45_categorie_detail, 46_ticket_detail, 47_confirmation_suppression, 48_categorie_apres_suppression, 49_categorie_detail_sombre, 50_ticket_detail_sombre, 51_reglage_budget_avant_maj, 52_categories_budget_avant_maj, 53_categories_budget_apres_maj, 54_budget_depasse, 55_budget_attention_sans_budget, 56_saisie_budget_preremplie, 57_budgets_sombre, 58_reglage_budgets_sombre, 59_confirmation_suppression_budget, 60_budget_partage_casse, 61_accueil_carte_budget, 62_accueil_annee_sans_carte, 63_accueil_carte_budget_sombre, 64_accueil_tendance]
+        group: ${{ fromJSON(needs.emulator-api34.outputs.groups) }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -374,17 +394,28 @@ jobs:
         with:
           name: emulator-api34
           path: emu
-      - name: Emit api34_${{ matrix.shot }}
-        run: |
-          F="emu/shots/api34_${{ matrix.shot }}.png"
-          if [ -f "$F" ]; then
-            python3 -m pip install --quiet pillow
-            python3 .github/scripts/emit_image.py "$F"
-          else
-            echo "::warning title=shot missing::api34_${{ matrix.shot }}"
-          fi
+      - name: Pillow
+        run: python3 -m pip install --quiet pillow
+      - name: Aperçu ${{ matrix.group[0] }}
+        run: python3 .github/scripts/emit_image.py "emu/shots/${{ matrix.group[0] }}.png"
+
+      - name: Aperçu ${{ matrix.group[1] }}
+        if: matrix.group[1]
+        run: python3 .github/scripts/emit_image.py "emu/shots/${{ matrix.group[1] }}.png"
+
+      - name: Aperçu ${{ matrix.group[2] }}
+        if: matrix.group[2]
+        run: python3 .github/scripts/emit_image.py "emu/shots/${{ matrix.group[2] }}.png"
+
+      - name: Aperçu ${{ matrix.group[3] }}
+        if: matrix.group[3]
+        run: python3 .github/scripts/emit_image.py "emu/shots/${{ matrix.group[3] }}.png"
 
   emulator-api36:
+    # Labels autres que « apercus » : aucun job (tests déjà exécutés à l'ouverture / au push)
+    if: github.event.action != 'labeled' || github.event.label.name == 'apercus'
+    outputs:
+      groups: ${{ steps.groups.outputs.list }}
     runs-on: ubuntu-latest
     timeout-minutes: 85
     permissions:
@@ -456,6 +487,15 @@ jobs:
           name: emulator-api36
           path: emu-out/
           if-no-files-found: ignore
+          retention-days: 30
+
+      # Captures complètes : artefact ci-dessus. Aperçus en annotations (groupes de 4) : label « apercus ».
+      - name: Groupes d'aperçus
+        id: groups
+        if: always()
+        run: |
+          echo "list=$(python3 .github/scripts/shot_groups.py emu-out/shots)" >> "$GITHUB_OUTPUT"
+          echo "::notice title=Captures émulateur (api36)::$(ls emu-out/shots/*.png 2>/dev/null | wc -l) capture(s) dans l'artefact « emulator-api36 » (30 jours). Aperçus en annotations : label « apercus » sur la PR."
 
       # Verdict : le job échoue si un test a échoué, si un résultat attendu manque (nombre de tests réussis
       # différent des @Test déclarés), en cas de plantage, de délai dépassé ou de mise à jour A→B non conforme.
@@ -464,9 +504,10 @@ jobs:
         if: always()
         run: bash .github/scripts/emu_verdict.sh emu-out "api36"
 
+  # Aperçus à la demande : seulement si la PR porte le label « apercus » (4 captures par job).
   preview-emu-api36:
     needs: emulator-api36
-    if: always()
+    if: always() && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'apercus') && needs.emulator-api36.outputs.groups != '' && needs.emulator-api36.outputs.groups != '[]'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -474,7 +515,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        shot: [01_onboarding, 02_connexion, 03_accueil_vide, 04_ajouter_vide, 05_historique_vide, 06_categories_vide, 07_magasins_vide, 08_reglages, 09_ajout_clavier_ouvert, 10_accueil_un_ticket, 11_historique, 12_detail, 13_modification, 14_detail_apres_modification, 15_historique_apres_retour, 16_magasins_mois, 17_magasins_aujourdhui, 18_fiche_magasin, 19_accueil_defile, 20_ajouter_clavier, 21_reglages_sombre, 22_accueil_sombre, 23_historique_sombre, 24_magasins_sombre, 25_ajouter_sombre, 26_reglages_clair, 27_apres_redemarrage, 28_eTixQA_premier_lancement, 30_selecteur_date, 31_selecteur_categorie, 32_ajout_formulaire_complet, 33_historique_sections, 34_historique_recherche, 35_filtre_dates, 36_historique_filtre_actif, 37_modification_prerempli, 37b_dialogue_categorie_edition, 38_detail_apres_modification, 40_categories_mois, 41_categories_annee, 42_categories_aujourdhui, 43_categories_sombre, 44_categories_sombre_lignes, 45_categorie_detail, 46_ticket_detail, 47_confirmation_suppression, 48_categorie_apres_suppression, 49_categorie_detail_sombre, 50_ticket_detail_sombre, 51_reglage_budget_avant_maj, 52_categories_budget_avant_maj, 53_categories_budget_apres_maj, 54_budget_depasse, 55_budget_attention_sans_budget, 56_saisie_budget_preremplie, 57_budgets_sombre, 58_reglage_budgets_sombre, 59_confirmation_suppression_budget, 60_budget_partage_casse, 61_accueil_carte_budget, 62_accueil_annee_sans_carte, 63_accueil_carte_budget_sombre, 64_accueil_tendance]
+        group: ${{ fromJSON(needs.emulator-api36.outputs.groups) }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -483,17 +524,28 @@ jobs:
         with:
           name: emulator-api36
           path: emu
-      - name: Emit api36_${{ matrix.shot }}
-        run: |
-          F="emu/shots/api36_${{ matrix.shot }}.png"
-          if [ -f "$F" ]; then
-            python3 -m pip install --quiet pillow
-            python3 .github/scripts/emit_image.py "$F"
-          else
-            echo "::warning title=shot missing::api36_${{ matrix.shot }}"
-          fi
+      - name: Pillow
+        run: python3 -m pip install --quiet pillow
+      - name: Aperçu ${{ matrix.group[0] }}
+        run: python3 .github/scripts/emit_image.py "emu/shots/${{ matrix.group[0] }}.png"
+
+      - name: Aperçu ${{ matrix.group[1] }}
+        if: matrix.group[1]
+        run: python3 .github/scripts/emit_image.py "emu/shots/${{ matrix.group[1] }}.png"
+
+      - name: Aperçu ${{ matrix.group[2] }}
+        if: matrix.group[2]
+        run: python3 .github/scripts/emit_image.py "emu/shots/${{ matrix.group[2] }}.png"
+
+      - name: Aperçu ${{ matrix.group[3] }}
+        if: matrix.group[3]
+        run: python3 .github/scripts/emit_image.py "emu/shots/${{ matrix.group[3] }}.png"
 
   emulator-api21:
+    # Labels autres que « apercus » : aucun job (tests déjà exécutés à l'ouverture / au push)
+    if: github.event.action != 'labeled' || github.event.label.name == 'apercus'
+    outputs:
+      groups: ${{ steps.groups.outputs.list }}
     runs-on: ubuntu-latest
     timeout-minutes: 85
     permissions:
@@ -565,6 +617,15 @@ jobs:
           name: emulator-api21
           path: emu-out/
           if-no-files-found: ignore
+          retention-days: 30
+
+      # Captures complètes : artefact ci-dessus. Aperçus en annotations (groupes de 4) : label « apercus ».
+      - name: Groupes d'aperçus
+        id: groups
+        if: always()
+        run: |
+          echo "list=$(python3 .github/scripts/shot_groups.py emu-out/shots)" >> "$GITHUB_OUTPUT"
+          echo "::notice title=Captures émulateur (api21)::$(ls emu-out/shots/*.png 2>/dev/null | wc -l) capture(s) dans l'artefact « emulator-api21 » (30 jours). Aperçus en annotations : label « apercus » sur la PR."
 
       # Verdict : le job échoue si un test a échoué, si un résultat attendu manque (nombre de tests réussis
       # différent des @Test déclarés), en cas de plantage, de délai dépassé ou de mise à jour A→B non conforme.
@@ -573,9 +634,10 @@ jobs:
         if: always()
         run: bash .github/scripts/emu_verdict.sh emu-out "api21"
 
+  # Aperçus à la demande : seulement si la PR porte le label « apercus » (4 captures par job).
   preview-emu-api21:
     needs: emulator-api21
-    if: always()
+    if: always() && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'apercus') && needs.emulator-api21.outputs.groups != '' && needs.emulator-api21.outputs.groups != '[]'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -583,7 +645,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        shot: [01_onboarding, 02_connexion, 03_accueil_vide, 04_ajouter_vide, 05_historique_vide, 06_categories_vide, 07_magasins_vide, 08_reglages, 09_ajout_clavier_ouvert, 10_accueil_un_ticket, 11_historique, 12_detail, 13_modification, 14_detail_apres_modification, 15_historique_apres_retour, 16_magasins_mois, 17_magasins_aujourdhui, 18_fiche_magasin, 19_accueil_defile, 20_ajouter_clavier, 21_reglages_sombre, 22_accueil_sombre, 23_historique_sombre, 24_magasins_sombre, 25_ajouter_sombre, 26_reglages_clair, 27_apres_redemarrage, 28_eTixQA_premier_lancement, 30_selecteur_date, 31_selecteur_categorie, 32_ajout_formulaire_complet, 33_historique_sections, 34_historique_recherche, 35_filtre_dates, 36_historique_filtre_actif, 37_modification_prerempli, 37b_dialogue_categorie_edition, 38_detail_apres_modification, 40_categories_mois, 41_categories_annee, 42_categories_aujourdhui, 43_categories_sombre, 44_categories_sombre_lignes, 45_categorie_detail, 46_ticket_detail, 47_confirmation_suppression, 48_categorie_apres_suppression, 49_categorie_detail_sombre, 50_ticket_detail_sombre, 51_reglage_budget_avant_maj, 52_categories_budget_avant_maj, 53_categories_budget_apres_maj, 54_budget_depasse, 55_budget_attention_sans_budget, 56_saisie_budget_preremplie, 57_budgets_sombre, 58_reglage_budgets_sombre, 59_confirmation_suppression_budget, 60_budget_partage_casse, 61_accueil_carte_budget, 62_accueil_annee_sans_carte, 63_accueil_carte_budget_sombre, 64_accueil_tendance]
+        group: ${{ fromJSON(needs.emulator-api21.outputs.groups) }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -592,17 +654,28 @@ jobs:
         with:
           name: emulator-api21
           path: emu
-      - name: Emit api21_${{ matrix.shot }}
-        run: |
-          F="emu/shots/api21_${{ matrix.shot }}.png"
-          if [ -f "$F" ]; then
-            python3 -m pip install --quiet pillow
-            python3 .github/scripts/emit_image.py "$F"
-          else
-            echo "::warning title=shot missing::api21_${{ matrix.shot }}"
-          fi
+      - name: Pillow
+        run: python3 -m pip install --quiet pillow
+      - name: Aperçu ${{ matrix.group[0] }}
+        run: python3 .github/scripts/emit_image.py "emu/shots/${{ matrix.group[0] }}.png"
+
+      - name: Aperçu ${{ matrix.group[1] }}
+        if: matrix.group[1]
+        run: python3 .github/scripts/emit_image.py "emu/shots/${{ matrix.group[1] }}.png"
+
+      - name: Aperçu ${{ matrix.group[2] }}
+        if: matrix.group[2]
+        run: python3 .github/scripts/emit_image.py "emu/shots/${{ matrix.group[2] }}.png"
+
+      - name: Aperçu ${{ matrix.group[3] }}
+        if: matrix.group[3]
+        run: python3 .github/scripts/emit_image.py "emu/shots/${{ matrix.group[3] }}.png"
 
   emulator-api34-fr:
+    # Labels autres que « apercus » : aucun job (tests déjà exécutés à l'ouverture / au push)
+    if: github.event.action != 'labeled' || github.event.label.name == 'apercus'
+    outputs:
+      groups: ${{ steps.groups.outputs.list }}
     runs-on: ubuntu-latest
     timeout-minutes: 85
     permissions:
@@ -674,6 +747,15 @@ jobs:
           name: emulator-api34-fr
           path: emu-out/
           if-no-files-found: ignore
+          retention-days: 30
+
+      # Captures complètes : artefact ci-dessus. Aperçus en annotations (groupes de 4) : label « apercus ».
+      - name: Groupes d'aperçus
+        id: groups
+        if: always()
+        run: |
+          echo "list=$(python3 .github/scripts/shot_groups.py emu-out/shots)" >> "$GITHUB_OUTPUT"
+          echo "::notice title=Captures émulateur (api34-fr)::$(ls emu-out/shots/*.png 2>/dev/null | wc -l) capture(s) dans l'artefact « emulator-api34-fr » (30 jours). Aperçus en annotations : label « apercus » sur la PR."
 
       # Verdict : le job échoue si un test a échoué, si un résultat attendu manque (nombre de tests réussis
       # différent des @Test déclarés), en cas de plantage, de délai dépassé ou de mise à jour A→B non conforme.
@@ -682,9 +764,10 @@ jobs:
         if: always()
         run: bash .github/scripts/emu_verdict.sh emu-out "api34-fr"
 
+  # Aperçus à la demande : seulement si la PR porte le label « apercus » (4 captures par job).
   preview-emu-api34-fr:
     needs: emulator-api34-fr
-    if: always()
+    if: always() && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'apercus') && needs.emulator-api34-fr.outputs.groups != '' && needs.emulator-api34-fr.outputs.groups != '[]'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -692,7 +775,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        shot: [f01_ajout_virgule_fr, f05a_historique_recherche_limites_fr, f02_historique_montant_fr, f03_selecteur_date_fr, f04_date_jour_mois_fr, f05_filtre_inclusif_fr, f06_historique_filtre_inclusif_fr, f07_magasins_aujourdhui_limites_fr, f08_magasins_mois_limites_fr, f09_budget_saisie_fr, f10_categories_budget_fr, f11_accueil_budget_fr]
+        group: ${{ fromJSON(needs.emulator-api34-fr.outputs.groups) }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -701,18 +784,29 @@ jobs:
         with:
           name: emulator-api34-fr
           path: emu
-      - name: Emit api34_${{ matrix.shot }}
-        run: |
-          F="emu/shots/api34_${{ matrix.shot }}.png"
-          if [ -f "$F" ]; then
-            python3 -m pip install --quiet pillow
-            python3 .github/scripts/emit_image.py "$F"
-          else
-            echo "::warning title=shot missing::api34_${{ matrix.shot }}"
-          fi
+      - name: Pillow
+        run: python3 -m pip install --quiet pillow
+      - name: Aperçu ${{ matrix.group[0] }}
+        run: python3 .github/scripts/emit_image.py "emu/shots/${{ matrix.group[0] }}.png"
+
+      - name: Aperçu ${{ matrix.group[1] }}
+        if: matrix.group[1]
+        run: python3 .github/scripts/emit_image.py "emu/shots/${{ matrix.group[1] }}.png"
+
+      - name: Aperçu ${{ matrix.group[2] }}
+        if: matrix.group[2]
+        run: python3 .github/scripts/emit_image.py "emu/shots/${{ matrix.group[2] }}.png"
+
+      - name: Aperçu ${{ matrix.group[3] }}
+        if: matrix.group[3]
+        run: python3 .github/scripts/emit_image.py "emu/shots/${{ matrix.group[3] }}.png"
 
   # Aperçu : une capture par job (limites d'annotations GitHub), lisible via l'API checks
   emulator-api36-petit:
+    # Labels autres que « apercus » : aucun job (tests déjà exécutés à l'ouverture / au push)
+    if: github.event.action != 'labeled' || github.event.label.name == 'apercus'
+    outputs:
+      groups: ${{ steps.groups.outputs.list }}
     runs-on: ubuntu-latest
     timeout-minutes: 85
     permissions:
@@ -784,6 +878,15 @@ jobs:
           name: emulator-api36-petit
           path: emu-out/
           if-no-files-found: ignore
+          retention-days: 30
+
+      # Captures complètes : artefact ci-dessus. Aperçus en annotations (groupes de 4) : label « apercus ».
+      - name: Groupes d'aperçus
+        id: groups
+        if: always()
+        run: |
+          echo "list=$(python3 .github/scripts/shot_groups.py emu-out/shots)" >> "$GITHUB_OUTPUT"
+          echo "::notice title=Captures émulateur (api36-petit)::$(ls emu-out/shots/*.png 2>/dev/null | wc -l) capture(s) dans l'artefact « emulator-api36-petit » (30 jours). Aperçus en annotations : label « apercus » sur la PR."
 
       # Verdict : le job échoue si un test a échoué, si un résultat attendu manque (nombre de tests réussis
       # différent des @Test déclarés), en cas de plantage, de délai dépassé ou de mise à jour A→B non conforme.
@@ -792,9 +895,10 @@ jobs:
         if: always()
         run: bash .github/scripts/emu_verdict.sh emu-out "api36-petit"
 
+  # Aperçus à la demande : seulement si la PR porte le label « apercus » (4 captures par job).
   preview-emu-api36-petit:
     needs: emulator-api36-petit
-    if: always()
+    if: always() && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'apercus') && needs.emulator-api36-petit.outputs.groups != '' && needs.emulator-api36-petit.outputs.groups != '[]'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -802,7 +906,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        shot: [k01_ajout_clavier_a, k02_modification_clavier_a, k03_detail_apres_modification_a, k01_ajout_clavier_b, k02_modification_clavier_b, k03_detail_apres_modification_b, k01_ajout_clavier_c, k02_modification_clavier_c, k03_detail_apres_modification_c, k04_budget_clavier_a, k04_budget_clavier_b, k04_budget_clavier_c, k05_accueil_budget_a, k05_accueil_budget_b, k05_accueil_budget_c, k06_accueil_tendance_a, k06_accueil_tendance_b, k06_accueil_tendance_c]
+        group: ${{ fromJSON(needs.emulator-api36-petit.outputs.groups) }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -811,21 +915,30 @@ jobs:
         with:
           name: emulator-api36-petit
           path: emu
-      - name: Emit api36_${{ matrix.shot }}
-        run: |
-          F="emu/shots/api36_${{ matrix.shot }}.png"
-          if [ -f "$F" ]; then
-            python3 -m pip install --quiet pillow
-            python3 .github/scripts/emit_image.py "$F"
-          else
-            echo "::warning title=shot missing::api36_${{ matrix.shot }}"
-          fi
+      - name: Pillow
+        run: python3 -m pip install --quiet pillow
+      - name: Aperçu ${{ matrix.group[0] }}
+        run: python3 .github/scripts/emit_image.py "emu/shots/${{ matrix.group[0] }}.png"
+
+      - name: Aperçu ${{ matrix.group[1] }}
+        if: matrix.group[1]
+        run: python3 .github/scripts/emit_image.py "emu/shots/${{ matrix.group[1] }}.png"
+
+      - name: Aperçu ${{ matrix.group[2] }}
+        if: matrix.group[2]
+        run: python3 .github/scripts/emit_image.py "emu/shots/${{ matrix.group[2] }}.png"
+
+      - name: Aperçu ${{ matrix.group[3] }}
+        if: matrix.group[3]
+        run: python3 .github/scripts/emit_image.py "emu/shots/${{ matrix.group[3] }}.png"
 
   # Aperçu : une capture par job (limites d'annotations GitHub), lisible via l'API checks
   # Auto-test du verdict des jobs émulateur : scénarios synthétiques (test en échec, résultat absent, aucun test,
   # test manquant, plantage Java, plantage natif, délai dépassé, rapport absent) passés par la vraie chaîne
   # emu_report.py → emu_verdict.sh. Réussit si chaque scénario donne le code attendu (aucun échec volontaire laissé).
   verdict-autotest:
+    # Labels autres que « apercus » : aucun job (tests déjà exécutés à l'ouverture / au push)
+    if: github.event.action != 'labeled' || github.event.label.name == 'apercus'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -838,6 +951,8 @@ jobs:
 
   # Compatibilité ciblée Android 5.1 à 7.1 (API 22 à 25) : lecteur de dates OCR seul (logique pure)
   emulator-compat-dates:
+    # Labels autres que « apercus » : aucun job (tests déjà exécutés à l'ouverture / au push)
+    if: github.event.action != 'labeled' || github.event.label.name == 'apercus'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
@@ -893,27 +1008,50 @@ jobs:
           name: emulator-compat-api${{ matrix.api }}
           path: emu-out/
           if-no-files-found: ignore
+          retention-days: 30
 
       - name: Verdict tests émulateur
         if: always()
         run: bash .github/scripts/emu_verdict.sh emu-out "API ${{ matrix.api }} dates"
 
+  # Aperçus Robolectric à la demande (label « apercus »), 4 captures par job.
   preview:
     needs: build
-    if: always() && needs.build.outputs.shots != '' && needs.build.outputs.shots != '[]'
+    if: always() && github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'apercus') && needs.build.outputs.shots != '' && needs.build.outputs.shots != '[]'
     permissions:
       contents: read
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      max-parallel: 20
       matrix:
-        shot: ${{ fromJSON(needs.build.outputs.shots) }}
+        group: ${{ fromJSON(needs.build.outputs.shots) }}
     steps:
       - name: Checkout scripts
         uses: actions/checkout@v4
         with:
           sparse-checkout: .github/scripts
+      - name: Download screenshots
+        uses: actions/download-artifact@v4
+        with:
+          name: screenshots
+          path: shots
+      - name: Pillow
+        run: python3 -m pip install --quiet pillow
+      - name: Aperçu ${{ matrix.group[0] }}
+        run: python3 .github/scripts/emit_image.py "shots/${{ matrix.group[0] }}.png"
 
+      - name: Aperçu ${{ matrix.group[1] }}
+        if: matrix.group[1]
+        run: python3 .github/scripts/emit_image.py "shots/${{ matrix.group[1] }}.png"
+
+      - name: Aperçu ${{ matrix.group[2] }}
+        if: matrix.group[2]
+        run: python3 .github/scripts/emit_image.py "shots/${{ matrix.group[2] }}.png"
+
+      - name: Aperçu ${{ matrix.group[3] }}
+        if: matrix.group[3]
+        run: python3 .github/scripts/emit_image.py "shots/${{ matrix.group[3] }}.png"
       - name: Download screenshots
         uses: actions/download-artifact@v4
         with:
