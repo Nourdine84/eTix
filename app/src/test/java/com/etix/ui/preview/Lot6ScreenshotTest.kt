@@ -52,9 +52,11 @@ class Lot6ScreenshotTest {
         val now = System.currentTimeMillis()
         // Dates dans le mois courant : aujourd'hui uniquement si on est en début de mois
         val dom = java.util.Calendar.getInstance().get(java.util.Calendar.DAY_OF_MONTH)
-        fun back(n: Int) = now - minOf(n, dom - 1) * day
+        // Le ticket Lidl doit rester le plus récent (1re ligne touchée par le test), y compris le 1er du mois où
+        // tous les tickets tombent le même jour (échec constaté le 01/10/2026) : les autres sont antérieurs d'1 s au moins.
+        fun back(n: Int) = now - minOf(n, dom - 1) * day - 1_000
         val list = listOf(
-            Ticket(id = 1, store = "Lidl", amount = 64.20, category = "Courses", dateMillis = now - 60_000,
+            Ticket(id = 1, store = "Lidl", amount = 64.20, category = "Courses", dateMillis = now,
                 description = "Courses de la semaine, promo sur le café"),
             Ticket(id = 2, store = "Carrefour", amount = 42.30, category = "Courses", dateMillis = back(1)),
             Ticket(id = 3, store = "Marché", amount = 12.90, category = "Courses", dateMillis = back(3)),

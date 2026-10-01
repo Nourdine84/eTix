@@ -62,6 +62,19 @@ jobs:
           [ "${{ steps.signing.outputs.ready }}" = "true" ] && TASKS="$TASKS assembleQa"
           ./gradlew $TASKS --console=plain -Dorg.gradle.java.home="$JAVA_HOME" 2>&1 | tee build.log
 
+      # Version livrable : APK construit SANS les propriétés de test (etixVersionCodeOffset / etixVersionNameSuffix),
+      # identique aux valeurs de app/build.gradle.kts. Le build « B » (+1, « -maj ») n'existe que dans les jobs émulateur.
+      - name: Version livrable (contrôle)
+        run: |
+          BT=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          B=$("$BT/aapt2" dump badging app/build/outputs/apk/debug/app-debug.apk | head -1)
+          CODE=$(echo "$B" | grep -oP "versionCode='\K[^']+"); NAME=$(echo "$B" | grep -oP "versionName='\K[^']+")
+          WCODE=$(grep -oP 'versionCode = \K[0-9]+(?= \+ versionOffset)' app/build.gradle.kts)
+          WNAME=$(grep -oP 'versionName = "\K[^"]+(?=" \+)' app/build.gradle.kts)
+          MSG="APK debug : versionCode=$CODE versionName=$NAME ; app/build.gradle.kts : versionCode=$WCODE versionName=$WNAME"
+          if [ "$CODE" = "$WCODE" ] && [ "$NAME" = "$WNAME" ]; then echo "::notice title=Version livrable::$MSG"
+          else echo "::error title=Version livrable::$MSG"; exit 1; fi
+
       # Contrôles de l'APK QA : package, version, empreinte complète du certificat
       - name: Inspect QA APK
         id: qa
@@ -136,6 +149,52 @@ jobs:
             echo "::notice title=OCR observé::$(sed ':a;N;$!ba;s/\n/%0A/g' app/build/ocr-report.txt)"
           fi
 
+      # Lint Android : signale les API trop récentes pour minSdk 21 (NewApi), comme HashMap.putIfAbsent (API 24)
+      # qui a fait planter Android 5 au lot 8. Non bloquant : rapport en annotations.
+      # Compatibilité API (minSdk 21) : toute NOUVELLE alerte NewApi / InlinedApi fait échouer le job.
+      # Seules exceptions admises : celles listées ci-dessous (déjà présentes dans app/lint-baseline.xml,
+      # documentées dans docs/COMPATIBILITE_ANDROID.md). Toute autre entrée NewApi/InlinedApi ajoutée à la
+      # baseline fait aussi échouer le job. Les autres catégories lint restent en rapport (inchangé).
+      - name: Lint NewApi (bloquant)
+        if: always()
+        run: |
+          ./gradlew :app:lintDebug --console=plain -Dorg.gradle.java.home=$JAVA_HOME > lint.log 2>&1 || true
+          python3 - <<'PY'
+          import glob, sys, xml.etree.ElementTree as ET
+          IDS = ("NewApi", "InlinedApi")
+          ALLOWED = {  # (id, fichier, attribut) — docs/COMPATIBILITE_ANDROID.md
+              ("NewApi", "src/main/res/values/themes.xml", "android:windowLightStatusBar"),
+              ("NewApi", "src/main/res/values/themes.xml", "android:windowLightNavigationBar"),
+          }
+          fail = False
+          base = [i for i in ET.parse("app/lint-baseline.xml").getroot().iter("issue") if i.get("id") in IDS]
+          seen = set()
+          for i in base:
+              f = i.find("location").get("file", "?")
+              key = next((k for k in ALLOWED if k[0] == i.get("id") and k[1] == f and k[2] in i.get("message", "")), None)
+              if key is None:
+                  fail = True
+                  print(f"::error title=Lint NewApi — exception non documentée dans la baseline::{i.get('id')} {f} {i.get('message','')[:160]}")
+              else:
+                  seen.add(key)
+          print("::notice title=Lint NewApi — exceptions documentées::" + "%0A".join(f"{k[0]} {k[1]} {k[2]}" + ("" if k in seen else " (plus présente)") for k in sorted(ALLOWED)))
+          files = glob.glob("app/build/reports/lint-results-debug.xml")
+          if not files:
+              print("::error title=Lint NewApi::rapport lint absent : compatibilité non vérifiée (voir lint.log)")
+              sys.exit(1)
+          rows = []
+          for i in ET.parse(files[0]).getroot().iter("issue"):
+              if i.get("id") in IDS:
+                  loc = i.find("location")
+                  rows.append(f"{i.get('id')} {loc.get('file','?').split('/app/')[-1]}:{loc.get('line','?')} {i.get('message','')[:160]}")
+          if rows:
+              print(f"::error title=Lint NewApi — {len(rows)} nouvelle(s) incompatibilité(s)::" + "%0A".join(rows[:20]))
+              fail = True
+          else:
+              print("::notice title=Lint NewApi — aucune nouvelle incompatibilité::aucun appel d'API au-delà de minSdk 21 hors exceptions documentées")
+          sys.exit(1 if fail else 0)
+          PY
+
       # Récapitulatif des tests (lisible via l'API, succès comme échec)
       - name: Report test summary
         if: always()
@@ -156,8 +215,18 @@ jobs:
                       state = "SKIP"
                   rows.append(f"{state} {tc.get('classname').split('.')[-1]}.{tc.get('name')} ({tc.get('time')}s)")
           from collections import Counter
+          import re as _re
           c = Counter(r.split(" ", 1)[0] for r in rows)
-          print(f"::notice title=Bilan tests JVM::{c['PASS']} réussis, {c['FAIL']} échecs, {c['SKIP']} désactivés, {len(rows)} au total")
+          declared = sum(len(_re.findall(r"@Test\b", open(p, errors="replace").read()))
+                         for p in glob.glob("app/src/test/**/*.kt", recursive=True))
+          skipped = [r.split(" ", 1)[1].split(" (")[0] for r in rows if r.startswith("SKIP")]
+          level = "notice" if (declared == len(rows) and c["FAIL"] == 0) else "error"
+          print(f"::{level} title=Bilan tests JVM::@Test déclarés dans les sources : {declared} ; découverts par Gradle : {len(rows)} ; "
+                f"exécutés : {c['PASS'] + c['FAIL']} (réussis {c['PASS']}, échecs {c['FAIL']}) ; ignorés (@Ignore) : {c['SKIP']}%0A"
+                + "%0A".join("ignoré : " + n for n in skipped))
+          if declared != len(rows):
+              print(f"::error title=Tests JVM non découverts::{declared} @Test déclarés, {len(rows)} découverts")
+              raise SystemExit(1)
           # Détail par classe (une annotation par classe : limite de 4096 caractères par annotation)
           by = {}
           for r in rows:
@@ -279,6 +348,13 @@ jobs:
           path: emu-out/
           if-no-files-found: ignore
 
+      # Verdict : le job échoue si un test a échoué, si un résultat attendu manque (nombre de tests réussis
+      # différent des @Test déclarés), en cas de plantage, de délai dépassé ou de mise à jour A→B non conforme.
+      # Mécanisme éprouvé par le job verdict-autotest (scénarios synthétiques).
+      - name: Verdict tests émulateur
+        if: always()
+        run: bash .github/scripts/emu_verdict.sh emu-out "api34"
+
   preview-emu-api34:
     needs: emulator-api34
     if: always()
@@ -289,7 +365,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        shot: [01_onboarding, 02_connexion, 03_accueil_vide, 04_ajouter_vide, 05_historique_vide, 06_categories_vide, 07_magasins_vide, 08_reglages, 09_ajout_clavier_ouvert, 10_accueil_un_ticket, 11_historique, 12_detail, 13_modification, 14_detail_apres_modification, 15_historique_apres_retour, 16_magasins_mois, 17_magasins_aujourdhui, 18_fiche_magasin, 19_accueil_defile, 20_ajouter_clavier, 21_reglages_sombre, 22_accueil_sombre, 23_historique_sombre, 24_magasins_sombre, 25_ajouter_sombre, 26_reglages_clair, 27_apres_redemarrage, 28_eTixQA_premier_lancement, 30_selecteur_date, 31_selecteur_categorie, 32_ajout_formulaire_complet, 33_historique_sections, 34_historique_recherche, 35_filtre_dates, 36_historique_filtre_actif, 37_modification_prerempli, 37b_dialogue_categorie_edition, 38_detail_apres_modification, 40_categories_mois, 41_categories_annee, 42_categories_aujourdhui, 43_categories_sombre, 44_categories_sombre_lignes, 45_categorie_detail, 46_ticket_detail, 47_confirmation_suppression, 48_categorie_apres_suppression, 49_categorie_detail_sombre, 50_ticket_detail_sombre, 51_reglage_budget_avant_maj, 52_categories_budget_avant_maj, 53_categories_budget_apres_maj, 54_budget_depasse, 55_budget_attention_sans_budget, 56_saisie_budget_preremplie, 57_budgets_sombre, 58_reglage_budgets_sombre, 59_confirmation_suppression_budget, 60_budget_partage_casse]
+        shot: [01_onboarding, 02_connexion, 03_accueil_vide, 04_ajouter_vide, 05_historique_vide, 06_categories_vide, 07_magasins_vide, 08_reglages, 09_ajout_clavier_ouvert, 10_accueil_un_ticket, 11_historique, 12_detail, 13_modification, 14_detail_apres_modification, 15_historique_apres_retour, 16_magasins_mois, 17_magasins_aujourdhui, 18_fiche_magasin, 19_accueil_defile, 20_ajouter_clavier, 21_reglages_sombre, 22_accueil_sombre, 23_historique_sombre, 24_magasins_sombre, 25_ajouter_sombre, 26_reglages_clair, 27_apres_redemarrage, 28_eTixQA_premier_lancement, 30_selecteur_date, 31_selecteur_categorie, 32_ajout_formulaire_complet, 33_historique_sections, 34_historique_recherche, 35_filtre_dates, 36_historique_filtre_actif, 37_modification_prerempli, 37b_dialogue_categorie_edition, 38_detail_apres_modification, 40_categories_mois, 41_categories_annee, 42_categories_aujourdhui, 43_categories_sombre, 44_categories_sombre_lignes, 45_categorie_detail, 46_ticket_detail, 47_confirmation_suppression, 48_categorie_apres_suppression, 49_categorie_detail_sombre, 50_ticket_detail_sombre, 51_reglage_budget_avant_maj, 52_categories_budget_avant_maj, 53_categories_budget_apres_maj, 54_budget_depasse, 55_budget_attention_sans_budget, 56_saisie_budget_preremplie, 57_budgets_sombre, 58_reglage_budgets_sombre, 59_confirmation_suppression_budget, 60_budget_partage_casse, 61_accueil_carte_budget, 62_accueil_annee_sans_carte, 63_accueil_carte_budget_sombre, 64_accueil_tendance]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -381,6 +457,13 @@ jobs:
           path: emu-out/
           if-no-files-found: ignore
 
+      # Verdict : le job échoue si un test a échoué, si un résultat attendu manque (nombre de tests réussis
+      # différent des @Test déclarés), en cas de plantage, de délai dépassé ou de mise à jour A→B non conforme.
+      # Mécanisme éprouvé par le job verdict-autotest (scénarios synthétiques).
+      - name: Verdict tests émulateur
+        if: always()
+        run: bash .github/scripts/emu_verdict.sh emu-out "api36"
+
   preview-emu-api36:
     needs: emulator-api36
     if: always()
@@ -391,7 +474,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        shot: [01_onboarding, 02_connexion, 03_accueil_vide, 04_ajouter_vide, 05_historique_vide, 06_categories_vide, 07_magasins_vide, 08_reglages, 09_ajout_clavier_ouvert, 10_accueil_un_ticket, 11_historique, 12_detail, 13_modification, 14_detail_apres_modification, 15_historique_apres_retour, 16_magasins_mois, 17_magasins_aujourdhui, 18_fiche_magasin, 19_accueil_defile, 20_ajouter_clavier, 21_reglages_sombre, 22_accueil_sombre, 23_historique_sombre, 24_magasins_sombre, 25_ajouter_sombre, 26_reglages_clair, 27_apres_redemarrage, 28_eTixQA_premier_lancement, 30_selecteur_date, 31_selecteur_categorie, 32_ajout_formulaire_complet, 33_historique_sections, 34_historique_recherche, 35_filtre_dates, 36_historique_filtre_actif, 37_modification_prerempli, 37b_dialogue_categorie_edition, 38_detail_apres_modification, 40_categories_mois, 41_categories_annee, 42_categories_aujourdhui, 43_categories_sombre, 44_categories_sombre_lignes, 45_categorie_detail, 46_ticket_detail, 47_confirmation_suppression, 48_categorie_apres_suppression, 49_categorie_detail_sombre, 50_ticket_detail_sombre, 51_reglage_budget_avant_maj, 52_categories_budget_avant_maj, 53_categories_budget_apres_maj, 54_budget_depasse, 55_budget_attention_sans_budget, 56_saisie_budget_preremplie, 57_budgets_sombre, 58_reglage_budgets_sombre, 59_confirmation_suppression_budget, 60_budget_partage_casse]
+        shot: [01_onboarding, 02_connexion, 03_accueil_vide, 04_ajouter_vide, 05_historique_vide, 06_categories_vide, 07_magasins_vide, 08_reglages, 09_ajout_clavier_ouvert, 10_accueil_un_ticket, 11_historique, 12_detail, 13_modification, 14_detail_apres_modification, 15_historique_apres_retour, 16_magasins_mois, 17_magasins_aujourdhui, 18_fiche_magasin, 19_accueil_defile, 20_ajouter_clavier, 21_reglages_sombre, 22_accueil_sombre, 23_historique_sombre, 24_magasins_sombre, 25_ajouter_sombre, 26_reglages_clair, 27_apres_redemarrage, 28_eTixQA_premier_lancement, 30_selecteur_date, 31_selecteur_categorie, 32_ajout_formulaire_complet, 33_historique_sections, 34_historique_recherche, 35_filtre_dates, 36_historique_filtre_actif, 37_modification_prerempli, 37b_dialogue_categorie_edition, 38_detail_apres_modification, 40_categories_mois, 41_categories_annee, 42_categories_aujourdhui, 43_categories_sombre, 44_categories_sombre_lignes, 45_categorie_detail, 46_ticket_detail, 47_confirmation_suppression, 48_categorie_apres_suppression, 49_categorie_detail_sombre, 50_ticket_detail_sombre, 51_reglage_budget_avant_maj, 52_categories_budget_avant_maj, 53_categories_budget_apres_maj, 54_budget_depasse, 55_budget_attention_sans_budget, 56_saisie_budget_preremplie, 57_budgets_sombre, 58_reglage_budgets_sombre, 59_confirmation_suppression_budget, 60_budget_partage_casse, 61_accueil_carte_budget, 62_accueil_annee_sans_carte, 63_accueil_carte_budget_sombre, 64_accueil_tendance]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -483,6 +566,13 @@ jobs:
           path: emu-out/
           if-no-files-found: ignore
 
+      # Verdict : le job échoue si un test a échoué, si un résultat attendu manque (nombre de tests réussis
+      # différent des @Test déclarés), en cas de plantage, de délai dépassé ou de mise à jour A→B non conforme.
+      # Mécanisme éprouvé par le job verdict-autotest (scénarios synthétiques).
+      - name: Verdict tests émulateur
+        if: always()
+        run: bash .github/scripts/emu_verdict.sh emu-out "api21"
+
   preview-emu-api21:
     needs: emulator-api21
     if: always()
@@ -493,7 +583,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        shot: [01_onboarding, 02_connexion, 03_accueil_vide, 04_ajouter_vide, 05_historique_vide, 06_categories_vide, 07_magasins_vide, 08_reglages, 09_ajout_clavier_ouvert, 10_accueil_un_ticket, 11_historique, 12_detail, 13_modification, 14_detail_apres_modification, 15_historique_apres_retour, 16_magasins_mois, 17_magasins_aujourdhui, 18_fiche_magasin, 19_accueil_defile, 20_ajouter_clavier, 21_reglages_sombre, 22_accueil_sombre, 23_historique_sombre, 24_magasins_sombre, 25_ajouter_sombre, 26_reglages_clair, 27_apres_redemarrage, 28_eTixQA_premier_lancement, 30_selecteur_date, 31_selecteur_categorie, 32_ajout_formulaire_complet, 33_historique_sections, 34_historique_recherche, 35_filtre_dates, 36_historique_filtre_actif, 37_modification_prerempli, 37b_dialogue_categorie_edition, 38_detail_apres_modification, 40_categories_mois, 41_categories_annee, 42_categories_aujourdhui, 43_categories_sombre, 44_categories_sombre_lignes, 45_categorie_detail, 46_ticket_detail, 47_confirmation_suppression, 48_categorie_apres_suppression, 49_categorie_detail_sombre, 50_ticket_detail_sombre, 51_reglage_budget_avant_maj, 52_categories_budget_avant_maj, 53_categories_budget_apres_maj, 54_budget_depasse, 55_budget_attention_sans_budget, 56_saisie_budget_preremplie, 57_budgets_sombre, 58_reglage_budgets_sombre, 59_confirmation_suppression_budget, 60_budget_partage_casse]
+        shot: [01_onboarding, 02_connexion, 03_accueil_vide, 04_ajouter_vide, 05_historique_vide, 06_categories_vide, 07_magasins_vide, 08_reglages, 09_ajout_clavier_ouvert, 10_accueil_un_ticket, 11_historique, 12_detail, 13_modification, 14_detail_apres_modification, 15_historique_apres_retour, 16_magasins_mois, 17_magasins_aujourdhui, 18_fiche_magasin, 19_accueil_defile, 20_ajouter_clavier, 21_reglages_sombre, 22_accueil_sombre, 23_historique_sombre, 24_magasins_sombre, 25_ajouter_sombre, 26_reglages_clair, 27_apres_redemarrage, 28_eTixQA_premier_lancement, 30_selecteur_date, 31_selecteur_categorie, 32_ajout_formulaire_complet, 33_historique_sections, 34_historique_recherche, 35_filtre_dates, 36_historique_filtre_actif, 37_modification_prerempli, 37b_dialogue_categorie_edition, 38_detail_apres_modification, 40_categories_mois, 41_categories_annee, 42_categories_aujourdhui, 43_categories_sombre, 44_categories_sombre_lignes, 45_categorie_detail, 46_ticket_detail, 47_confirmation_suppression, 48_categorie_apres_suppression, 49_categorie_detail_sombre, 50_ticket_detail_sombre, 51_reglage_budget_avant_maj, 52_categories_budget_avant_maj, 53_categories_budget_apres_maj, 54_budget_depasse, 55_budget_attention_sans_budget, 56_saisie_budget_preremplie, 57_budgets_sombre, 58_reglage_budgets_sombre, 59_confirmation_suppression_budget, 60_budget_partage_casse, 61_accueil_carte_budget, 62_accueil_annee_sans_carte, 63_accueil_carte_budget_sombre, 64_accueil_tendance]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -585,6 +675,13 @@ jobs:
           path: emu-out/
           if-no-files-found: ignore
 
+      # Verdict : le job échoue si un test a échoué, si un résultat attendu manque (nombre de tests réussis
+      # différent des @Test déclarés), en cas de plantage, de délai dépassé ou de mise à jour A→B non conforme.
+      # Mécanisme éprouvé par le job verdict-autotest (scénarios synthétiques).
+      - name: Verdict tests émulateur
+        if: always()
+        run: bash .github/scripts/emu_verdict.sh emu-out "api34-fr"
+
   preview-emu-api34-fr:
     needs: emulator-api34-fr
     if: always()
@@ -595,7 +692,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        shot: [f01_ajout_virgule_fr, f05a_historique_recherche_limites_fr, f02_historique_montant_fr, f03_selecteur_date_fr, f04_date_jour_mois_fr, f05_filtre_inclusif_fr, f06_historique_filtre_inclusif_fr, f07_magasins_aujourdhui_limites_fr, f08_magasins_mois_limites_fr, f09_budget_saisie_fr, f10_categories_budget_fr]
+        shot: [f01_ajout_virgule_fr, f05a_historique_recherche_limites_fr, f02_historique_montant_fr, f03_selecteur_date_fr, f04_date_jour_mois_fr, f05_filtre_inclusif_fr, f06_historique_filtre_inclusif_fr, f07_magasins_aujourdhui_limites_fr, f08_magasins_mois_limites_fr, f09_budget_saisie_fr, f10_categories_budget_fr, f11_accueil_budget_fr]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -688,6 +785,13 @@ jobs:
           path: emu-out/
           if-no-files-found: ignore
 
+      # Verdict : le job échoue si un test a échoué, si un résultat attendu manque (nombre de tests réussis
+      # différent des @Test déclarés), en cas de plantage, de délai dépassé ou de mise à jour A→B non conforme.
+      # Mécanisme éprouvé par le job verdict-autotest (scénarios synthétiques).
+      - name: Verdict tests émulateur
+        if: always()
+        run: bash .github/scripts/emu_verdict.sh emu-out "api36-petit"
+
   preview-emu-api36-petit:
     needs: emulator-api36-petit
     if: always()
@@ -698,7 +802,7 @@ jobs:
       fail-fast: false
       max-parallel: 20
       matrix:
-        shot: [k01_ajout_clavier_a, k02_modification_clavier_a, k03_detail_apres_modification_a, k01_ajout_clavier_b, k02_modification_clavier_b, k03_detail_apres_modification_b, k01_ajout_clavier_c, k02_modification_clavier_c, k03_detail_apres_modification_c, k04_budget_clavier_a, k04_budget_clavier_b, k04_budget_clavier_c]
+        shot: [k01_ajout_clavier_a, k02_modification_clavier_a, k03_detail_apres_modification_a, k01_ajout_clavier_b, k02_modification_clavier_b, k03_detail_apres_modification_b, k01_ajout_clavier_c, k02_modification_clavier_c, k03_detail_apres_modification_c, k04_budget_clavier_a, k04_budget_clavier_b, k04_budget_clavier_c, k05_accueil_budget_a, k05_accueil_budget_b, k05_accueil_budget_c, k06_accueil_tendance_a, k06_accueil_tendance_b, k06_accueil_tendance_c]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -718,6 +822,82 @@ jobs:
           fi
 
   # Aperçu : une capture par job (limites d'annotations GitHub), lisible via l'API checks
+  # Auto-test du verdict des jobs émulateur : scénarios synthétiques (test en échec, résultat absent, aucun test,
+  # test manquant, plantage Java, plantage natif, délai dépassé, rapport absent) passés par la vraie chaîne
+  # emu_report.py → emu_verdict.sh. Réussit si chaque scénario donne le code attendu (aucun échec volontaire laissé).
+  verdict-autotest:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+      - name: Scénarios du verdict
+        run: bash .github/scripts/test_emu_verdict.sh
+
+  # Compatibilité ciblée Android 5.1 à 7.1 (API 22 à 25) : lecteur de dates OCR seul (logique pure)
+  emulator-compat-dates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        api: [22, 23, 24, 25]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+
+      - name: Build APKs (app, tests)
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug assembleDebugAndroidTest --console=plain -Dorg.gradle.java.home=$JAVA_HOME
+          mkdir -p dist emu-out && cp app/build/outputs/apk/debug/app-debug.apk dist/app-A.apk
+
+      - name: Run date reader on emulator API ${{ matrix.api }}
+        uses: reactivecircus/android-emulator-runner@v2
+        env:
+          MODE: compat
+        with:
+          api-level: ${{ matrix.api }}
+          target: default
+          arch: x86
+          emulator-boot-timeout: 900
+          disable-animations: true
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none -no-snapshot
+          script: bash .github/scripts/emulator_e2e.sh
+
+      - name: Report
+        if: always()
+        run: python3 .github/scripts/emu_report.py emu-out "API ${{ matrix.api }}"
+
+      - name: Upload emulator results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: emulator-compat-api${{ matrix.api }}
+          path: emu-out/
+          if-no-files-found: ignore
+
+      - name: Verdict tests émulateur
+        if: always()
+        run: bash .github/scripts/emu_verdict.sh emu-out "API ${{ matrix.api }} dates"
+
   preview:
     needs: build
     if: always() && needs.build.outputs.shots != '' && needs.build.outputs.shots != '[]'

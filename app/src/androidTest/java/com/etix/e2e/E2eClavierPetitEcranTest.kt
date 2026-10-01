@@ -122,6 +122,7 @@ class E2eClavierPetitEcranTest {
         startMain()
         onView(withId(R.id.menu_add)).perform(click())
         onView(allOf(withId(R.id.inputStore), isDisplayed())).perform(click(), replaceText(store))
+        E2e.closeKeyboard() // clavier du champ Magasin fermé : sinon, à police 2,0, le champ montant reste masqué
         onView(withId(R.id.inputAmount)).perform(scrollTo(), click())
         // Taper seulement quand le clavier est prêt : sinon l'injection perd le 1er caractère (« ,20 » observé, run 36631237084)
         assertTrue("Clavier non affiché", waitImeStable() > 0)
@@ -226,5 +227,18 @@ class E2eClavierPetitEcranTest {
         SystemClock.sleep(500)
         val saved = com.etix.data.BudgetStore(ctx).limit("Clavier $passe")
         assertTrue("Budget non enregistré ($saved)", saved == 7.5)
+    }
+
+    /** Lot 8 : carte Budget de l'Accueil sur petit écran / grande police (budget de k04). */
+    @Test
+    fun k05_accueil_carte_budget() {
+        startMain()
+        AccueilBudgetE2e.checkCard("k05_accueil_budget_${passe}")
+    }
+
+    @Test
+    fun k06_accueil_tendance() {
+        startMain()
+        AccueilBudgetE2e.checkTrend("k06_accueil_tendance_${passe}")
     }
 }

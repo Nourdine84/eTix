@@ -1,4 +1,4 @@
-# Validation sur émulateur — lots 1 à 7
+# Validation sur émulateur — lots 1 à 8
 
 **Ce n'est pas une validation sur téléphone physique.** Émulateurs Android officiels (Google) dans GitHub Actions,
 données fictives uniquement, build de test signé avec la clé de développement du runner
@@ -41,6 +41,96 @@ Run : https://github.com/Nourdine84/eTix/actions/runs/36601028467
 | c01 | Lot 4 : ajout avec date (sélecteur), catégorie « Carburant », description |
 | c02 | Lot 4 : sections, recherche « carbu », filtre date de début, réinitialisation |
 | c03 | Lot 4 : édition préremplie, catégorie libre « Péage fictif », reprise dans le sélecteur |
+
+## Lot 8 — carte Budget de l'Accueil (branche `feature/android-lot8-accueil-budget`)
+
+Commit testé : **`b48f5d0`** — run https://github.com/Nourdine84/eTix/actions/runs/36703532983 (dernier commit de code).
+
+| Niveau | Résultat |
+|---|---|
+| JVM + Robolectric | **146 réussis, 0 échec, 10 désactivés** (dont `BudgetSummaryEngineTest` : sans budget, 49,99 / 50 / 80 / 100 %, dépassement, budget partagé compté une fois, 31/08 → 01/09, jours restants, 3 lignes max, « budget tendu ») |
+| Émulateur API 36 / 34 / 21 | **26/26** chacun |
+| Émulateur API 34 fr-FR | **6/6** (carte Budget en français) |
+| Émulateur API 36 petit écran | **12/12** (carte Budget à 360 dp police 1,3 et 2,0, 320 dp police 1,3) |
+| Mise à jour A → B | API 21, 34, 36 : versionCode 9 → 10, tickets, catégories et budgets conservés |
+| Plantages | aucun (après correction) |
+| Lint NewApi (nouveau, non bloquant) | 8 signalements, tous dans `OCRDateExtractor` (java.time, API 26), code existant non atteignable aujourd'hui |
+
+Défauts trouvés sur émulateur / aperçus et corrigés :
+- **Plantage de l'Accueil sur Android 5** dès qu'un budget existe (`HashMap.putIfAbsent`, API 24), run 36700391736 → `da8aa93` ;
+- fond teinté transparent laissant voir l'ombre en gris (Android 14) → couleurs opaques (`b48f5d0`) ;
+- « 200 » et « € » séparés en fin de ligne à police 2,0 → espace insécable (`b12fa3a`).
+
+Changement de mois : vérifié en JVM seulement (horloge de l'émulateur non modifiée).
+Aperçus : `docs/preview/lot8/` (Robolectric) et `docs/preview/lot8-emulateur/`.
+
+## Lot 8 — revue avant fusion : fiabilité CI, résultat de fusion (01/10/2026)
+
+Résultat de fusion proposé de la PR #76 (`refs/pull/76/merge`, source `1540145`, cible `8c1af76`) — run
+https://github.com/Nourdine84/eTix/actions/runs/36887839853, avec le verdict corrigé (`docs/FIABILITE_CI.md`).
+
+| Job (lien) | Attendu | Observé |
+|---|---|---|
+| [build](https://github.com/Nourdine84/eTix/actions/runs/36887839853/job/110455589790) — JVM + Robolectric | 170 `@Test` déclarés et découverts, 160 exécutés, 10 `@Ignore` | 160 réussis, 0 échec, 10 ignorés ; lint NewApi : aucune nouvelle incompatibilité ; version livrable 10 / `1.8.1-lot8` |
+| [emulator-api21](https://github.com/Nourdine84/eTix/actions/runs/36887839853/job/110455590508) | 29 | 29 réussis, mise à jour 10 → 11 conforme, aucun plantage |
+| [emulator-api34](https://github.com/Nourdine84/eTix/actions/runs/36887839853/job/110455590381) | 29 | 29 |
+| [emulator-api36](https://github.com/Nourdine84/eTix/actions/runs/36887839853/job/110455590571) | 29 | 29 |
+| [emulator-api34-fr](https://github.com/Nourdine84/eTix/actions/runs/36887839853/job/110455590244) | 6 | 6 |
+| [emulator-api36-petit](https://github.com/Nourdine84/eTix/actions/runs/36887839853/job/110455589943) | 15 (5 × 3 passes) | 15 |
+| emulator-compat-dates API [22](https://github.com/Nourdine84/eTix/actions/runs/36887839853/job/110455590437) / [23](https://github.com/Nourdine84/eTix/actions/runs/36887839853/job/110455590125) / [24](https://github.com/Nourdine84/eTix/actions/runs/36887839853/job/110461982250) / [25](https://github.com/Nourdine84/eTix/actions/runs/36887839853/job/110455590331) | 2 chacun | 2 chacun (API 24 : 1re tentative rouge, installation bloquée > 300 s, [relance](https://github.com/Nourdine84/eTix/actions/runs/36887839853/job/110461982250) verte) |
+| [verdict-autotest](https://github.com/Nourdine84/eTix/actions/runs/36887839853/job/110455590168) | 10 scénarios conformes | 10 conformes |
+
+Parcours standard (29 par API) par lot : lots 1-3 `E2eParcoursTest` (7) et `E2ePersistanceTest` (1) ;
+lot 4 `E2eLot4Test` (3) ; lot 5 `E2eCategoriesTest` (3) ; lot 6 `E2eDetailsTest` (3) ; lot 7
+`E2eBudgetAvantMajTest`, `E2eBudgetApresMajTest` (1 + 1), `E2eBudgetsTest` (4) ; lot 8 `E2eAccueilBudgetTest` (4),
+`E2eCompatDatesOcrTest` (2). Français : `E2eFrancaisTest` (6, lots 4 à 8). Petit écran : `E2eClavierPetitEcranTest`
+(5 × 3, lots 6 à 8).
+
+Défaut de test trouvé le 01/10/2026 (premier jour du mois) : `Lot6ScreenshotTest.details_*` supposait le ticket
+Lidl plus récent que les autres ; le 1er du mois, tous tombent le même jour → échec (run 36886132461). Données de
+test corrigées et attente Robolectric désormais en échec explicite à l'expiration (`1540145`). Code de l'app inchangé.
+
+## Lot 8 — durcissement (compatibilité, « Budget atteint », Tendance 6 mois)
+
+Commit de code testé : **`3129344`** — run https://github.com/Nourdine84/eTix/actions/runs/36725776665.
+
+| Niveau | Résultat |
+|---|---|
+| JVM + Robolectric | **160 réussis, 0 échec, 10 désactivés** (dont équivalence stricte du lecteur de dates avec java.time, « Budget atteint », libellés de la Tendance à 360 dp / 320 dp, police 1,0 / 1,3 / 2,0) |
+| Lint NewApi (désormais **bloquant**) | aucune nouvelle incompatibilité ; 2 exceptions documentées (`docs/COMPATIBILITE_ANDROID.md`) |
+| Émulateur API 36 / 34 / 21 | **29/29** chacun, dont lecteur de dates OCR sur l'appareil (11 cas + traitement complet) et Tendance 6 mois |
+| Émulateur API 34 fr-FR | **6/6** |
+| Émulateur API 36 petit écran | **15/15** (Tendance : libellés entiers à 360 dp police 1,3 et 2,0, 320 dp police 1,3) |
+| Mise à jour A → B | API 21, 34, 36 : versionCode 10 → 11 sans désinstallation, données conservées |
+| Plantages | aucun |
+
+Compatibilité java.time, exécutions réelles :
+
+| Commit | Configuration | API 21 | API 34 / 36 |
+|---|---|---|---|
+| `21adde7` (run 36722937007) | code d'origine, sans désucrage | **11/11 cas en `NoClassDefFoundError`** (DateTimeFormatter), traitement OCR complet idem | 11/11 conformes |
+| `50e1558` / `b3a7fa7` (runs 36724140825, 36725178848) | désucrage `desugar_jdk_libs` 2.0.4 | dates conformes, mais **plantages natifs `SIGSEGV`** de l'app pendant 5 classes de test | conformes |
+| `3129344` (run 36725776665) | lecteur sans java.time, désucrage retiré | **11/11 conformes, 29/29 tests, aucun plantage** | conformes |
+
+Les jobs émulateur échouent désormais si un test échoue, si aucun résultat n'est produit ou en cas de plantage
+(étape « Verdict tests émulateur ») ; auparavant ils restaient verts et seules les annotations signalaient les échecs.
+
+Mesures Tendance 6 mois (largeur du libellé / largeur disponible, taille par rapport à la taille prévue) :
+360 dp police 2,0 → libellés iOS entiers réduits à 94 % ; 320 dp police 1,3 → entiers à 100 %.
+Robolectric 320 dp police 2,0 → repli sur 3 lettres (« JUN », « JUL », « AOÛ », « SEP »), non atteint sur émulateur.
+
+Aperçus : `docs/preview/lot8/l8_09_atteint_*`, `l8_10` à `l8_12` (Robolectric), `docs/preview/lot8-emulateur/*tendance*`.
+
+## Incident CI après fusion de la PR #75 (30/09/2026)
+
+Run 36695648030 (commit de fusion `8c1af76` sur `feature/android-v2`), tentative 1 : le job `emulator-api34-fr`
+a échoué à l'étape **« Build APKs (A, B, tests, QA de développement) »** (compilation Gradle), avant tout test ;
+les 11 aperçus dépendants ont échoué faute d'artefact. Les autres jobs, compilant le même code, ont réussi.
+Tentative 2 (relance des jobs en échec) : réussie (fr 5/5).
+**Cause : inconnue.** Les journaux ne sont pas accessibles depuis cette session (téléchargement refusé, HTTP 403) et
+l'annotation ne contient que « Process completed with exit code 1 ». La relance réussie ne démontre pas une panne
+d'environnement. À revoir si le journal devient accessible (onglet Actions du run, job `emulator-api34-fr`,
+tentative 1) ou si l'échec se reproduit.
 
 ## Lot 7 — budgets (branche `feature/android-lot7-budgets`)
 

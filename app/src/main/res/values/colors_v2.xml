@@ -38,4 +38,7 @@
     <color name="v2_chart_5">#FF2D55</color>
     <color name="v2_chart_6">#FF3B30</color>
     <color name="v2_chart_7">#30B0C7</color>
+    <!-- Carte Budget de l'Accueil (lot 8) : fond teinté iOS orange / rouge à 8 % (16 % en sombre), pré-mélangé sur le fond de l'Accueil : opaque, sinon l'ombre de la carte apparaît en gris à travers (constaté sur Android 14) -->
+    <color name="v2_attention_08">#EFEBEB</color>
+    <color name="v2_negative_08">#EFE3EE</color>
 </resources>

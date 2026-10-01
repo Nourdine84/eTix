@@ -220,6 +220,114 @@
                 android:textSize="13sp" />
         </com.google.android.material.button.MaterialButtonToggleGroup>
 
+        <!-- ===== CARTE BUDGET (lot 8) — iOS BudgetSummaryCardView, « Ce mois » et au moins un budget ===== -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardBudget"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:visibility="gone"
+            app:cardBackgroundColor="@color/v2_surface_home"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="@dimen/v2_card_elevation"
+            app:strokeWidth="0dp">
+
+            <LinearLayout
+                android:id="@+id/budgetCardContent"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:accessibilityHeading="true"
+                    android:letterSpacing="0.14"
+                    android:text="BUDGETS DU MOIS"
+                    android:textColor="@color/v2_text_secondary"
+                    android:textSize="11sp"
+                    tools:targetApi="p" />
+
+                <TextView
+                    android:id="@+id/tvBudgetHeadline"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="@color/v2_text_primary"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:id="@+id/tvBudgetCaption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:textColor="@color/v2_text_secondary"
+                    android:textSize="12sp" />
+
+                <com.google.android.material.progressindicator.LinearProgressIndicator
+                    android:id="@+id/budgetGlobalBar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:importantForAccessibility="no"
+                    android:max="1000"
+                    app:indicatorTrackGapSize="0dp"
+                    app:trackColor="@color/v2_fill"
+                    app:trackCornerRadius="3dp"
+                    app:trackStopIndicatorSize="0dp"
+                    app:trackThickness="6dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvBudgetPercent"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvBudgetDaysLeft"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:gravity="end"
+                        android:textColor="@color/v2_text_secondary"
+                        android:textSize="11sp" />
+                </LinearLayout>
+
+                <View
+                    android:id="@+id/budgetDivider"
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="14dp"
+                    android:background="@color/v2_divider" />
+
+                <LinearLayout
+                    android:id="@+id/budgetLines"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:orientation="vertical" />
+
+                <TextView
+                    android:id="@+id/tvBudgetMore"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textColor="@color/v2_text_secondary"
+                    android:textSize="12sp"
+                    android:visibility="gone" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
         <!-- ===== TENDANCE 6 MOIS + PANIER MOYEN (masquée sans ticket, comme iOS) ===== -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardTrend"

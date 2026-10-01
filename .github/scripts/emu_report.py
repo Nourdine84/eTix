@@ -17,8 +17,10 @@ def notice(title, body, level="notice"):
 notice("Émulateur", read(f"{out}/device.txt") + "\n" + read(f"{out}/install.txt")[-600:])
 
 rows, fails = [], []
+per_file = {}  # nom de fichier -> {"PASS": n, "FAIL": n, "ERROR": n, "SKIP": n}
 for f in sorted(glob.glob(f"{out}/instr_*.txt")):
     txt = read(f)
+    counts = per_file.setdefault(os.path.basename(f), {"PASS": 0, "FAIL": 0, "ERROR": 0, "SKIP": 0})
     cur = {}
     key = None
     for line in txt.splitlines():
@@ -32,6 +34,7 @@ for f in sorted(glob.glob(f"{out}/instr_*.txt")):
             if code in (0, -1, -2, -3):
                 state = {0: "PASS", -2: "FAIL", -1: "ERROR", -3: "SKIP"}[code]
                 rows.append(f"{state} {name}")
+                counts[state] += 1
                 if code in (-1, -2):
                     stack = cur.get("stack", "").strip().splitlines()
                     causes = [l.strip() for l in stack if l.strip().startswith("Caused by")]
@@ -51,12 +54,11 @@ if fails:
         notice(f"Échecs émulateur {i//3+1}", "\n".join(fails[i:i+3]), "error")
 
 ua, ub = read(f"{out}/update_avant.txt").strip(), read(f"{out}/update_apres.txt").strip()
+def field(t, k):
+    m = re.search(k + r"=([^\s]+(?: [0-9:]+)?)", t)
+    return m.group(1) if m else "?"
+same_first = field(ua, "firstInstallTime") == field(ub, "firstInstallTime") != "?"
 if ua or ub:
-    import re as _re
-    def field(t, k):
-        m = _re.search(k + r"=([^\s]+(?: [0-9:]+)?)", t)
-        return m.group(1) if m else "?"
-    same_first = field(ua, "firstInstallTime") == field(ub, "firstInstallTime") != "?"
     notice("Mise à jour A→B sans désinstallation",
            f"certificats (A / B) :\n{read(f'{out}/update_certs.txt').strip()}\n"
            f"install -r : {read(f'{out}/update_install.txt').strip()[-160:]}\n"
@@ -78,6 +80,15 @@ dem = read(f"{out}/shots/demarrage.txt").strip()
 if dem:
     notice("Démarrages (état réel de l'app)", dem[:3500])
 
+cd = read(f"{out}/shots/compat_dates.txt").strip()
+if cd:
+    notice("Compatibilité dates OCR", cd[:3500], "warning" if ("ERREUR" in cd or "ÉCART" in cd) else "notice")
+
+nat = read(f"{out}/native.txt").strip()
+if nat:
+    for i in range(0, min(len(nat), 10500), 3500):
+        notice(f"Plantages natifs {i//3500+1}", nat[i:i+3500], "error")
+
 ech = read(f"{out}/shots/echec.txt").strip()
 if ech:
     notice("Diagnostic des échecs (focus fenêtre)", ech[:3500], "warning")
@@ -88,3 +99,69 @@ if to:
 
 crash = read(f"{out}/crashes.txt").strip()
 notice("Plantages (logcat)", crash[:3500] if crash else "aucun FATAL EXCEPTION", "error" if crash else "notice")
+
+# ---------------------------------------------------------------------------
+# Attendus / observés : chaque classe lancée par emulator_e2e.sh (expected_runs.txt) doit avoir produit
+# un résultat, avec autant de tests réussis que de @Test déclarés dans sa source (moins les @Ignore).
+# ---------------------------------------------------------------------------
+SRC = os.environ.get("ANDROID_TEST_SRC", "app/src/androidTest/java")
+
+def declared(cls):
+    """(@Test, @Ignore) déclarés dans le corps de la classe Kotlin `cls`, ou None si introuvable."""
+    for path in glob.glob(f"{SRC}/**/*.kt", recursive=True):
+        txt = read(path)
+        m = re.search(r"^(?:@\S+\s+)*class\s+" + re.escape(cls) + r"\b", txt, re.M)
+        if not m:
+            continue
+        body = txt[m.end():]
+        nxt = re.search(r"^(?:@RunWith|@FixMethodOrder|class |object |internal |private )", body, re.M)
+        body = body[:nxt.start()] if nxt else body
+        return len(re.findall(r"@Test\b", body)), len(re.findall(r"@Ignore\b", body))
+    return None
+
+expected_runs = [l.split() for l in read(f"{out}/expected_runs.txt").splitlines() if l.strip()]
+table, exp_total, obs_total, mismatch = [], 0, 0, []
+for parts in expected_runs:
+    cls = parts[0].split(".")[-1]; suf = f"_{parts[1]}" if len(parts) > 1 else ""
+    fname = f"instr_{parts[0].replace('.', '_')}{suf}.txt"
+    d = declared(cls)
+    c = per_file.get(fname)
+    if d is None:
+        mismatch.append(f"{cls}{suf} : classe introuvable dans les sources"); continue
+    want = d[0] - d[1]; exp_total += want
+    got = c["PASS"] if c else 0; obs_total += got
+    state = "OK" if (c and got == want and c["FAIL"] == 0 and c["ERROR"] == 0) else "ÉCART"
+    if c is None:
+        mismatch.append(f"{cls}{suf} : résultat absent")
+    elif state != "OK":
+        mismatch.append(f"{cls}{suf} : attendu {want} réussis, observé {got} (échecs {c['FAIL'] + c['ERROR']})")
+    table.append(f"{state} {cls}{suf} : attendu {want}, réussis {got}" + (f", échecs {c['FAIL'] + c['ERROR']}, ignorés {c['SKIP']}" if c else ", aucun résultat"))
+notice("Attendus / observés", f"total attendu {exp_total}, réussis {obs_total}\n" + "\n".join(table) if table else "aucune exécution prévue enregistrée",
+       "notice" if (table and not mismatch) else "error")
+
+# Mise à jour A→B : versionCode croissant et pas de désinstallation (mode standard uniquement)
+upd_bad = False
+if ua or ub:
+    upd_bad = not (same_first and field(ub, "versionCode") != "?" and field(ua, "versionCode") != "?"
+                   and int(field(ub, "versionCode")) > int(field(ua, "versionCode")))
+
+# Verdict lu par .github/scripts/emu_verdict.sh (le job échoue sinon)
+reasons = []
+if not expected_runs:
+    reasons.append("aucune exécution prévue enregistrée")
+if not rows:
+    reasons.append("aucun résultat de test")
+nfail = sum(1 for r in rows if r.startswith(("FAIL", "ERROR")))
+if nfail or fails:
+    reasons.append(f"{max(nfail, len(fails))} échec(s)")
+if mismatch:
+    reasons.append("attendus/observés : " + " ; ".join(mismatch))
+if crash or nat:
+    reasons.append("plantage (logcat)")
+if to:
+    reasons.append("délai dépassé")
+if upd_bad:
+    reasons.append("mise à jour A→B non conforme")
+os.makedirs(out, exist_ok=True)
+with open(f"{out}/verdict.txt", "w") as fh:
+    fh.write("OK" if not reasons else "ÉCHEC : " + ", ".join(reasons))

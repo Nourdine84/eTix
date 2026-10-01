@@ -9,8 +9,8 @@ import java.util.Calendar
  * HomeSnapshot (sous-ensemble utile), FinancialStateEngine, HomeFinancialCopy, TrendEngine.
  * Fonctions pures, sans Android, testées en JVM.
  *
- * Non porté : HomeInsightEngine, BudgetSummaryEngine, StoreIntelligenceEngine (cartes contextuelles)
- * — Android n'a pas encore de budgets ; voir docs/SUIVI_ANDROID.md.
+ * BudgetSummaryEngine : features/budget (lot 8). Non porté : HomeInsightEngine, StoreIntelligenceEngine (cartes contextuelles)
+ * — voir docs/SUIVI_ANDROID.md.
  */
 data class HomeSnapshot(
     val periodTotal: Double,
@@ -110,7 +110,8 @@ object HomeCopy {
     }
 }
 
-data class MonthlyTrendPoint(val month: String, val total: Double)
+/** [month] : libellé court iOS ; [monthIndex] (0 = janvier) et [year] servent aux libellés courts et accessibles. */
+data class MonthlyTrendPoint(val month: String, val total: Double, val monthIndex: Int = -1, val year: Int = 0)
 
 /** iOS TrendEngine : 6 derniers mois calendaires (mois courant inclus), mois vides à 0. */
 object TrendEngine {
@@ -118,6 +119,19 @@ object TrendEngine {
     /** Libellés iOS fr_FR shortStandaloneMonthSymbols, sans point, en majuscules. Figés pour ne pas
      *  dépendre des données de locale de l'appareil. */
     private val MONTHS = listOf("JANV", "FÉVR", "MARS", "AVR", "MAI", "JUIN", "JUIL", "AOÛT", "SEPT", "OCT", "NOV", "DÉC")
+
+    /** Repli Android sur écran étroit ou en grande police : 3 lettres (pas d'équivalent iOS). */
+    private val SHORT = listOf("JAN", "FÉV", "MAR", "AVR", "MAI", "JUN", "JUL", "AOÛ", "SEP", "OCT", "NOV", "DÉC")
+
+    /** Noms complets lus par l'accessibilité (TalkBack), quel que soit le libellé affiché. */
+    private val FULL = listOf("janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août",
+        "septembre", "octobre", "novembre", "décembre")
+
+    fun shortLabel(p: MonthlyTrendPoint): String = SHORT.getOrNull(p.monthIndex) ?: p.month
+
+    /** « septembre 2026 » (l'année lève l'ambiguïté quand les 6 mois chevauchent deux années). */
+    fun fullLabel(p: MonthlyTrendPoint): String =
+        FULL.getOrNull(p.monthIndex)?.let { "$it ${p.year}" } ?: p.month
 
     fun monthlyTrend(tickets: List<Ticket>, monthsBack: Int = 6, now: Long = System.currentTimeMillis()): List<MonthlyTrendPoint> {
         if (monthsBack <= 0) return emptyList()
@@ -129,9 +143,14 @@ object TrendEngine {
         }
         val starts = LongArray(monthsBack + 1)
         val labels = ArrayList<String>(monthsBack)
+        val months = IntArray(monthsBack)
+        val years = IntArray(monthsBack)
         for (i in 0..monthsBack) {
             starts[i] = cal.timeInMillis
-            if (i < monthsBack) labels += MONTHS[cal.get(Calendar.MONTH)]
+            if (i < monthsBack) {
+                labels += MONTHS[cal.get(Calendar.MONTH)]
+                months[i] = cal.get(Calendar.MONTH); years[i] = cal.get(Calendar.YEAR)
+            }
             cal.add(Calendar.MONTH, 1)
         }
         val totals = DoubleArray(monthsBack)
@@ -140,6 +159,25 @@ object TrendEngine {
             if (ms < starts[0] || ms >= starts[monthsBack]) continue
             for (i in 0 until monthsBack) if (ms < starts[i + 1]) { totals[i] += t.amount; break }
         }
-        return labels.mapIndexed { i, l -> MonthlyTrendPoint(l, totals[i]) }
+        return labels.mapIndexed { i, l -> MonthlyTrendPoint(l, totals[i], months[i], years[i]) }
+    }
+}
+
+/**
+ * Ajustement des libellés du graphique « Tendance 6 mois » à la largeur d'une colonne.
+ * Ordre : libellés iOS à la taille prévue ; sinon légère réduction (jamais sous [MIN_SCALE]) ;
+ * sinon libellés à 3 lettres ; sinon 3 lettres réduites au plus jusqu'à [MIN_SCALE].
+ * Les largeurs sont mesurées à la taille prévue (qui suit déjà la taille de police du système).
+ */
+object TrendLabelFit {
+    const val MIN_SCALE = 0.8f
+
+    data class Fit(val useShort: Boolean, val scale: Float)
+
+    fun choose(available: Float, widestFull: Float, widestShort: Float): Fit = when {
+        widestFull <= available -> Fit(false, 1f)
+        widestFull * MIN_SCALE <= available -> Fit(false, available / widestFull)
+        widestShort <= available -> Fit(true, 1f)
+        else -> Fit(true, maxOf(MIN_SCALE, available / widestShort))
     }
 }
