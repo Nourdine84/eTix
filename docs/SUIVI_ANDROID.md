@@ -203,7 +203,11 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
   - « Budget atteint » à 100 % pile (écart iOS B3 documenté) ; « Budgets dépassés de X » seulement en dépassement réel.
   - Tendance 6 mois : libellés entiers sur petit écran et grande police (réduction ≤ 20 %, sinon 3 lettres),
     zone du graphique agrandie au lieu de couper, libellé accessible complet (« septembre 2026 : 55,00 € »).
-  - PR brouillon vers `feature/android-v2` (non fusionnée).
+  - PR brouillon #76 vers `feature/android-v2` (non fusionnée).
+  - **Fiabilité CI** (`docs/FIABILITE_CI.md`) : jobs émulateur verts malgré des échecs jusqu'au 30/09 (62 jobs,
+    28 runs intermédiaires ; résultats de référence des lots, lus dans les annotations, confirmés sans échec).
+    Verdict par attendus/observés, auto-test permanent, démonstration rouge sur `demo/ci-verdict` (branche de
+    démonstration, non destinée à la fusion). Lecteur de dates exécuté sur API 22 à 25. Version livrable contrôlée.
 
 ## Écarts restants avec iOS (référence `feature/home-hero-v2`)
 

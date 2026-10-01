@@ -17,8 +17,10 @@ Application : minSdk 21 (Android 5.0), targetSdk 34, Java/Kotlin 17.
     (y compris le traitement OCR complet `OCRProcessor.process`). L'erreur n'est pas rattrapée par
     le `catch (Exception)` du lecteur : dans l'app, elle ferait planter l'écran appelant.
   - API 34 et API 36 : 11 cas sur 11 conformes, traitement complet conforme.
-- API 22 à 25 : non exécutées (pas d'émulateur dans la CI) ; `java.time` y est également absent
-  (API 26 minimum), même défaut attendu, corrigé de la même façon.
+- API 22 à 25 (Android 5.1.1, 6.0, 7.0, 7.1.1) : exécutées **après correction** (job `emulator-compat-dates`,
+  run 36887839853 sur le résultat de fusion de la PR #76) : 11/11 cas et traitement complet conformes sur
+  chaque version (API 24 : première tentative bloquée à l'installation de l'APK, > 300 s, relancée).
+  Le code d'origine n'y a pas été exécuté.
 
 ### Portée pour l'utilisateur
 

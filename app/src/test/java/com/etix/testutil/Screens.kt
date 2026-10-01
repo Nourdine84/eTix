@@ -13,8 +13,7 @@ object Screens {
 
     fun idle() = shadowOf(Looper.getMainLooper()).idle()
 
-    /** Room émet sur un thread d'arrière-plan : on laisse tourner le looper jusqu'à la condition. */
-    /** Attend [cond] (5 s max). Échoue explicitement à l'expiration : auparavant le test continuait en silence
+    /** Room émet sur un thread d'arrière-plan : on laisse tourner le looper jusqu'à [cond] (5 s max). Échoue explicitement à l'expiration : auparavant le test continuait en silence
      *  et échouait plus loin avec un message trompeur (constaté le 01/10/2026, Lot6ScreenshotTest). */
     fun waitFor(cond: () -> Boolean) {
         repeat(100) {

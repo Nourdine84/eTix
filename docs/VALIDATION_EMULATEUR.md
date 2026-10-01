@@ -64,6 +64,32 @@ Défauts trouvés sur émulateur / aperçus et corrigés :
 Changement de mois : vérifié en JVM seulement (horloge de l'émulateur non modifiée).
 Aperçus : `docs/preview/lot8/` (Robolectric) et `docs/preview/lot8-emulateur/`.
 
+## Lot 8 — revue avant fusion : fiabilité CI, résultat de fusion (01/10/2026)
+
+Résultat de fusion proposé de la PR #76 (`refs/pull/76/merge`, source `1540145`, cible `8c1af76`) — run
+https://github.com/Nourdine84/eTix/actions/runs/36887839853, avec le verdict corrigé (`docs/FIABILITE_CI.md`).
+
+| Job (lien) | Attendu | Observé |
+|---|---|---|
+| [build](https://github.com/Nourdine84/eTix/actions/runs/36887839853/job/110455589790) — JVM + Robolectric | 170 `@Test` déclarés et découverts, 160 exécutés, 10 `@Ignore` | 160 réussis, 0 échec, 10 ignorés ; lint NewApi : aucune nouvelle incompatibilité ; version livrable 10 / `1.8.1-lot8` |
+| [emulator-api21](https://github.com/Nourdine84/eTix/actions/runs/36887839853/job/110455590508) | 29 | 29 réussis, mise à jour 10 → 11 conforme, aucun plantage |
+| [emulator-api34](https://github.com/Nourdine84/eTix/actions/runs/36887839853/job/110455590381) | 29 | 29 |
+| [emulator-api36](https://github.com/Nourdine84/eTix/actions/runs/36887839853/job/110455590571) | 29 | 29 |
+| [emulator-api34-fr](https://github.com/Nourdine84/eTix/actions/runs/36887839853/job/110455590244) | 6 | 6 |
+| [emulator-api36-petit](https://github.com/Nourdine84/eTix/actions/runs/36887839853/job/110455589943) | 15 (5 × 3 passes) | 15 |
+| emulator-compat-dates API [22](https://github.com/Nourdine84/eTix/actions/runs/36887839853/job/110455590437) / [23](https://github.com/Nourdine84/eTix/actions/runs/36887839853/job/110455590125) / [24](https://github.com/Nourdine84/eTix/actions/runs/36887839853/job/110461982250) / [25](https://github.com/Nourdine84/eTix/actions/runs/36887839853/job/110455590331) | 2 chacun | 2 chacun (API 24 : 1re tentative rouge, installation bloquée > 300 s, [relance](https://github.com/Nourdine84/eTix/actions/runs/36887839853/job/110461982250) verte) |
+| [verdict-autotest](https://github.com/Nourdine84/eTix/actions/runs/36887839853/job/110455590168) | 10 scénarios conformes | 10 conformes |
+
+Parcours standard (29 par API) par lot : lots 1-3 `E2eParcoursTest` (7) et `E2ePersistanceTest` (1) ;
+lot 4 `E2eLot4Test` (3) ; lot 5 `E2eCategoriesTest` (3) ; lot 6 `E2eDetailsTest` (3) ; lot 7
+`E2eBudgetAvantMajTest`, `E2eBudgetApresMajTest` (1 + 1), `E2eBudgetsTest` (4) ; lot 8 `E2eAccueilBudgetTest` (4),
+`E2eCompatDatesOcrTest` (2). Français : `E2eFrancaisTest` (6, lots 4 à 8). Petit écran : `E2eClavierPetitEcranTest`
+(5 × 3, lots 6 à 8).
+
+Défaut de test trouvé le 01/10/2026 (premier jour du mois) : `Lot6ScreenshotTest.details_*` supposait le ticket
+Lidl plus récent que les autres ; le 1er du mois, tous tombent le même jour → échec (run 36886132461). Données de
+test corrigées et attente Robolectric désormais en échec explicite à l'expiration (`1540145`). Code de l'app inchangé.
+
 ## Lot 8 — durcissement (compatibilité, « Budget atteint », Tendance 6 mois)
 
 Commit de code testé : **`3129344`** — run https://github.com/Nourdine84/eTix/actions/runs/36725776665.
