@@ -27,6 +27,15 @@ jobs:
         env:
           ANDROID_TEST_SRC: demo/src
         run: python3 .github/scripts/emu_report.py demo/emu-out "${{ matrix.scenario }}"
+      # Comme dans les jobs émulateur : résultats publiés en artefact AVANT le verdict, conservés même si le job échoue
+      - name: Upload emulator results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-${{ matrix.scenario }}
+          path: demo/emu-out/
+          if-no-files-found: ignore
+          retention-days: 30
       - name: Verdict tests émulateur
         if: always()
         run: bash .github/scripts/emu_verdict.sh demo/emu-out "${{ matrix.scenario }}"
