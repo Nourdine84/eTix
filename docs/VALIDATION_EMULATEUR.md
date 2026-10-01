@@ -64,6 +64,28 @@ Défauts trouvés sur émulateur / aperçus et corrigés :
 Changement de mois : vérifié en JVM seulement (horloge de l'émulateur non modifiée).
 Aperçus : `docs/preview/lot8/` (Robolectric) et `docs/preview/lot8-emulateur/`.
 
+## Lot 9 — scanner (branche `feature/android-lot9-scanner`)
+
+Commit de code testé : **`897e536`**, résultat de fusion proposé de la PR #78 (cible `457f49e`) — run
+https://github.com/Nourdine84/eTix/actions/runs/36930688922 (label `apercus` : 95 jobs dont 84 d'aperçu, tous verts).
+
+| Niveau | Attendu | Observé |
+|---|---|---|
+| JVM + Robolectric | 201 `@Test` déclarés | 201 découverts, 200 réussis, 0 échec, 1 ignoré (`OCRValidationTest`, obsolète) |
+| Émulateur API 21 / 34 / 36 | 33 chacun (29 + `E2eScanTest` 4) | 33 chacun ; ML Kit réel sur l'image de test, formulaire prérempli (ESSO, 23,45, 12/01/2026, Carburant), enregistrement après correction, rien détecté |
+| Émulateur API 34 fr-FR | 6 | 6 |
+| Émulateur API 36 petit écran | 18 (6 × 3 passes, dont `k07` scanner) | 18 |
+| Lecteur de dates API 22 à 25 | 2 chacun | 2 chacun |
+| Mise à jour A → B | versionCode 11 → 12 sans désinstallation | conforme (API 21, 34, 36), aucun plantage |
+
+Défauts trouvés en cours de lot (CI, aperçus) et corrigés :
+- toute image jugée « introuvable » (lecture des dimensions mal testée) — tests Robolectric, `9ec6e46` ;
+- boutons du scanner hors de l'écran sur petit écran / grande police → barre basse toujours visible, `0fb922b` ;
+- bandeau de vérification écrasé lettre par lettre à 320 dp / police 2,0 → empilé, `80a055a` ;
+- fonds du bandeau et des badges absents sur Android 5 (teinte ignorée) → fonds construits directement, `897e536`.
+
+Aperçus : `docs/preview/lot9/` (Robolectric) et `docs/preview/lot9-emulateur/`.
+
 ## Lot 8 — revue avant fusion : fiabilité CI, résultat de fusion (01/10/2026)
 
 Résultat de fusion proposé de la PR #76 (`refs/pull/76/merge`, source `1540145`, cible `8c1af76`) — run

@@ -242,7 +242,7 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
   « Réessayer » ou « Saisir manuellement ». Annuler, Retour, « Annuler le scan » : aucun ticket.
   Ancien écran de scan simulé (`OCRScannerFragment`, valeurs fictives) : jamais branché, conservé. Détail et
   écarts iOS : `docs/SCANNER.md`.
-- Version `1.9.0-lot9` (versionCode 11).
+- Version `1.9.0-lot9` (versionCode 11). PR brouillon #78 (non fusionnée) ; résultats : `docs/VALIDATION_EMULATEUR.md`.
 
 ## Écarts restants avec iOS (référence `feature/home-hero-v2`)
 
