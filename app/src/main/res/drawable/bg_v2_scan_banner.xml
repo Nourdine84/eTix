@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Bandeau « Informations lues sur le ticket » : couleur dans le fond lui-même (android:backgroundTint d'un
+     LinearLayout est ignoré sur Android 5, constaté sur émulateur API 21) -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/v2_primary_30" />
+    <corners android:radius="20dp" />
+</shape>

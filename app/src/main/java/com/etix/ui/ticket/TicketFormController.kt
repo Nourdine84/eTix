@@ -90,6 +90,9 @@ class TicketFormController(
         b.tvCategorySuggested.visibility = android.view.View.GONE
     }
 
+    /** Fond coloré construit directement (une teinte de fond n'a pas d'effet sur Android 5, constaté sur émulateur API 21). */
+    private fun capsule(color: Int) = android.graphics.drawable.GradientDrawable().apply { cornerRadius = 999f; setColor(color) }
+
     /** iOS FieldConfidence : HIGH → « Vérifié » ; MEDIUM / LOW → « À vérifier » ; NONE → aucun badge. */
     private fun setBadge(v: android.widget.TextView, c: ScanConfidence) {
         val ctx = v.context
@@ -98,13 +101,13 @@ class TicketFormController(
             ScanConfidence.HIGH -> {
                 v.text = "Vérifié"
                 v.setTextColor(ContextCompat.getColor(ctx, R.color.v2_positive))
-                v.backgroundTintList = ContextCompat.getColorStateList(ctx, R.color.v2_positive_12)
+                v.background = capsule(ContextCompat.getColor(ctx, R.color.v2_positive_12))
                 v.contentDescription = "Lu sur le ticket : vérifié"
             }
             else -> {
                 v.text = "À vérifier"
                 v.setTextColor(ContextCompat.getColor(ctx, R.color.v2_attention))
-                v.backgroundTintList = ContextCompat.getColorStateList(ctx, R.color.v2_attention_12)
+                v.background = capsule(ContextCompat.getColor(ctx, R.color.v2_attention_12))
                 v.contentDescription = "Lu sur le ticket : à vérifier"
             }
         }
