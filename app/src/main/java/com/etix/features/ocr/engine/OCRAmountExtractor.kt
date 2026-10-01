@@ -36,7 +36,13 @@ object OCRAmountExtractor {
     private val CASH = Regex("""\b(ESPECES|ESP|CASH)\b""")
     private val CHANGE = Regex("""\b(RENDU|A RENDRE|MONNAIE)\b""")
 
-    fun extract(rawLines: List<String>): Double? {
+    /** Montant retenu et sa provenance : [fromTotalLine] = ligne « total à payer » (règle 2), sinon repli. */
+    data class Hit(val value: Double, val fromTotalLine: Boolean)
+
+    fun extract(rawLines: List<String>): Double? = extractDetailed(rawLines)?.value
+
+    /** Mêmes règles que [extract] ; indique en plus si le montant vient d'une ligne de total (confiance iOS). */
+    fun extractDetailed(rawLines: List<String>): Hit? {
         val lines = rawLines.map { it.trim() }.filter { it.isNotBlank() }
         val norm = lines.map(::normalize)
 
@@ -52,22 +58,22 @@ object OCRAmountExtractor {
                 (firstAmountAfter(norm[i], m.range.last + 1) ?: lines.getOrNull(i + 1)
                     ?.takeIf { isAmountOnly(it) }?.let(::lastAmount))?.takeIf { it > 0 }
             }.lastOrNull()
-            if (hit != null) return hit
+            if (hit != null) return Hit(hit, true)
         }
 
         // 3. Montant payé
         norm.indices.filter { CARD.containsMatchIn(norm[it]) && !isExcluded(it) }
-            .mapNotNull { amountOf(it)?.takeIf { v -> v > 0 } }.lastOrNull()?.let { return it }
+            .mapNotNull { amountOf(it)?.takeIf { v -> v > 0 } }.lastOrNull()?.let { return Hit(it, false) }
         val cash = norm.indices.filter { CASH.containsMatchIn(norm[it]) }.mapNotNull { amountOf(it) }.lastOrNull()
         if (cash != null && cash > 0) {
             val change = norm.indices.filter { CHANGE.containsMatchIn(norm[it]) }.mapNotNull { amountOf(it) }
                 .lastOrNull() ?: 0.0
-            return round2(cash - change).takeIf { it > 0 }
+            return round2(cash - change).takeIf { it > 0 }?.let { Hit(it, false) }
         }
 
         // 4. Repli
         return norm.indices.filterNot(::isExcluded).mapNotNull { lastAmount(lines[it]) }
-            .filter { it > 0.5 }.maxOrNull()
+            .filter { it > 0.5 }.maxOrNull()?.let { Hit(it, false) }
     }
 
     /**
