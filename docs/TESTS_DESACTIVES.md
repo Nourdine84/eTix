@@ -10,10 +10,11 @@ commit `2087d49`), qui exécute l'attente proposée **sans assertion**.
 |---|---|---|
 | Lot 5 (`747c558`) | **11** | 10 dans `OCRFixturesTest` + 1 `OCRValidationTest`. Le compte rendu du lot 5 ne détaillait que les 10 d'`OCRFixturesTest` (9 décisions Q1–Q4 + 1 défaut moteur) et omettait `OCRValidationTest` : c'est l'écart signalé. |
 | Lot 6 | **10** | `s_long_montant_total_ttc` réactivé (défaut D1 corrigé, attente 40,80 inchangée) → 9 dans `OCRFixturesTest` + 1 `OCRValidationTest`. |
+| Lot 9 | **1** | Décisions Q1–Q4 validées : les 9 tests d'`OCRFixturesTest` réactivés, attentes inchangées (7 passaient déjà, 2 ont demandé une correction du moteur : `t003_enseigne`, `t004_categorie`). Reste `OCRValidationTest` (obsolète, conservé). |
 
 Aucun autre test désactivé dans le dépôt (JVM, Robolectric, émulateur).
 
-## Inventaire (lot 6)
+## Inventaire (lot 6) — lignes 1 à 9 réactivées au lot 9
 
 Types : **D** = décision produit en attente, l'attente proposée passe déjà ; **D+M** = décision produit en attente
 **et** défaut moteur (l'attente proposée échouerait aujourd'hui) ; **O** = test obsolète (données absentes).
@@ -39,3 +40,9 @@ Bilan : 7 cas passeraient dès validation des propositions ; **2 échoueraient**
 | Test | Avant | Après |
 |---|---|---|
 | `OCRFixturesTest.s_long_montant_total_ttc` | `@Ignore` (défaut D1 : `SOUS-TOTAL 42,80` retenu) | actif, réussi — `OCRAmountExtractor` ; + 18 cas de régression `OCRAmountRegressionTest` |
+
+## Réactivés au lot 9 (décisions Q1 à Q4 validées le 01/10/2026)
+
+Lignes 1 à 9 de l'inventaire : actives, attentes d'origine. Corrections moteur : enseigne « TOTAL » seule ignorée
+(Q1, `t003_enseigne`) ; catégories iOS par enseigne (Q2, `t004_categorie` : ESSO → Carburant). Seul
+`OCRValidationTest.validate_ocr_results` reste désactivé (obsolète, données absentes, conservé et documenté).
