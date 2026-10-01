@@ -251,9 +251,10 @@ class E2eClavierPetitEcranTest {
         onView(allOf(withId(R.id.btnScanTicket), isDisplayed())).perform(click())
         waitFor(withId(R.id.btnTakePhoto))
         shot("k07_scan_intro_${passe}")
+        // barre basse toujours visible : les trois boutons entièrement à l'écran, sans défilement
         for (id in listOf(R.id.btnTakePhoto, R.id.btnPickImage, R.id.btnScanCancel)) {
-            onView(withId(id)).perform(androidx.test.espresso.action.ViewActions.scrollTo())
-                .check(androidx.test.espresso.assertion.ViewAssertions.matches(isDisplayed()))
+            onView(withId(id)).check(androidx.test.espresso.assertion.ViewAssertions.matches(
+                androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed()))
         }
         onView(withId(R.id.btnScanCancel)).perform(click())
         waitFor(withId(R.id.inputStore))

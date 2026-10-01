@@ -12,11 +12,63 @@
     android:focusable="true">
 
     <!-- ===== INTRO ===== -->
-    <ScrollView
+    <!-- Boutons dans une barre basse toujours visible (petit écran / grande police : constaté sur émulateur,
+         l'action principale sortait de l'écran) ; l'illustration et le texte défilent au-dessus. -->
+    <LinearLayout
         android:id="@+id/stepIntro"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:orientation="vertical">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:fillViewport="true">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:paddingStart="32dp"
+                android:paddingTop="24dp"
+                android:paddingEnd="32dp"
+                android:paddingBottom="24dp">
+
+                <Space android:layout_width="1dp" android:layout_height="0dp" android:layout_weight="1" />
+
+                <ImageView
+                    android:id="@+id/imgScanFrame"
+                    android:layout_width="200dp"
+                    android:layout_height="250dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/img_scan_frame" />
+
+                <TextView
+                    android:id="@+id/tvScanTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:accessibilityHeading="true"
+                    android:gravity="center"
+                    android:text="Scanner un ticket"
+                    android:textColor="@color/v2_text_primary"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    tools:targetApi="p" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:gravity="center"
+                    android:text="Prends ton ticket en photo, à plat et en entier, ou choisis une image. La lecture se fait sur ton téléphone : aucune image n'est envoyée sur un serveur."
+                    android:textColor="@color/v2_text_secondary"
+                    android:textSize="15sp" />
+
+                <Space android:layout_width="1dp" android:layout_height="0dp" android:layout_weight="1" />
+            </LinearLayout>
+        </ScrollView>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -24,48 +76,13 @@
             android:gravity="center_horizontal"
             android:orientation="vertical"
             android:paddingStart="32dp"
-            android:paddingTop="24dp"
             android:paddingEnd="32dp"
-            android:paddingBottom="24dp">
-
-            <Space android:layout_width="1dp" android:layout_height="0dp" android:layout_weight="1" />
-
-            <ImageView
-                android:id="@+id/imgScanFrame"
-                android:layout_width="200dp"
-                android:layout_height="250dp"
-                android:importantForAccessibility="no"
-                android:src="@drawable/img_scan_frame" />
-
-            <TextView
-                android:id="@+id/tvScanTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:accessibilityHeading="true"
-                android:gravity="center"
-                android:text="Scanner un ticket"
-                android:textColor="@color/v2_text_primary"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                tools:targetApi="p" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:gravity="center"
-                android:text="Prends ton ticket en photo, à plat et en entier, ou choisis une image. La lecture se fait sur ton téléphone : aucune image n'est envoyée sur un serveur."
-                android:textColor="@color/v2_text_secondary"
-                android:textSize="15sp" />
-
-            <Space android:layout_width="1dp" android:layout_height="0dp" android:layout_weight="1" android:minHeight="24dp" />
-
+            android:paddingBottom="16dp">
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnTakePhoto"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="8dp"
                 android:minHeight="52dp"
                 android:text="Prendre une photo"
                 android:textSize="17sp"
@@ -98,15 +115,21 @@
                 android:textColor="@color/v2_text_secondary"
                 android:textSize="15sp" />
         </LinearLayout>
-    </ScrollView>
+    </LinearLayout>
 
     <!-- ===== AUTORISATION CAMÉRA (iOS CameraPrimingView) ===== -->
-    <ScrollView
+    <LinearLayout
         android:id="@+id/stepPriming"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true"
+        android:orientation="vertical"
         android:visibility="gone">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -148,12 +171,22 @@
                 android:src="@drawable/ic_v2_scan"
                 app:tint="@color/v2_primary" />
 
-            <Space android:layout_width="1dp" android:layout_height="0dp" android:layout_weight="1" android:minHeight="24dp" />
+            <Space android:layout_width="1dp" android:layout_height="0dp" android:layout_weight="1" />
+        </LinearLayout>
+    </ScrollView>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingStart="32dp"
+            android:paddingEnd="32dp"
+            android:paddingBottom="16dp">
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="8dp"
                 android:orientation="horizontal">
 
                 <com.google.android.material.button.MaterialButton
@@ -183,7 +216,7 @@
                     app:cornerRadius="14dp" />
             </LinearLayout>
         </LinearLayout>
-    </ScrollView>
+    </LinearLayout>
 
     <!-- ===== LECTURE (iOS OCRProcessingView) ===== -->
     <LinearLayout
@@ -232,12 +265,18 @@
     </LinearLayout>
 
     <!-- ===== RIEN DÉTECTÉ / ERREUR (iOS notFoundView) ===== -->
-    <ScrollView
+    <LinearLayout
         android:id="@+id/stepFailure"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true"
+        android:orientation="vertical"
         android:visibility="gone">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -281,13 +320,23 @@
                 android:textColor="@color/v2_text_secondary"
                 android:textSize="15sp" />
 
-            <Space android:layout_width="1dp" android:layout_height="0dp" android:layout_weight="1" android:minHeight="24dp" />
+            <Space android:layout_width="1dp" android:layout_height="0dp" android:layout_weight="1" />
+        </LinearLayout>
+    </ScrollView>
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingStart="32dp"
+            android:paddingEnd="32dp"
+            android:paddingBottom="16dp">
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnRetry"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
+                android:layout_marginTop="8dp"
                 android:minHeight="52dp"
                 android:text="Réessayer"
                 android:textSize="17sp"
@@ -305,5 +354,5 @@
                 android:textColor="@color/v2_text_secondary"
                 android:textSize="15sp" />
         </LinearLayout>
-    </ScrollView>
+    </LinearLayout>
 </FrameLayout>
