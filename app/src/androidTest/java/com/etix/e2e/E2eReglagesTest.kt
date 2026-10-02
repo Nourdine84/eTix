@@ -167,7 +167,8 @@ class E2eReglagesTest {
                 description = "Vis \"inox\"", dateMillis = now - 120_000))
             dao.insert(Ticket(store = "E2E CSV Marché", amount = 0.05, category = "E2E Réglages",
                 description = "ligne 1\nligne 2", dateMillis = now - 180_000))
-            dao.insert(Ticket(store = "E2E CSV Ancien", amount = 12.0, category = "E2E Réglages", dateMillis = old))
+            dao.insert(Ticket(store = "E2E CSV Ancien", amount = 12.0, category = "E2E Réglages",
+                description = "=SOMME(A1:A2)", dateMillis = old))
         }
         return runBlocking { dao.getAllFlow().first() }.filter { it.store.startsWith("E2E CSV") }
     }
@@ -235,9 +236,9 @@ class E2eReglagesTest {
     fun r02_periode_par_defaut() {
         val before = ReglagesE2e.data()
         ReglagesE2e.startMain("E2eReglagesTest r02")
-        // Historique ouvert avant le changement de période (ses filtres ne dépendent pas de ce réglage)
-        onView(withId(R.id.menu_history)).perform(click())
-        waitFor(withId(R.id.inputSearch))
+        // Sélection faite sur l'Accueil avant de changer le réglage
+        onView(allOf(withId(R.id.btnHomeToday), isDisplayed())).perform(click())
+        waitFor(allOf(withId(R.id.btnHomeToday), isChecked()))
         val all = runBlocking { dao.getAllFlow().first() }.size
 
         ReglagesE2e.openSettings()
@@ -245,36 +246,35 @@ class E2eReglagesTest {
         assertEquals(TimeRange.YEAR, AppPreferences(ctx).defaultRange)
         shot("r02_reglages_periode_annee")
         pressBack()
+        // Écrans déjà ouverts : sélections inchangées
+        waitFor(allOf(withId(R.id.btnHomeToday), isChecked()))
+        onView(withId(R.id.menu_category)).perform(click())
+        waitFor(allOf(withId(R.id.btnCatMonth), isChecked()))
+        onView(withId(R.id.menu_stores)).perform(click())
+        waitFor(allOf(withId(R.id.btnPeriodMonth), isChecked()))
+        // Historique : aucun filtre ajouté, tous les tickets affichés et exportables
+        onView(withId(R.id.menu_history)).perform(click())
+        waitFor(allOf(withId(R.id.btnExportCsv), withText("Exporter les $all tickets affichés (CSV)")))
+        onView(withId(R.id.tvFilterSummary)).check(matches(not(isDisplayed())))
+        // Retour sur l'Accueil : sélection toujours conservée
+        onView(withId(R.id.menu_home)).perform(click())
+        waitFor(allOf(withId(R.id.btnHomeToday), isChecked()))
+        shot("r02_accueil_choix_conserve")
+
+        // Nouvelle ouverture de l'app : période par défaut sur les trois écrans
+        ReglagesE2e.startMain("E2eReglagesTest r02 réouverture")
         waitFor(allOf(withId(R.id.btnHomeYear), isChecked()))
+        shot("r02_accueil_reouverture_annee")
         onView(withId(R.id.menu_category)).perform(click())
         waitFor(allOf(withId(R.id.btnCatYear), isChecked()))
         onView(withId(R.id.menu_stores)).perform(click())
         waitFor(allOf(withId(R.id.btnPeriodYear), isChecked()))
 
-        // Choix fait sur l'Accueil : conservé en changeant d'onglet
-        onView(withId(R.id.menu_home)).perform(click())
-        onView(allOf(withId(R.id.btnHomeToday), isDisplayed())).perform(click())
-        waitFor(allOf(withId(R.id.btnHomeToday), isChecked()))
-        onView(withId(R.id.menu_history)).perform(click())
-        waitFor(withId(R.id.inputSearch))
-        // Historique : aucun filtre ajouté, tous les tickets affichés et exportables
-        waitFor(allOf(withId(R.id.btnExportCsv), withText("Exporter les $all tickets affichés (CSV)")))
-        onView(withId(R.id.tvFilterSummary)).check(matches(not(isDisplayed())))
-        onView(withId(R.id.menu_stores)).perform(click())
-        onView(withId(R.id.menu_home)).perform(click())
-        waitFor(allOf(withId(R.id.btnHomeToday), isChecked()))
-        shot("r02_accueil_choix_conserve")
-
-        // Nouvelle ouverture : période par défaut
-        ReglagesE2e.startMain("E2eReglagesTest r02 réouverture")
-        waitFor(allOf(withId(R.id.btnHomeYear), isChecked()))
-        shot("r02_accueil_reouverture_annee")
-
-        // Rétablissement : « Ce mois »
+        // Rétablissement : « Ce mois » (l'Accueil ouvert garde « Cette année »)
         ReglagesE2e.openSettings()
         ReglagesE2e.choosePeriod("Ce mois")
         pressBack()
-        waitFor(allOf(withId(R.id.btnHomeMonth), isChecked()))
+        waitFor(allOf(withId(R.id.btnHomeYear), isChecked()))
         assertEquals(TimeRange.MONTH, AppPreferences(ctx).defaultRange)
         assertEquals("tickets et budgets inchangés", before, ReglagesE2e.data())
     }
@@ -300,7 +300,9 @@ class E2eReglagesTest {
             assertTrue(text.contains("${day(f.getValue("E2E CSV Café de l'Été"))},E2E CSV Café de l'Été,4.50,E2E Réglages,\n"))
             assertTrue(text.contains("${day(f.getValue("E2E CSV Durand, fils"))},\"E2E CSV Durand, fils\",1234.56,E2E Réglages,\"Vis \"\"inox\"\"\"\n"))
             assertTrue(text.contains("${day(f.getValue("E2E CSV Marché"))},E2E CSV Marché,0.05,E2E Réglages,\"ligne 1\nligne 2\"\n"))
-            assertTrue(text.contains("${day(f.getValue("E2E CSV Ancien"))},E2E CSV Ancien,12.00,E2E Réglages,\n"))
+            // Formule neutralisée dans le fichier, description enregistrée inchangée
+            assertTrue(text.contains("${day(f.getValue("E2E CSV Ancien"))},E2E CSV Ancien,12.00,E2E Réglages,'=SOMME(A1:A2)\n"))
+            assertEquals("=SOMME(A1:A2)", all.first { it.store == "E2E CSV Ancien" }.description)
             assertTrue("nom du fichier : ${send.getStringExtra(Intent.EXTRA_SUBJECT)}",
                 send.getStringExtra(Intent.EXTRA_SUBJECT)!!.matches(Regex("eTix_tous_les_tickets_\\d+\\.csv")))
             File(File(ctx.filesDir, "shots").apply { mkdirs() }, "export_tous_les_tickets.csv").writeBytes(bytes)

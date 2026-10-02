@@ -53,8 +53,6 @@ class HomeFragmentV2 : Fragment() {
     private val binding get() = _binding!!
 
     private val range = MutableStateFlow(TimeRange.DEFAULT)
-    private var appliedDefault: TimeRange = TimeRange.DEFAULT
-    private var defaultRangeListener: android.content.SharedPreferences.OnSharedPreferenceChangeListener? = null
 
     private data class HomeUi(
         val snap: HomeSnapshot,
@@ -65,25 +63,10 @@ class HomeFragmentV2 : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Lot 10 : période par défaut des Réglages à l'ouverture ; un choix fait sur l'écran est conservé ensuite
-        val prefs = AppPreferences(requireContext())
-        val parse = { k: String -> savedInstanceState?.getString(k)?.let { runCatching { TimeRange.valueOf(it) }.getOrNull() } }
-        appliedDefault = prefs.defaultRange
-        range.value = AppPreferences.initialRange(parse(KEY_RANGE), parse(KEY_APPLIED_DEFAULT), appliedDefault)
-        // Seul un changement du réglage remplace la période affichée ; changer d'onglet ne la réinitialise pas
-        defaultRangeListener = prefs.listenDefaultRange { d ->
-            if (d != appliedDefault) {
-                appliedDefault = d
-                range.value = d
-                _binding?.homeTogglePeriod?.check(buttonFor(d))
-            }
-        }
-    }
-
-    override fun onDestroy() {
-        defaultRangeListener?.let { AppPreferences(requireContext()).stopListening(it) }
-        defaultRangeListener = null
-        super.onDestroy()
+        // Lot 10 : période par défaut des Réglages, lue à la création de l'écran. Un écran déjà ouvert garde sa
+        // sélection (changement du réglage, retour entre onglets, recréation) : le réglage vaut pour la prochaine ouverture.
+        val saved = savedInstanceState?.getString(KEY_RANGE)?.let { runCatching { TimeRange.valueOf(it) }.getOrNull() }
+        range.value = AppPreferences.initialRange(saved, AppPreferences(requireContext()).defaultRange)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -306,7 +289,6 @@ class HomeFragmentV2 : Fragment() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putString(KEY_RANGE, range.value.name)
-        outState.putString(KEY_APPLIED_DEFAULT, appliedDefault.name)
     }
 
     override fun onDestroyView() {
@@ -324,7 +306,6 @@ class HomeFragmentV2 : Fragment() {
 
     companion object {
         private const val KEY_RANGE = "home_range"
-        private const val KEY_APPLIED_DEFAULT = "home_applied_default"
         private const val TREND_BAR_MAX_DP = 70
         private const val TREND_LABEL_GAP_DP = 6
         private const val TREND_MIN_HEIGHT_DP = 92

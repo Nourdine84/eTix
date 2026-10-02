@@ -12,6 +12,7 @@ import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
@@ -107,8 +108,20 @@ class SettingsFragment : Fragment() {
             requireActivity().finish()
         }
 
-        // Diagnostic : journaux de plantage locaux, affichés à la demande, jamais transmis
+        // Diagnostic : journaux de plantage locaux, affichés à la demande, jamais transmis. Collecte inactive (ETixApp
+        // non déclarée) : indisponibilité affichée, actions désactivées s'il n'existe aucun journal.
         val crashPreview = view.findViewById<TextView>(R.id.textCrashPreview)
+        val collecting = CrashLogs.isCollectionActive(requireContext())
+        val hasLogs = CrashLogs.latestLog(requireContext()) != null
+        view.findViewById<TextView>(R.id.tvCrashNote).text = if (collecting)
+            "Journaux de plantage : conservés sur ce téléphone, jamais envoyés."
+        else
+            "Journaux de plantage indisponibles : leur collecte n’est pas active dans cette version. Aucun journal n’est enregistré ni envoyé."
+        for (id in listOf(R.id.btnShowCrash, R.id.btnClearCrash)) {
+            val b = view.findViewById<Button>(id)
+            b.isEnabled = collecting || hasLogs
+            if (!b.isEnabled) b.setTextColor(ContextCompat.getColor(requireContext(), R.color.v2_text_secondary))
+        }
         view.findViewById<Button>(R.id.btnShowCrash).setOnClickListener {
             val file = CrashLogs.latestLog(requireContext())
             if (file == null) {

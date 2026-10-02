@@ -60,24 +60,9 @@ class AppPreferencesTest {
 
     @Test fun periode_initiale_d_un_ecran() {
         // Écran neuf : période par défaut
-        assertEquals(TimeRange.YEAR, AppPreferences.initialRange(null, null, TimeRange.YEAR))
-        // Écran recréé, réglage inchangé : le choix fait sur l'écran est conservé
-        assertEquals(TimeRange.TODAY, AppPreferences.initialRange(TimeRange.TODAY, TimeRange.MONTH, TimeRange.MONTH))
-        // Réglage modifié entre-temps : nouvelle période par défaut
-        assertEquals(TimeRange.YEAR, AppPreferences.initialRange(TimeRange.TODAY, TimeRange.MONTH, TimeRange.YEAR))
-        // État enregistré par une version précédente (sans période par défaut) : période par défaut
-        assertEquals(TimeRange.MONTH, AppPreferences.initialRange(TimeRange.TODAY, null, TimeRange.MONTH))
-    }
-
-    @Test fun ecoute_du_changement_de_periode() {
-        val seen = mutableListOf<TimeRange>()
-        val p = AppPreferences(ctx)
-        val l = p.listenDefaultRange { seen += it }
-        p.defaultRange = TimeRange.YEAR
-        org.robolectric.shadows.ShadowLooper.idleMainLooper()
-        p.stopListening(l)
-        p.defaultRange = TimeRange.TODAY
-        org.robolectric.shadows.ShadowLooper.idleMainLooper()
-        assertEquals(listOf(TimeRange.YEAR), seen)
+        assertEquals(TimeRange.YEAR, AppPreferences.initialRange(null, TimeRange.YEAR))
+        // Écran recréé : le choix fait sur l'écran est conservé, même si le réglage a changé entre-temps
+        assertEquals(TimeRange.TODAY, AppPreferences.initialRange(TimeRange.TODAY, TimeRange.MONTH))
+        assertEquals(TimeRange.TODAY, AppPreferences.initialRange(TimeRange.TODAY, TimeRange.YEAR))
     }
 }

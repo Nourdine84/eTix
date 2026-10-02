@@ -16,7 +16,9 @@ import java.util.TimeZone
  * en-tête `Date,Magasin,Montant (€),Catégorie,Description`, séparateur virgule, date courte française jj/mm/aaaa,
  * montant à 2 décimales avec un point (« 23.45 »), UTF-8, une ligne par ticket (« \n »). Un champ contenant une
  * virgule, un guillemet ou un retour à la ligne est entouré de guillemets, les guillemets internes doublés.
- * Lecture seule : aucun ticket n'est modifié.
+ * Champs texte (magasin, catégorie, description) commençant par = + - @, une tabulation ou un retour chariot :
+ * précédés d'une apostrophe dans le fichier, pour qu'un tableur ne les interprète pas comme formules (écart iOS
+ * voulu, demande de Nourdine du 02/10/2026). Lecture seule : aucun ticket n'est modifié, seul le fichier diffère.
  */
 object CsvExporter {
 
@@ -28,13 +30,22 @@ object CsvExporter {
         val sb = StringBuilder(HEADER).append('\n')
         tickets.sortedWith(compareByDescending<Ticket> { it.dateMillis }.thenBy { it.id }).forEach { t ->
             sb.append(sdf.format(Date(t.dateMillis))).append(',')
-                .append(escape(t.store)).append(',')
+                .append(text(t.store)).append(',')
                 .append(String.format(Locale.ROOT, "%.2f", t.amount)).append(',')
-                .append(escape(t.category)).append(',')
-                .append(escape(t.description.orEmpty())).append('\n')
+                .append(text(t.category)).append(',')
+                .append(text(t.description.orEmpty())).append('\n')
         }
         return sb.toString()
     }
+
+    /** Champ texte saisi par l'utilisateur : neutralisé contre les formules, puis échappé. */
+    fun text(value: String): String = escape(neutralizeFormula(value))
+
+    /** Préfixe « ' » si le texte commence par un caractère qu'un tableur lit comme le début d'une formule. */
+    fun neutralizeFormula(value: String): String =
+        if (value.isNotEmpty() && value[0] in FORMULA_START) "'$value" else value
+
+    private val FORMULA_START = charArrayOf('=', '+', '-', '@', '\t', '\r')
 
     fun escape(value: String): String =
         if (value.any { it == ',' || it == '"' || it == '\n' || it == '\r' }) "\"" + value.replace("\"", "\"\"") + "\""

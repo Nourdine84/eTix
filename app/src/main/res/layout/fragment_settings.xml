@@ -105,7 +105,7 @@
                     <ImageView style="@style/V2.SettingsChevron" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
-            <TextView style="@style/V2.SettingsFooter" android:text="Appliquée à l’ouverture de l’Accueil, des Catégories et des Magasins." />
+            <TextView style="@style/V2.SettingsFooter" android:text="Appliquée à la prochaine ouverture de l’app sur l’Accueil, les Catégories et les Magasins. Les périodes déjà choisies ne changent pas." />
 
             <!-- ===== DONNÉES ===== -->
             <TextView style="@style/V2.SettingsHeader" android:text="DONNÉES" />
@@ -200,6 +200,7 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical">
                     <TextView
+                        android:id="@+id/tvCrashNote"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:paddingStart="16dp"

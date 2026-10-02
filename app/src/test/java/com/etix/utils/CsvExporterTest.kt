@@ -68,4 +68,22 @@ class CsvExporterTest {
         assertEquals("point-virgule;libre", CsvExporter.escape("point-virgule;libre"))
         assertEquals("", CsvExporter.escape(""))
     }
+
+    /**
+     * Champs texte commençant par = + - @, tabulation ou retour chariot : apostrophe ajoutée dans le fichier (un
+     * tableur ne les lit pas comme formules). Montant et date non concernés ; le ticket lui-même n'est pas modifié.
+     */
+    @Test fun formules_neutralisees_dans_les_champs_texte() {
+        val t = Ticket(id = 7, store = "=HYPERLINK(\"http://x\")", amount = 2.0, category = "+Courses",
+            description = "@note, -2", dateMillis = at(2026, 4, 2, 10, 0))
+        val copy = t.copy()
+        val line = CsvExporter.toCsv(listOf(t), paris).lines()[1]
+        assertEquals("02/04/2026,\"'=HYPERLINK(\"\"http://x\"\")\",2.00,'+Courses,\"'@note, -2\"", line)
+        assertEquals("ticket non modifié", copy, t)
+        assertEquals("'-5 €", CsvExporter.neutralizeFormula("-5 €"))
+        assertEquals("'\tx", CsvExporter.neutralizeFormula("\tx"))
+        assertEquals("Total = 5", CsvExporter.neutralizeFormula("Total = 5"))
+        assertEquals("", CsvExporter.neutralizeFormula(""))
+        assertEquals("Lidl", CsvExporter.text("Lidl"))
+    }
 }

@@ -1,7 +1,6 @@
 package com.etix.features.settings
 
 import android.content.Context
-import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatDelegate
 import com.etix.features.store.TimeRange
 
@@ -37,30 +36,14 @@ class AppPreferences(context: Context) {
             ?.let { runCatching { TimeRange.valueOf(it) }.getOrNull() } ?: TimeRange.DEFAULT
         set(value) { prefs.edit().putString(KEY_DEFAULT_RANGE, value.name).apply() }
 
-    /**
-     * Changement de la période par défaut depuis les Réglages, signalé sur le thread principal aux écrans déjà
-     * ouverts (l'Accueil reste actif sous les Réglages). Garder la référence rendue et la passer à [stopListening].
-     */
-    fun listenDefaultRange(onChange: (TimeRange) -> Unit): SharedPreferences.OnSharedPreferenceChangeListener {
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
-            if (key == KEY_DEFAULT_RANGE) onChange(defaultRange)
-        }
-        prefs.registerOnSharedPreferenceChangeListener(listener)
-        return listener
-    }
-
-    fun stopListening(listener: SharedPreferences.OnSharedPreferenceChangeListener) =
-        prefs.unregisterOnSharedPreferenceChangeListener(listener)
-
     companion object {
         const val PREFS = "etix_settings"
         const val KEY_DEFAULT_RANGE = "default_range"
 
         /**
-         * Période d'un écran à sa création. Écran neuf : période par défaut. Écran recréé (rotation, thème, processus
-         * relancé) : la période choisie sur l'écran est conservée, sauf si la période par défaut a changé entre-temps.
+         * Période d'un écran à sa création : écran neuf → période par défaut ; écran recréé (rotation, thème,
+         * processus relancé) → période choisie sur l'écran, conservée même si le réglage a changé entre-temps.
          */
-        fun initialRange(savedRange: TimeRange?, savedDefault: TimeRange?, currentDefault: TimeRange): TimeRange =
-            if (savedRange != null && savedDefault == currentDefault) savedRange else currentDefault
+        fun initialRange(savedRange: TimeRange?, currentDefault: TimeRange): TimeRange = savedRange ?: currentDefault
     }
 }

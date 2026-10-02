@@ -56,9 +56,10 @@ class Lot10ScreenshotTest {
     private val dao get() = AppDatabase.getInstance(ctx).ticketDao()
     private val now = System.currentTimeMillis()
 
-    /** Données délicates pour l'export : accents, virgule, guillemets, retour à la ligne, centimes. */
+    /** Données délicates pour l'export : accents, virgule, guillemets, retour à la ligne, centimes, formule. */
     private val seeded = listOf(
-        Ticket(id = 1, store = "Café de l'Été", amount = 4.5, category = "Loisirs", dateMillis = now - 60_000),
+        Ticket(id = 1, store = "Café de l'Été", amount = 4.5, category = "Loisirs", description = "=SOMME(A1:A3)",
+            dateMillis = now - 60_000),
         Ticket(id = 2, store = "Durand, fils", amount = 1234.56, category = "Maison", description = "Vis \"inox\"",
             dateMillis = now - 120_000),
         Ticket(id = 3, store = "Marché", amount = 0.05, category = "Courses", description = "ligne 1\nligne 2",
@@ -254,15 +255,12 @@ class Lot10ScreenshotTest {
         capture(a, "l10_07_reglages_320dp_police_2_haut_dark")
     }
 
-    /** Choix existant de l'ancien bouton (clair) conservé et affiché ; ouvrir les Réglages ne le change pas. */
     /**
      * Choix existant de l'ancien bouton (clair) conservé et affiché ; liste Système / Clair / Sombre avec le choix
-     * actuel coché ; « Annuler » ne change rien. Le choix d'un thème (préférence enregistrée, écran recréé, thème
-     * appliqué, persistance après arrêt) est vérifié sur émulateur (E2eReglagesTest r01, E2eReglagesAvant/Après
-     * RedemarrageTest) : sous Robolectric, l'application du thème par AppCompat échoue (barrière de synchronisation
-     * de la file de messages, constaté le 02/10/2026).
+     * actuel coché ; « Annuler » ne change rien ; Sombre puis Système enregistrés et transmis à AppCompat, relus à
+     * la réouverture. L'apparence réellement appliquée (écran recréé en sombre) est vérifiée sur émulateur (r01).
      */
-    @Test fun theme_existant_conserve_et_liste_de_choix() {
+    @Test fun theme_existant_conserve_puis_choix() {
         SessionManager(ctx).setThemeMode(AppCompatDelegate.MODE_NIGHT_NO)
         val a = launch()
         settings(a)
@@ -278,34 +276,42 @@ class Lot10ScreenshotTest {
         d.getButton(android.content.DialogInterface.BUTTON_NEGATIVE).performClick(); idle()
         assertEquals(AppCompatDelegate.MODE_NIGHT_NO, SessionManager(ctx).getThemeMode())
 
+        choose(a, R.id.rowTheme, "Sombre")
+        assertEquals(AppCompatDelegate.MODE_NIGHT_YES, SessionManager(ctx).getThemeMode())
+        assertEquals(AppCompatDelegate.MODE_NIGHT_YES, AppCompatDelegate.getDefaultNightMode())
+
+        val b = launch()
+        settings(b)
+        assertEquals("Sombre", value(b, R.id.tvThemeValue))
+        choose(b, R.id.rowTheme, "Système")
+        assertEquals(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM, SessionManager(ctx).getThemeMode())
+        assertEquals(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM, AppCompatDelegate.getDefaultNightMode())
         unchanged()
     }
 
     /**
-     * Période par défaut : appliquée à l'ouverture de l'Accueil, des Catégories et des Magasins, et aux écrans
-     * déjà ouverts quand le réglage change ; un choix fait sur un écran n'est pas réinitialisé en changeant d'onglet.
+     * Période par défaut : lue à l'ouverture de l'Accueil, des Catégories et des Magasins ; changer le réglage ne
+     * modifie pas les écrans déjà ouverts ; un choix fait sur un écran n'est pas réinitialisé en changeant d'onglet.
      */
     @Test fun periode_par_defaut() {
         val a = launch()
         assertEquals(R.id.btnHomeMonth, checked(a, R.id.homeTogglePeriod))
+        a.findViewById<View>(R.id.btnHomeToday).performClick(); idle()
         settings(a)
         choose(a, R.id.rowDefaultRange, "Cette année", shot = "l10_10_choix_periode_light")
         assertEquals("Cette année", value(a, R.id.tvDefaultRangeValue))
         assertEquals(TimeRange.YEAR, AppPreferences(ctx).defaultRange)
         a.onBackPressedDispatcher.onBackPressed(); idle()
-        assertEquals("Accueil déjà ouvert : nouvelle période appliquée", R.id.btnHomeYear, checked(a, R.id.homeTogglePeriod))
+        assertEquals("Accueil déjà ouvert : sélection conservée", R.id.btnHomeToday, checked(a, R.id.homeTogglePeriod))
 
         val nav = a.findViewById<BottomNavigationView>(R.id.bottomNav)
         nav.selectedItemId = R.id.menu_category; idle()
-        assertEquals(R.id.btnCatYear, checked(a, R.id.togglePeriodCategory))
+        assertEquals("Catégories déjà ouvertes : inchangées", R.id.btnCatMonth, checked(a, R.id.togglePeriodCategory))
         nav.selectedItemId = R.id.menu_stores; idle()
-        assertEquals(R.id.btnPeriodYear, checked(a, R.id.togglePeriod))
+        assertEquals("Magasins déjà ouverts : inchangés", R.id.btnPeriodMonth, checked(a, R.id.togglePeriod))
 
-        // Choix sur l'Accueil conservé en changeant d'onglet
-        nav.selectedItemId = R.id.menu_home; idle()
-        a.findViewById<View>(R.id.btnHomeToday).performClick(); idle()
+        // Choix conservé en changeant d'onglet
         nav.selectedItemId = R.id.menu_history; idle()
-        nav.selectedItemId = R.id.menu_category; idle()
         nav.selectedItemId = R.id.menu_home; idle()
         assertEquals("pas de réinitialisation au retour", R.id.btnHomeToday, checked(a, R.id.homeTogglePeriod))
         assertEquals(TimeRange.YEAR, AppPreferences(ctx).defaultRange)
@@ -321,13 +327,25 @@ class Lot10ScreenshotTest {
         unchanged()
     }
 
-    /** Écran recréé (rotation, thème) : la période choisie sur l'écran est conservée. */
+    /** Écran recréé (rotation, thème) : la période choisie est conservée, même si le réglage a changé entre-temps. */
     @Test fun periode_conservee_apres_recreation() {
         AppPreferences(ctx).defaultRange = TimeRange.MONTH
         val c = Robolectric.buildActivity(MainActivityV2::class.java).also { controllers += it }.setup(); idle()
         c.get().findViewById<View>(R.id.btnHomeYear).performClick(); idle()
+        AppPreferences(ctx).defaultRange = TimeRange.TODAY
         c.recreate(); idle()
         assertEquals(R.id.btnHomeYear, checked(c.get(), R.id.homeTogglePeriod))
+    }
+
+    /** Collecte des journaux de plantage inactive (ETixApp non déclarée) : indisponibilité affichée, actions désactivées. */
+    @Test fun journaux_de_plantage_indisponibles() {
+        val a = launch()
+        settings(a)
+        assertFalse(com.etix.CrashLogs.isCollectionActive(ctx))
+        assertEquals("Journaux de plantage indisponibles : leur collecte n’est pas active dans cette version. Aucun journal n’est enregistré ni envoyé.",
+            value(a, R.id.tvCrashNote))
+        assertFalse(a.findViewById<View>(R.id.btnShowCrash).isEnabled)
+        assertFalse(a.findViewById<View>(R.id.btnClearCrash).isEnabled)
     }
 
     @Test fun export_de_tous_les_tickets() {
@@ -343,7 +361,7 @@ class Lot10ScreenshotTest {
         assertEquals(CsvExporter.toCsv(seeded), text)
         assertTrue(text.contains("\"Durand, fils\",1234.56,Maison,\"Vis \"\"inox\"\"\""))
         assertTrue(text.contains("Marché,0.05,Courses,\"ligne 1\nligne 2\""))
-        assertTrue(text.contains("Café de l'Été,4.50,Loisirs,"))
+        assertTrue("formule neutralisée dans le fichier", text.contains("Café de l'Été,4.50,Loisirs,'=SOMME(A1:A3)\n"))
         assertEquals(file.name, send.getStringExtra(Intent.EXTRA_SUBJECT))
         unchanged()
     }
