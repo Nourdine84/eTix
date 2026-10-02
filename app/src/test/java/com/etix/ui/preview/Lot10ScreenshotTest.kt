@@ -96,18 +96,30 @@ class Lot10ScreenshotTest {
         s.scrollTo(0, s.getChildAt(0).height); idle()
     }
 
-    /** Lignes Thème / Période : libellé et valeur entiers (ni tronqués ni coupés en milieu de mot). */
+    private fun texts(v: View): List<TextView> = when (v) {
+        is TextView -> listOf(v)
+        is android.view.ViewGroup -> (0 until v.childCount).flatMap { texts(v.getChildAt(it)) }
+        else -> emptyList()
+    }
+
+    /**
+     * Lignes Thème / Période : textes entiers (ni tronqués ni coupés en milieu de mot). Version / Build : libellé sur
+     * une ligne, valeur jamais tronquée (elle peut passer à la ligne).
+     */
     private fun checkRows(a: MainActivityV2) {
-        for (id in listOf(R.id.rowTheme, R.id.rowDefaultRange)) {
-            val row = a.findViewById<android.view.ViewGroup>(id)
-            for (i in 0 until row.childCount) {
-                val t = row.getChildAt(i) as? TextView ?: continue
-                val layout = t.layout
-                assertNotNull(layout)
-                for (l in 0 until layout.lineCount) assertEquals("texte tronqué : ${t.text}", 0, layout.getEllipsisCount(l))
-                val words = t.text.toString().split(' ', '\u00A0')
-                assertTrue("mot coupé : ${t.text} (${layout.lineCount} lignes)", layout.lineCount <= words.size)
-            }
+        for (t in listOf(R.id.rowTheme, R.id.rowDefaultRange).flatMap { texts(a.findViewById(it)) }) {
+            val layout = t.layout
+            assertNotNull("texte non mesuré : ${t.text}", layout)
+            for (l in 0 until layout.lineCount) assertEquals("texte tronqué : ${t.text}", 0, layout.getEllipsisCount(l))
+            val breaks = t.text.toString().count { it == ' ' || it == '\u00A0' }
+            assertTrue("mot coupé : ${t.text} (${layout.lineCount} lignes)", layout.lineCount <= breaks + 1)
+        }
+        for (id in listOf(R.id.textVersion, R.id.textBuild)) {
+            val row = a.findViewById<View>(id).parent as android.view.ViewGroup
+            val label = row.getChildAt(0) as TextView
+            assertEquals("libellé ${label.text} sur une ligne", 1, label.layout.lineCount)
+            val value = a.findViewById<TextView>(id)
+            for (l in 0 until value.layout.lineCount) assertEquals("valeur tronquée : ${value.text}", 0, value.layout.getEllipsisCount(l))
         }
     }
 
@@ -133,6 +145,15 @@ class Lot10ScreenshotTest {
         root.draw(android.graphics.Canvas(bmp))
         val dir = File("build/screenshots").apply { mkdirs() }
         java.io.FileOutputStream(File(dir, "$name.png")).use { bmp.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
+    }
+
+    /** Attente d'un libellé, avec le libellé réellement affiché en cas d'échec. */
+    private fun waitText(v: TextView, expected: String) {
+        try {
+            waitFor { v.text.toString() == expected }
+        } catch (e: AssertionError) {
+            throw AssertionError("attendu « $expected », affiché « ${v.text} » (activé=${v.isEnabled})", e)
+        }
     }
 
     private fun sharedFile(started: Intent): Pair<Intent, File> {
@@ -312,9 +333,9 @@ class Lot10ScreenshotTest {
         a.findViewById<BottomNavigationView>(R.id.bottomNav).selectedItemId = R.id.menu_history; idle()
         val history = a.supportFragmentManager.findFragmentByTag("f2")!!.requireView()
         val btn = history.findViewById<Button>(R.id.btnExportCsv)
-        waitFor { btn.text.toString() == "Exporter les 3 tickets affichés (CSV)" }
+        waitText(btn, "Exporter les 3 tickets affichés (CSV)")
         history.findViewById<EditText>(R.id.inputSearch).setText("Durand"); idle()
-        waitFor { btn.text.toString() == "Exporter le ticket affiché (CSV)" }
+        waitText(btn, "Exporter le ticket affiché (CSV)")
         capture(a, "l10_08_historique_export_filtre_light")
         btn.performClick()
         waitFor { shadowOf(a).peekNextStartedActivity() != null }

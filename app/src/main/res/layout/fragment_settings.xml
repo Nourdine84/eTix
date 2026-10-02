@@ -2,7 +2,7 @@
 <!-- Lot 10 — Réglages, référence iOS SettingsView (sections Apparence, Période par défaut, Données, Informations), présentés
      comme l'écran « Budgets mensuels » (en-tête avec retour, cartes groupées). Sections Android conservées en fin
      d'écran : Compte (connexion locale) et Diagnostic (journaux de plantage, jamais envoyés).
-     Thème et période : lignes « libellé / valeur » ouvrant une liste à choix unique (équivalent Android du Picker
+     Thème et période : lignes « titre / valeur choisie » (valeur sous le titre, lisible à 320 dp et police 2,0) ouvrant une liste à choix unique (équivalent Android du Picker
      iOS dans une List). Une seule mise en page pour les thèmes clair et sombre (couleurs v2_* déclinées dans values-night). -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -69,8 +69,16 @@
                     android:background="?attr/selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true">
-                    <TextView style="@style/V2.SettingsValueLabel" android:text="Thème" />
-                    <TextView android:id="@+id/tvThemeValue" style="@style/V2.SettingsValue" android:text="Système" />
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp">
+                        <TextView style="@style/V2.SettingsChoiceTitle" android:text="Thème" />
+                        <TextView android:id="@+id/tvThemeValue" style="@style/V2.SettingsChoiceValue" android:text="Système" />
+                    </LinearLayout>
                     <ImageView style="@style/V2.SettingsChevron" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -84,8 +92,16 @@
                     android:background="?attr/selectableItemBackground"
                     android:clickable="true"
                     android:focusable="true">
-                    <TextView style="@style/V2.SettingsValueLabel" android:text="Période" />
-                    <TextView android:id="@+id/tvDefaultRangeValue" style="@style/V2.SettingsValue" android:text="Ce mois" />
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:paddingTop="10dp"
+                        android:paddingBottom="10dp">
+                        <TextView style="@style/V2.SettingsChoiceTitle" android:text="Période" />
+                        <TextView android:id="@+id/tvDefaultRangeValue" style="@style/V2.SettingsChoiceValue" android:text="Ce mois" />
+                    </LinearLayout>
                     <ImageView style="@style/V2.SettingsChevron" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

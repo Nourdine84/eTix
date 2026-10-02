@@ -327,8 +327,10 @@ class E2eClavierPetitEcranTest {
                 "police=${res.configuration.fontScale} :")
             for (row in listOf(R.id.rowTheme, R.id.rowDefaultRange)) {
                 val g = act.findViewById<android.view.ViewGroup>(row)
-                for (i in 0 until g.childCount) {
-                    val t = g.getChildAt(i) as? android.widget.TextView ?: continue
+                val inner = (0 until g.childCount).map { g.getChildAt(it) }
+                    .flatMap { v -> if (v is android.view.ViewGroup) (0 until v.childCount).map { v.getChildAt(it) } else listOf(v) }
+                for (child in inner) {
+                    val t = child as? android.widget.TextView ?: continue
                     val l = t.layout ?: continue
                     val ell = (0 until l.lineCount).sumOf { l.getEllipsisCount(it) }
                     val words = t.text.toString().split(' ', '\u00A0').size

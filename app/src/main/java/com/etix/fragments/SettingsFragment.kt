@@ -152,7 +152,8 @@ class SettingsFragment : Fragment() {
             .setTitle(title)
             .setSingleChoiceItems(labels.toTypedArray(), checked) { d, which ->
                 d.dismiss()
-                onChoice(which)
+                // Après la fermeture de la liste : un changement de thème recrée l'écran, la liste ne doit plus y être
+                view?.post { if (isAdded) onChoice(which) }
             }
             .setNegativeButton("Annuler", null)
             .show()

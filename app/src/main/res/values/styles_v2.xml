@@ -133,19 +133,36 @@
     </style>
 
     <style name="V2.SettingsValueLabel" parent="">
-        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_weight">1</item>
         <item name="android:textColor">@color/v2_text_primary</item>
         <item name="android:textSize">16sp</item>
     </style>
 
     <style name="V2.SettingsValue" parent="">
-        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:gravity">end</item>
         <item name="android:layout_marginStart">8dp</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textColor">@color/v2_text_secondary</item>
         <item name="android:textSize">16sp</item>
+    </style>
+
+    <!-- Ligne de choix (thème, période) : titre puis valeur choisie, comme une préférence Android à liste -->
+    <style name="V2.SettingsChoiceTitle" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/v2_text_primary</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="V2.SettingsChoiceValue" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">2dp</item>
+        <item name="android:textColor">@color/v2_text_secondary</item>
+        <item name="android:textSize">14sp</item>
     </style>
 
     <!-- Chevron de fin de ligne (ligne qui ouvre un choix) -->
