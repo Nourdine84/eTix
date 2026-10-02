@@ -82,12 +82,13 @@ Document de reprise. À lire en entier avant toute action. Détail : `docs/SUIVI
 
 ## État au 02/10/2026
 
-- `feature/android-v2` = intégration, tête `457f49e` : lots 1 à 8 + CI (PR #75, #76, #77 fusionnées).
-- **PR #78 en brouillon** : `feature/android-lot9-scanner` (scanner + Q1–Q4), version `1.9.0-lot9`
-  (versionCode 11). Revue avant fusion du 02/10 faite sur émulateur (marques « Détecté / À vérifier / Non lu »,
-  double appui, rotation, permission CAMERA retirée, barre basse compacte, vrais sélecteur et appareil photo,
-  hors ligne, mise à jour depuis le lot 8) : `docs/VALIDATION_EMULATEUR.md`. Dernier résultat de fusion vérifié
-  dans ce document ; toujours vérifier le run du dernier commit avant toute décision. **Non fusionnée.**
+- `feature/android-v2` = intégration : lots 1 à 9 + CI (PR #75, #76, #77, #78 fusionnées), tête `86d9a19` au 02/10.
+- **Lot 9 fusionné** (PR #78, 02/10/2026) : `feature/android-v2` = commit de fusion **`86d9a19`** (scanner + Q1–Q4,
+  version `1.9.0-lot9`, versionCode 11). CI après fusion verte : run 36999579628 (JVM 217 réussis / 1 ignoré,
+  émulateurs 40/40 par API, système, mise à jour lot 8 → lot 9 avec données identiques). Branche
+  `feature/android-lot9-scanner` conservée. Fusion ≠ validation visuelle : aucune revue visuelle ni essai
+  physique faits (`docs/REVUE_VISUELLE.md`).
+- Bilan de parité iOS et pistes de prochain lot : `docs/PARITE_IOS.md` (choix du lot par Nourdine).
 - Permissions de l'APK : aucune permission système (CAMERA, INTERNET, ACCESS_NETWORK_STATE retirées, contrôle CI
   bloquant). Une future fonctionnalité réseau devra les redéclarer explicitement (et ajuster ce contrôle).
 - Branche `demo/ci-verdict` : démonstration du verdict, jamais proposée à la fusion, à conserver.
@@ -96,12 +97,12 @@ Document de reprise. À lire en entier avant toute action. Détail : `docs/SUIVI
 
 ## Prochaine étape
 
-Tests du scanner sur **téléphone physique** avec l'APK QA (jamais l'app `com.etix`) quand un téléphone sera
+Revue visuelle par Nourdine (`docs/REVUE_VISUELLE.md`) et choix du prochain lot (`docs/PARITE_IOS.md`) ;
+signature QA durable à préparer séparément. Tests du scanner sur **téléphone physique** avec l'APK QA (jamais l'app `com.etix`) quand un téléphone sera
 disponible : application appareil photo du constructeur, vraies photos (flou, pli, lumière, ticket long), refus
 puis rétablissement de l'accès caméra dans l'application appareil photo (eTix ne demande plus rien), sélecteur du
 téléphone, retour arrière à chaque étape, aucun ticket créé sans « Enregistrer ». Leur absence est une limite
-documentée ; Nourdine décide de la fusion après le bilan. Puis revue visuelle par
-Nourdine, puis décision de fusion de la PR #78 (par Nourdine).
+documentée ; le lot 9 a été fusionné sans eux (décision de Nourdine du 02/10/2026).
 
 ## Pièges déjà rencontrés
 

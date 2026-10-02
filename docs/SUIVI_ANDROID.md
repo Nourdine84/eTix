@@ -265,13 +265,32 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
     appui, annulation pendant la lecture, scan en français, passe 320 dp police 2,0, mise à jour depuis le lot 8
     fusionné (versionCode 10 → 11) avec tickets et budgets comparés. Résultats : `docs/VALIDATION_EMULATEUR.md`.
 
+### Fusion du lot 9 dans `feature/android-v2` (PR #78, 02/10/2026)
+- Fusion autorisée par Nourdine, commit de fusion **`86d9a19`** (parents `457f49e` et `8e6fa6f`, sans squash),
+  arbre identique au résultat de fusion testé `bbb38df` (run https://github.com/Nourdine84/eTix/actions/runs/36994446604,
+  une relance du job `emulator-compat-dates (24)` : installation de l'APK bloquée > 300 s, aucun test démarré,
+  cause inconnue, diagnostics dans le run).
+- Refus des montants nuls ou négatifs : déjà présent avant le lot 9 (`TicketFormRules.parseAmount`, champ sans
+  signe moins) ; le lot 9 n'a changé que le message et le texte indicatif.
+- **CI après fusion** : https://github.com/Nourdine84/eTix/actions/runs/36999579628 — 21 jobs verts, sans relance.
+  JVM 218 déclarés, 217 réussis, 1 ignoré (`OCRValidationTest`), 0 échec ; émulateurs API 21 / 34 / 36 : 40 / 40
+  chacun ; système 3 / 3 ; mise à jour lot 8 → lot 9 12 / 12 (tickets et budgets identiques) ; fr 7 / 7 ; petit
+  écran 28 / 28 ; dates API 22-25. APK : seule `com.etix.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` (CAMERA, INTERNET,
+  ACCESS_NETWORK_STATE absentes).
+- Limites restantes : aucune revue visuelle par Nourdine (parcours : `docs/REVUE_VISUELLE.md`), aucun essai sur
+  téléphone physique (vraies photos, appareil photo et sélecteur du constructeur), signature QA durable à
+  préparer. La fusion ne valide ni les choix visuels ni les décisions produit ouvertes.
+- Bilan de parité et pistes pour le prochain lot : `docs/PARITE_IOS.md`.
+
 ## Écarts restants avec iOS (référence `feature/home-hero-v2`)
+
+Bilan détaillé à jour (présent / partiel / absent, émulateur, validations manquantes) : `docs/PARITE_IOS.md`.
 
 | Écran | Écart | Lot envisagé |
 |---|---|---|
 | Accueil | Insights (≤ 2), carte Budget / Magasin, étoiles du header sombre, animations d'entrée, lien Tendance → rapport mensuel | 4 |
-| Accueil | Scanner : branché au lot 9 (voir `docs/SCANNER.md` pour les écarts) | 9 |
-| Ajouter | Scanner et suggestion de catégorie (historique puis OCR) : lot 9 | 9 |
+| Accueil | Scanner : porté au lot 9, fusionné (`86d9a19`) ; écarts voulus dans `docs/SCANNER.md` | fait |
+| Ajouter | Scanner et suggestion de catégorie (historique puis OCR) : lot 9, fusionné | fait |
 | Historique | Suppression par balayage (iOS) non portée | 5 |
 | Détail ticket | Aligné au lot 6 ; dégradé du montant iOS rendu en bleu uni ; pas de retour haptique | — |
 | Catégories | Budgets portés (lot 7) ; export non porté | à planifier |
@@ -318,7 +337,7 @@ Recommandation technique inchangée : A (ou B) pour la parité iOS.
 | # | Sujet | Priorité |
 |---|---|---|
 | 1 | Magasins : bouton « Comparaison » (iOS `StoreComparisonView`) et graphique « Historique des achats » non portés | P2 |
-| 2 | Bouton « Scanner » de l'ajout sans action ; flux OCR conçu pour NavController (crasherait) | P3 |
+| 2 | ~~Bouton « Scanner » de l'ajout sans action~~ : résolu au lot 9 (parcours de scan, fusionné en `86d9a19`) ; l'ancien flux NavController reste non branché | fait |
 | 3 | Ajout : catégorie non choisie → « Autre » (choix provisoire, écart iOS : vide) — date et description ajoutées au lot 4 | décision produit |
 | 4 | Accueil / Réglages loin d'iOS (insights, budget, apparence, export PDF…) ; Catégories : budgets/détail/export manquants | P2-P3 |
 | 5 | Login / Register Android sans équivalent iOS (iOS : splash → onboarding → app) | À décider |
