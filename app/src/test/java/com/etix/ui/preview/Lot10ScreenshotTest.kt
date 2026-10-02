@@ -232,7 +232,13 @@ class Lot10ScreenshotTest {
     }
 
     /** Choix existant de l'ancien bouton (clair) conservé et affiché ; ouvrir les Réglages ne le change pas. */
-    @Test fun theme_existant_conserve_puis_trois_etats() {
+    /**
+     * Choix existant de l'ancien bouton (clair) conservé et affiché ; « Annuler » ne change rien ; Système et Clair
+     * enregistrés. Le passage clair ↔ sombre (écran recréé) est vérifié sur émulateur (E2eReglagesTest.r01) :
+     * Robolectric échoue sur la recréation d'activité par AppCompat (barrière de synchronisation), d'où des choix
+     * qui ne changent pas l'apparence effective ici (téléphone simulé en clair).
+     */
+    @Test fun theme_existant_conserve_et_choix_enregistres() {
         SessionManager(ctx).setThemeMode(AppCompatDelegate.MODE_NIGHT_NO)
         val a = launch()
         settings(a)
@@ -244,19 +250,19 @@ class Lot10ScreenshotTest {
         val d = org.robolectric.shadows.ShadowDialog.getLatestDialog() as androidx.appcompat.app.AlertDialog
         assertEquals(listOf("Système", "Clair", "Sombre"), (0 until d.listView.adapter.count).map { d.listView.adapter.getItem(it).toString() })
         assertEquals("choix actuel coché", 1, d.listView.checkedItemPosition)
+        captureDialog(d, "l10_09_choix_theme_light")
         d.getButton(android.content.DialogInterface.BUTTON_NEGATIVE).performClick(); idle()
         assertEquals(AppCompatDelegate.MODE_NIGHT_NO, SessionManager(ctx).getThemeMode())
 
-        choose(a, R.id.rowTheme, "Sombre", shot = "l10_09_choix_theme_light")
-        assertEquals(AppCompatDelegate.MODE_NIGHT_YES, SessionManager(ctx).getThemeMode())
-        assertEquals(AppCompatDelegate.MODE_NIGHT_YES, AppCompatDelegate.getDefaultNightMode())
-
-        val b = launch()
-        settings(b)
-        assertEquals("Sombre", value(b, R.id.tvThemeValue))
-        choose(b, R.id.rowTheme, "Système")
+        choose(a, R.id.rowTheme, "Système")
+        assertEquals("Système", value(a, R.id.tvThemeValue))
         assertEquals(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM, SessionManager(ctx).getThemeMode())
         assertEquals(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM, AppCompatDelegate.getDefaultNightMode())
+
+        choose(a, R.id.rowTheme, "Clair")
+        assertEquals("Clair", value(a, R.id.tvThemeValue))
+        assertEquals(AppCompatDelegate.MODE_NIGHT_NO, SessionManager(ctx).getThemeMode())
+        assertEquals(AppCompatDelegate.MODE_NIGHT_NO, AppCompatDelegate.getDefaultNightMode())
         unchanged()
     }
 
@@ -337,8 +343,15 @@ class Lot10ScreenshotTest {
         history.findViewById<EditText>(R.id.inputSearch).setText("Durand"); idle()
         waitText(btn, "Exporter le ticket affiché (CSV)")
         capture(a, "l10_08_historique_export_filtre_light")
+        assertTrue("bouton actif", btn.isEnabled && btn.hasOnClickListeners())
         btn.performClick()
-        waitFor { shadowOf(a).peekNextStartedActivity() != null }
+        try {
+            waitFor { shadowOf(a).peekNextStartedActivity() != null }
+        } catch (e: AssertionError) {
+            val toast = org.robolectric.shadows.ShadowToast.getTextOfLatestToast()
+            val files = File(ctx.cacheDir, "exports").list()?.toList()
+            throw AssertionError("aucun partage lancé ; dernier toast « $toast », fichiers $files", e)
+        }
         val (_, file) = sharedFile(shadowOf(a).nextStartedActivity)
         assertTrue(file.name.startsWith("eTix_tickets_affiches_"))
         assertEquals(CsvExporter.toCsv(seeded.filter { it.id == 2L }), file.readText())
