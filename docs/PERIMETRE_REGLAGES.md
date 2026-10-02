@@ -1,7 +1,7 @@
-# Lot 10 — Réglages : périmètre proposé (en attente d'accord, non codé)
+# Lot 10 — Réglages : périmètre (validé par Nourdine le 02/10/2026)
 
-Prochain lot retenu par Nourdine : Réglages. Ce document fixe un périmètre court ; **aucun code n'est écrit avant
-son accord**. Références : iOS `feature/home-hero-v2` (`Views/Main/SettingsView.swift`,
+Prochain lot retenu par Nourdine : Réglages. Périmètre validé le 02/10/2026 avec les décisions ci-dessous
+(« Décisions de Nourdine »), qui priment sur la proposition. Références : iOS `feature/home-hero-v2` (`Views/Main/SettingsView.swift`,
 `Settings/AppSettings.swift`, `Settings/SettingsViewModel.swift`, `AppAppearance.swift`, `eTixApp.swift`) ;
 Android `feature/android-v2` `86d9a19` (`fragments/SettingsFragment.kt`, `res/layout/fragment_settings.xml`,
 `utils/CsvExporter.kt`, `ui/history/TicketHistoryFragmentV2.kt`).
@@ -62,7 +62,23 @@ Hors périmètre : synchronisation, compte, permission réseau, suppression glob
   préférences conservées lors d'une mise à jour sans désinstallation.
 - Aperçus (label `apercus`) examinés avant toute demande de revue.
 
-## Questions à trancher avant de coder
+## Décisions de Nourdine (02/10/2026)
+
+1. Thème Système / Clair / Sombre ; Système par défaut **en l'absence de préférence existante** ; le choix déjà
+   enregistré d'un utilisateur est conservé ; persistance vérifiée après redémarrage.
+2. Période par défaut appliquée à l'ouverture de l'Accueil, des Catégories et des Magasins ; filtres de
+   l'Historique inchangés ; un choix fait sur un écran n'est pas réinitialisé lors des allers-retours entre écrans.
+3. Export CSV : Réglages = tous les tickets ; Historique = uniquement les tickets correspondant aux filtres actifs,
+   libellé clair ; les deux par le partage Android, sans permission ni réseau ; contenu du fichier transmis vérifié
+   (accents, décimales, séparateurs, guillemets, retours à la ligne, dates) ; annuler le partage ne modifie aucune
+   donnée.
+4. Connexion et journaux de plantage conservés en fin d'écran ; la connexion factice n'est pas présentée comme une
+   protection ; aucun journal transmis automatiquement.
+5. Accès par l'engrenage de l'Accueil, sans sixième onglet.
+6. Suppression globale désactivée ; compteur de tickets, version et build affichés.
+7. Fonds sombres non uniformisés dans ce lot (choix visuel ouvert). Aucun changement de schéma Room.
+
+## Questions (posées avant accord, désormais tranchées ci-dessus)
 
 1. Thème à trois états, défaut Système : d'accord ?
 2. Période par défaut appliquée à l'Accueil, aux Catégories et aux Magasins (pas à l'Historique), comme iOS ?
