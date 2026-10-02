@@ -74,9 +74,32 @@ class Lot10ScreenshotTest {
         BudgetStore(ctx).set("Courses", 100.0)
     }
 
-    @After fun resetNightMode() = AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+    private val controllers = mutableListOf<org.robolectric.android.controller.ActivityController<MainActivityV2>>()
 
-    private fun launch(): MainActivityV2 = Robolectric.buildActivity(MainActivityV2::class.java).setup().get().also { idle() }
+    /**
+     * Activités fermées AVANT de rétablir le thème par défaut : sinon AppCompat recrée les activités encore ouvertes
+     * et Robolectric échoue (barrière de synchronisation de la file de messages, constaté le 02/10/2026).
+     */
+    @After fun closeActivitiesThenResetNightMode() {
+        controllers.forEach { runCatching { it.pause().stop().destroy() } }
+        controllers.clear()
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM)
+    }
+
+    /**
+     * FileProvider garde en mémoire, par autorité, les dossiers du premier test ; Robolectric change de dossier de
+     * données à chaque test. Mémoire vidée pour que l'URI partagée corresponde au cache de CE test (sur un téléphone,
+     * le dossier de l'app ne change pas).
+     */
+    @Before fun forgetFileProviderRoots() {
+        runCatching {
+            val f = androidx.core.content.FileProvider::class.java.getDeclaredField("sCache").apply { isAccessible = true }
+            (f.get(null) as MutableMap<*, *>).clear()
+        }
+    }
+
+    private fun launch(): MainActivityV2 =
+        Robolectric.buildActivity(MainActivityV2::class.java).also { controllers += it }.setup().get().also { idle() }
 
     private fun settings(a: MainActivityV2): View {
         a.openSettings(); idle()
@@ -301,7 +324,7 @@ class Lot10ScreenshotTest {
     /** Écran recréé (rotation, thème) : la période choisie sur l'écran est conservée. */
     @Test fun periode_conservee_apres_recreation() {
         AppPreferences(ctx).defaultRange = TimeRange.MONTH
-        val c = Robolectric.buildActivity(MainActivityV2::class.java).setup(); idle()
+        val c = Robolectric.buildActivity(MainActivityV2::class.java).also { controllers += it }.setup(); idle()
         c.get().findViewById<View>(R.id.btnHomeYear).performClick(); idle()
         c.recreate(); idle()
         assertEquals(R.id.btnHomeYear, checked(c.get(), R.id.homeTogglePeriod))
