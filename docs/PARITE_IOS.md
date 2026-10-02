@@ -82,7 +82,10 @@ Par écart restant, sans estimation engageante :
 | C. Accueil « intelligent » | Insights, carte Magasin, montants animés | Moteur d'insights iOS à porter, textes à valider |
 | D. Historique | Suppression par balayage | Confirmation et annulation à définir |
 | E. Rapport mensuel / export PDF | `MonthlyReportView`, `PDFExportService` | Plus large ; partage de fichiers |
-| F. Fiabilité des données | Migrations Room explicites au lieu de la suppression destructive | Aucun changement de schéma sans accord ; réduit un risque de perte de données |
+| F. Fiabilité des données | Migrations Room explicites au lieu de la suppression destructive | Aucun changement de schéma sans accord ; risque futur détaillé dans `docs/STOCKAGE_ROOM.md` |
 | G. Widget | `eTixWidget` | Plus tard |
+
+**Choix de Nourdine (02/10/2026) : piste A, Réglages** — périmètre proposé, en attente d'accord :
+`docs/PERIMETRE_REGLAGES.md`.
 
 Hors lot fonctionnel : signature QA durable (préalable aux essais sur téléphone) et revue visuelle.
