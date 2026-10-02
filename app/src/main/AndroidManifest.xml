@@ -1,10 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- ========================= -->
     <!-- PERMISSIONS -->
     <!-- ========================= -->
-    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Lot 9 : pas de permission CAMERA. Le scan passe par l'application appareil photo du système
+         (ACTION_IMAGE_CAPTURE), qui n'en demande aucune à eTix ; déclarée, elle obligerait à la demander
+         (Android refuse ACTION_IMAGE_CAPTURE sinon). Retirée aussi si une bibliothèque la déclarait.
+         L'ancien écran CameraX (features/ocr/ui, nav_graph) n'est relié à aucune activité. -->
+    <uses-permission
+        android:name="android.permission.CAMERA"
+        tools:node="remove" />
+
+    <!-- Lot 9 (02/10/2026) : aucune fonctionnalité d'eTix n'utilise le réseau (données locales, connexion locale,
+         reconnaissance ML Kit embarquée). INTERNET et ACCESS_NETWORK_STATE n'étaient apportées que par les
+         bibliothèques de ML Kit (envoi de statistiques d'utilisation, voir le rapport de fusion du manifeste en CI) :
+         retirées du manifeste final. Toute future fonctionnalité réseau devra les redéclarer explicitement. -->
+    <uses-permission
+        android:name="android.permission.INTERNET"
+        tools:node="remove" />
+    <uses-permission
+        android:name="android.permission.ACCESS_NETWORK_STATE"
+        tools:node="remove" />
 
     <!-- Caméra non obligatoire (tablettes, émulateurs, etc.) -->
     <uses-feature

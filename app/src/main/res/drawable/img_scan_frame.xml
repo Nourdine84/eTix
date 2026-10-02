@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- iOS ScannerFlowView.scannerFrame : ticket illustré (150 × 185) dans un cadre à coins d'accroche (200 × 250).
+     Illustration statique, pas un aperçu caméra. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="200dp"
+    android:height="250dp"
+    android:viewportWidth="200"
+    android:viewportHeight="250">
+    <!-- ticket -->
+    <path android:fillColor="#FFFFFFFF" android:strokeColor="#1F000000" android:strokeWidth="1"
+        android:pathData="M37,40 h126 a12,12 0 0 1 12,12 v161 a12,12 0 0 1 -12,12 h-126 a12,12 0 0 1 -12,-12 v-161 a12,12 0 0 1 12,-12 z" />
+    <path android:fillColor="#40007BFF" android:pathData="M50,54 m-11,0 a11,11 0 1,0 22,0 a11,11 0 1,0 -22,0" />
+    <path android:fillColor="#59808080" android:pathData="M39,76 h67 a2.5,2.5 0 0 1 0,5 h-67 a2.5,2.5 0 0 1 0,-5 z" />
+    <path android:fillColor="#59808080" android:pathData="M39,92 h110 a2.5,2.5 0 0 1 0,5 h-110 a2.5,2.5 0 0 1 0,-5 z" />
+    <path android:fillColor="#59808080" android:pathData="M39,104 h98 a2.5,2.5 0 0 1 0,5 h-98 a2.5,2.5 0 0 1 0,-5 z" />
+    <path android:fillColor="#59808080" android:pathData="M39,116 h85 a2.5,2.5 0 0 1 0,5 h-85 a2.5,2.5 0 0 1 0,-5 z" />
+    <path android:fillColor="#59808080" android:pathData="M39,206 h37 a2.5,2.5 0 0 1 0,5 h-37 a2.5,2.5 0 0 1 0,-5 z" />
+    <path android:fillColor="#59808080" android:pathData="M134,206 h27 a2.5,2.5 0 0 1 0,5 h-27 a2.5,2.5 0 0 1 0,-5 z" />
+    <!-- coins d'accroche -->
+    <path android:strokeColor="#BF007BFF" android:strokeWidth="3" android:strokeLineCap="round"
+        android:pathData="M2,32 L2,2 L32,2 M168,2 L198,2 L198,32 M198,218 L198,248 L168,248 M32,248 L2,248 L2,218" />
+</vector>

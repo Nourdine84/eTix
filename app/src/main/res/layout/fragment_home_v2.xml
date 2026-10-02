@@ -388,34 +388,23 @@
         </com.google.android.material.card.MaterialCardView>
 
         <!-- ===== ACTIONS ===== -->
-        <!-- iOS : « Scanner un ticket » = action principale. Scanner non fonctionnel sur Android
-             (flux OCR non branché) → bouton désactivé et signalé comme indisponible. -->
+        <!-- iOS : « Scanner un ticket » = action principale (lot 9 : parcours de scan branché). -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnScanTicket"
             android:layout_width="match_parent"
-            android:layout_height="52dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:enabled="false"
+            android:minHeight="52dp"
             android:insetTop="0dp"
             android:insetBottom="0dp"
             android:text="Scanner un ticket"
-            android:textColor="@color/v2_disabled_on_primary"
+            android:textColor="@android:color/white"
             android:textSize="17sp"
-            app:backgroundTint="@color/v2_disabled_primary"
+            app:backgroundTint="@color/v2_primary"
             app:cornerRadius="14dp"
             app:icon="@drawable/ic_v2_scan"
             app:iconGravity="textStart"
-            app:iconTint="@color/v2_disabled_on_primary" />
-
-        <TextView
-            android:id="@+id/tvScanUnavailable"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:gravity="center"
-            android:text="Scanner indisponible sur Android pour le moment"
-            android:textColor="@color/v2_text_secondary"
-            android:textSize="12sp" />
+            app:iconTint="@android:color/white" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnAddTicket"

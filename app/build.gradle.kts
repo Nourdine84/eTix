@@ -18,8 +18,8 @@ android {
         targetSdk = 34
         // Build « B » de test de mise à jour (CI émulateur uniquement) : même code, versionCode + offset.
         val versionOffset = (project.findProperty("etixVersionCodeOffset") as String?)?.toInt() ?: 0
-        versionCode = 10 + versionOffset
-        versionName = "1.8.1-lot8" + ((project.findProperty("etixVersionNameSuffix") as String?) ?: "")
+        versionCode = 11 + versionOffset
+        versionName = "1.9.0-lot9" + ((project.findProperty("etixVersionNameSuffix") as String?) ?: "")
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -158,9 +158,15 @@ dependencies {
     androidTestImplementation("androidx.test:rules:1.5.0")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
     androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1")
+    // Lot 9 : réponses simulées de l'appareil photo et du sélecteur d'image (tests du scanner)
+    androidTestImplementation("androidx.test.espresso:espresso-intents:3.5.1")
+    // Lot 9 : pilotage des VRAIES applications du système (sélecteur d'image, appareil photo) sur émulateur
+    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.2.0")
 
     // 🔍 ML Kit – Text Recognition (OCR)
     implementation("com.google.mlkit:text-recognition:16.0.0")
+    // Lot 9 : orientation EXIF des photos de tickets (déjà tirée par CameraX, déclarée explicitement)
+    implementation("androidx.exifinterface:exifinterface:1.3.7")
 
     // 📷 CameraX
     implementation("androidx.camera:camera-core:1.3.4")

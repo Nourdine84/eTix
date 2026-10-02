@@ -7,6 +7,9 @@ import java.util.Random
 import java.util.TimeZone
 
 /**
+ * Lot 9 : porte sur extractDateMillisOriginalRules (règles d'origine) ; extractDateMillis y ajoute la priorité aux
+ * dates délimitées (décisions Q3 / Q4), couverte par OCRDateExtractorTest et OCRScanRulesTest.
+ *
  * Équivalence stricte entre le lecteur de dates OCR sans java.time (compatible API 21) et
  * l'implémentation d'origine en java.time (OCRDateExtractorJavaTimeReference), sur la JVM :
  * - lecture (jour, mois, année, rejets) : entrées construites (formats, séparateurs, bornes, signes,
@@ -63,7 +66,7 @@ class OCRDateExtractorEquivalenceTest {
         for (z in listOf("UTC")) {
             TimeZone.setDefault(TimeZone.getTimeZone(z))
             for (line in inputs) {
-                assertEquals("$z « $line »", reference(line), OCRDateExtractor.extractDateMillis(listOf(line)))
+                assertEquals("$z « $line »", reference(line), OCRDateExtractor.extractDateMillisOriginalRules(listOf(line)))
             }
         }
     }
@@ -84,7 +87,7 @@ class OCRDateExtractorEquivalenceTest {
                     repeat(rnd.nextInt(3)) { sb.insert(rnd.nextInt(sb.length + 1), alphabet[rnd.nextInt(alphabet.length)]) }
                 } else repeat(len) { sb.append(alphabet[rnd.nextInt(alphabet.length)]) }
                 val line = sb.toString()
-                assertEquals("$z « $line »", reference(line), OCRDateExtractor.extractDateMillis(listOf(line)))
+                assertEquals("$z « $line »", reference(line), OCRDateExtractor.extractDateMillisOriginalRules(listOf(line)))
             }
         }
     }
@@ -95,7 +98,7 @@ class OCRDateExtractorEquivalenceTest {
             TimeZone.setDefault(TimeZone.getTimeZone(z))
             for (y in 1901..2086) for (m in 1..12) for (d in 1..31) {
                 val line = "%02d/%02d/%04d".format(d, m, y)
-                assertEquals("$z « $line »", reference(line), OCRDateExtractor.extractDateMillis(listOf(line)))
+                assertEquals("$z « $line »", reference(line), OCRDateExtractor.extractDateMillisOriginalRules(listOf(line)))
             }
         }
     }
@@ -107,15 +110,15 @@ class OCRDateExtractorEquivalenceTest {
             OCRDateExtractorJavaTimeReference.extractDateMillis(listOf("12/01/+300000000"))
             throw AssertionError("java.time devait lever ArithmeticException")
         } catch (_: ArithmeticException) { }
-        assertEquals(null, OCRDateExtractor.extractDateMillis(listOf("12/01/+300000000")))
+        assertEquals(null, OCRDateExtractor.extractDateMillisOriginalRules(listOf("12/01/+300000000")))
         assertEquals(
             OCRDateExtractorJavaTimeReference.extractDateMillis(listOf("12/01/2026")),
-            OCRDateExtractor.extractDateMillis(listOf("12/01/+300000000", "12/01/2026"))
+            OCRDateExtractor.extractDateMillisOriginalRules(listOf("12/01/+300000000", "12/01/2026"))
         )
     }
 
     @Test fun plusieurs_lignes_premiere_datee() {
         val lines = listOf("SUPER U", "TEL 01.23.45.67.89", "31/04/2026 10:41", "12/01/2026")
-        assertEquals(OCRDateExtractorJavaTimeReference.extractDateMillis(lines), OCRDateExtractor.extractDateMillis(lines))
+        assertEquals(OCRDateExtractorJavaTimeReference.extractDateMillis(lines), OCRDateExtractor.extractDateMillisOriginalRules(lines))
     }
 }

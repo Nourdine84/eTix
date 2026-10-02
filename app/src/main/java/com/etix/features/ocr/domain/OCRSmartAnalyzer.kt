@@ -1,7 +1,5 @@
 package com.etix.features.ocr.domain
 
-import kotlin.math.min
-
 /**
  * OCRSmartAnalyzer
  *
@@ -25,39 +23,13 @@ object OCRSmartAnalyzer {
     // -----------------------------
 
     /**
-     * Déduit une catégorie + un niveau de confiance à partir du texte OCR brut
+     * Catégorie suggérée à partir du texte OCR brut — lot 9 : délègue à OCRCategoryGuesser (catégories iOS,
+     * décision Q2). Confiance : enseigne connue 0,80 ; mot d'activité dans l'en-tête 0,50 ; sinon aucune.
      */
     fun guessCategoryWithConfidence(rawText: String): CategoryPrediction {
-        val text = normalize(rawText)
-        if (text.isEmpty()) {
-            return CategoryPrediction(null, 0.0)
-        }
-
-        val scores = mutableMapOf<String, Int>()
-
-        for ((category, keywords) in CATEGORY_KEYWORDS) {
-            var score = 0
-            for (word in keywords) {
-                if (text.contains(word)) {
-                    score += 1
-                }
-            }
-            if (score > 0) {
-                scores[category] = score
-            }
-        }
-
-        if (scores.isEmpty()) {
-            return CategoryPrediction(null, 0.0)
-        }
-
-        val best = scores.maxByOrNull { it.value }!!
-        val confidence = computeConfidence(best.value)
-
-        return CategoryPrediction(
-            category = best.key,
-            confidence = confidence
-        )
+        val g = com.etix.features.ocr.engine.OCRCategoryGuesser.guess(rawText) ?: return CategoryPrediction(null, 0.0)
+        val conf = if (g.source == com.etix.features.ocr.engine.OCRCategoryGuesser.Source.STORE_DICTIONARY) 0.80 else 0.50
+        return CategoryPrediction(g.category, conf)
     }
 
     /**
@@ -105,15 +77,6 @@ object OCRSmartAnalyzer {
     // INTERNALS
     // -----------------------------
 
-    private fun computeConfidence(score: Int): Double {
-        // Heuristique simple :
-        // 1 mot clé → ~0.45
-        // 2 → ~0.65
-        // 3 → ~0.80
-        // 4+ → ~0.90+
-        return min(0.95, 0.35 + score * 0.15)
-    }
-
     private fun normalize(s: String): String {
         return s.lowercase()
             .replace("é", "e")
@@ -126,45 +89,4 @@ object OCRSmartAnalyzer {
             .replace(Regex("""\s+"""), " ")
             .trim()
     }
-
-    // -----------------------------
-    // CATEGORY DICTIONARY
-    // -----------------------------
-
-    private val CATEGORY_KEYWORDS = mapOf(
-
-        "Alimentation" to listOf(
-            "carrefour", "leclerc", "auchan", "lidl", "aldi", "intermarche",
-            "supermarche", "hypermarche", "casino", "monoprix",
-            "boulangerie", "boucherie", "epicerie"
-        ),
-
-        "Restaurant" to listOf(
-            "restaurant", "brasserie", "cafe", "bar", "pizza",
-            "kebab", "snack", "fast food", "mcdo", "mcdonald",
-            "burger", "tacos"
-        ),
-
-        "Transport" to listOf(
-            "sncf", "ratp", "uber", "bolt", "taxi",
-            "peage", "autoroute", "essence", "carburant",
-            "station", "parking"
-        ),
-
-        "Santé" to listOf(
-            "pharmacie", "pharma", "docteur", "medecin",
-            "hopital", "clinique", "dentiste"
-        ),
-
-        "Shopping" to listOf(
-            "zara", "hm", "h&m", "uniqlo", "celio",
-            "fnac", "darty", "boulanger",
-            "amazon", "ikea"
-        ),
-
-        "Loisirs" to listOf(
-            "cinema", "theatre", "concert", "netflix",
-            "spotify", "disney", "abonnement"
-        )
-    )
 }

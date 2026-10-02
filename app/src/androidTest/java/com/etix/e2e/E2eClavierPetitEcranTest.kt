@@ -241,4 +241,69 @@ class E2eClavierPetitEcranTest {
         startMain()
         AccueilBudgetE2e.checkTrend("k06_accueil_tendance_${passe}")
     }
+
+    /**
+     * Lot 9 : écran d'accueil du scanner sur petit écran / grande police. Mesuré sur l'émulateur (pas un rendu
+     * simulé) : barre basse ≤ 40 % de la hauteur utile, barre d'onglets masquée, les trois boutons entièrement
+     * visibles sans défilement. Mesures dans shots/mesures_scan.txt (publiées par la CI).
+     */
+    @Test
+    fun k07_scan_intro() {
+        startMain()
+        onView(withId(R.id.menu_add)).perform(click())
+        waitFor(withId(R.id.inputStore))
+        onView(allOf(withId(R.id.btnScanTicket), isDisplayed())).perform(click())
+        waitFor(withId(R.id.btnTakePhoto))
+        androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().waitForIdleSync()
+        shot("k07_scan_intro_${passe}")
+        var bar = 0; var step = 0; var screen = 0; var compact = false; var nav = View.VISIBLE
+        var a: Activity? = null
+        androidx.test.platform.app.InstrumentationRegistry.getInstrumentation().runOnMainSync {
+            val act = resumedOnMain(); a = act
+            bar = act.findViewById<View>(R.id.introBar).height
+            step = act.findViewById<View>(R.id.stepIntro).height
+            screen = act.window.decorView.height
+            compact = act.findViewById<View>(R.id.introCompactActions).visibility == View.VISIBLE
+            nav = act.findViewById<View>(R.id.bottomNav).visibility
+        }
+        val res = a!!.resources
+        java.io.File(java.io.File(ctx.filesDir, "shots").apply { mkdirs() }, "mesures_scan.txt").appendText(
+            "passe=$passe sdk=${Build.VERSION.SDK_INT} écran=${res.configuration.screenWidthDp}x${res.configuration.screenHeightDp} dp " +
+                "police=${res.configuration.fontScale} : barre basse $bar px / étape $step px " +
+                "(${if (step > 0) bar * 100 / step else -1} %), fenêtre $screen px, compact=$compact, " +
+                "barre d'onglets ${if (nav == View.VISIBLE) "visible" else "masquée"}\n")
+        assertTrue("barre d'onglets masquée pendant le scan", nav != View.VISIBLE)
+        assertTrue("barre basse $bar px > 40 % de $step px", step > 0 && bar <= step * com.etix.ui.scan.ScanFlowFragment.MAX_BAR_FRACTION)
+        // actions toujours atteignables : les trois boutons entièrement à l'écran, sans défilement
+        for (id in listOf(R.id.btnTakePhoto, R.id.btnPickImage, R.id.btnScanCancel)) {
+            onView(withId(id)).check(androidx.test.espresso.assertion.ViewAssertions.matches(
+                androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed()))
+        }
+        onView(withId(R.id.btnScanCancel)).perform(click())
+        waitFor(withId(R.id.inputStore))
+    }
+
+    /** Lot 9 : formulaire prérempli par un scan (ML Kit réel, image simulée) sur petit écran / grande police. */
+    @Test
+    fun k08_scan_formulaire_prerempli() {
+        androidx.test.espresso.intent.Intents.init()
+        try {
+            val before = ScanE2e.tickets()
+            startMain()
+            onView(withId(R.id.menu_add)).perform(click())
+            waitFor(withId(R.id.inputStore))
+            onView(allOf(withId(R.id.btnScanTicket), isDisplayed())).perform(click())
+            waitFor(withId(R.id.btnTakePhoto))
+            ScanE2e.stubPicker(ScanE2e.ticketImage("petit_${passe}.png"))
+            onView(withId(R.id.btnPickImage)).perform(click())
+            waitFor(allOf(withId(R.id.scanBanner), isDisplayed()), 60_000)
+            shot("k08_scan_formulaire_${passe}")
+            onView(withId(R.id.inputStore)).check(androidx.test.espresso.assertion.ViewAssertions.matches(
+                androidx.test.espresso.matcher.ViewMatchers.withText("ESSO")))
+            onView(withId(R.id.btnDiscardScan)).perform(androidx.test.espresso.action.ViewActions.scrollTo(), click())
+            org.junit.Assert.assertEquals(before, ScanE2e.tickets())
+        } finally {
+            androidx.test.espresso.intent.Intents.release()
+        }
+    }
 }

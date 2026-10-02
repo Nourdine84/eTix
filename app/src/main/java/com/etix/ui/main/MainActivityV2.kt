@@ -123,6 +123,16 @@ class MainActivityV2 : AppCompatActivity() {
         push(com.etix.ui.budget.BudgetEditFragment.newInstance(category), BACKSTACK_BUDGET_EDIT)
     }
 
+    /**
+     * Lot 9 : parcours de scan (iOS ScannerFlowView), au-dessus de l'onglet « Ajouter » qui reçoit le résultat,
+     * en plein écran (barre d'onglets masquée, comme la fullScreenCover iOS).
+     * Depuis l'Accueil (iOS : CTA « Scanner un ticket » → AddTicketView avec scanner ouvert).
+     */
+    fun openScanFlow() {
+        if (viewPager.currentItem != PAGE_ADD) goToPage(PAGE_ADD)
+        push(com.etix.ui.scan.ScanFlowFragment(), BACKSTACK_SCAN)
+    }
+
     fun openStoreDetail(storeKey: String) {
         push(StoreDetailFragment.newInstance(storeKey), BACKSTACK_STORE)
     }
@@ -165,8 +175,11 @@ class MainActivityV2 : AppCompatActivity() {
     }
 
     private fun syncOverlayVisibility() {
-        overlay.visibility =
-            if (supportFragmentManager.backStackEntryCount > 0) View.VISIBLE else View.GONE
+        val count = supportFragmentManager.backStackEntryCount
+        overlay.visibility = if (count > 0) View.VISIBLE else View.GONE
+        // Lot 9 : le parcours de scan occupe tout l'écran, sans barre d'onglets (iOS : fullScreenCover)
+        val top = if (count > 0) supportFragmentManager.getBackStackEntryAt(count - 1).name else null
+        bottomNav.visibility = if (top == BACKSTACK_SCAN) View.GONE else View.VISIBLE
     }
 
     companion object {
@@ -183,5 +196,6 @@ class MainActivityV2 : AppCompatActivity() {
         private const val BACKSTACK_CATEGORY = "category_detail"
         private const val BACKSTACK_BUDGETS = "budget_settings"
         private const val BACKSTACK_BUDGET_EDIT = "budget_edit"
+        private const val BACKSTACK_SCAN = "scan_flow"
     }
 }

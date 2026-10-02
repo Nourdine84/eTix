@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Capsule (badges « Vérifié » / « À vérifier » après un scan, iOS TicketForm.confidenceBadge) ; teinte par backgroundTint -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <corners android:radius="999dp" />
+    <solid android:color="#FFFFFFFF" />
+</shape>

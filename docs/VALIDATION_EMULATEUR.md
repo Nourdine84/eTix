@@ -64,6 +64,98 @@ Défauts trouvés sur émulateur / aperçus et corrigés :
 Changement de mois : vérifié en JVM seulement (horloge de l'émulateur non modifiée).
 Aperçus : `docs/preview/lot8/` (Robolectric) et `docs/preview/lot8-emulateur/`.
 
+## Lot 9 — scanner (branche `feature/android-lot9-scanner`)
+
+### Finalisation avant décision de fusion (02/10/2026)
+
+- Permissions : INTERNET et ACCESS_NETWORK_STATE retirées du manifeste final ; elles venaient uniquement de
+  `transport-backend-cct:2.3.3` et `transport-runtime:2.2.6` (statistiques de ML Kit), d'après le rapport de fusion
+  du manifeste. APK final : seule `com.etix.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` (androidx.core, interne).
+- Run de `f4e3ddf` (https://github.com/Nourdine84/eTix/actions/runs/36993023967) : build vert, émulateurs
+  API 21 / 34 / 36, fr, petit écran, mise à jour lot 8 verts ; job système en échec sur **le test lui-même**
+  (`E2eScanHorsLigneTest` interrogeait ConnectivityManager, qui exige ACCESS_NETWORK_STATE) — corrigé (état du
+  réseau lu par `dumpsys connectivity`). Constats du même job : processus eTix sans groupe `inet` (Groups 9997
+  20192 50192), aucune tâche planifiée, vrai sélecteur et vraie application appareil photo lus par ML Kit sans
+  permission réseau, aucun plantage d'eTix. Run de branche : API 36 en échec sur le plantage d'une application
+  système (`com.google.android.settings.intelligence`, « Service not registered »), sans rapport avec eTix ;
+  vert sur le run PR du même code.
+- Champs non lus : `s10` (émulateur, ML Kit réel) et Robolectric : « Saisir le montant », « Date non lue —
+  aujourd'hui proposé », enregistrement refusé sans montant (ni 0), accepté après saisie.
+- Run final et SHA : description de la PR #78.
+
+### Revue avant décision de fusion (02/10/2026, sans téléphone physique)
+
+Commit de code testé : **`0d7894e`** (source), cible `feature/android-v2` **`457f49e`**, résultat de fusion testé
+**`80c4178`** — run PR https://github.com/Nourdine84/eTix/actions/runs/36988606560 (100 jobs, tous verts, aperçus
+compris) ; run de la branche https://github.com/Nourdine84/eTix/actions/runs/36988599906 (21 jobs, tous verts).
+
+| Job | Attendu | Observé (résultat de fusion) |
+|---|---|---|
+| JVM + Robolectric | 217 `@Test` | 217 découverts, 216 réussis, 0 échec, 1 ignoré (`OCRValidationTest`) |
+| Permissions de l'APK | pas de CAMERA | ACCESS_NETWORK_STATE, INTERNET (apportées par ML Kit) |
+| Émulateur API 21 / 34 / 36 | 39 chacun (`E2eScanTest` 10) | 39 / 39 chacun |
+| API 34 fr-FR | 7 (dont `E2eScanFrTest`) | 7 / 7 — date préremplie « 12 janv. 2026 », enregistrée au 12/01/2026 |
+| API 36 petit écran | 28 (7 × 4 passes, dont d = 320 dp police 2,0) | 28 / 28 |
+| API 34 système (nouveau) | 3 | 3 / 3 — voir ci-dessous |
+| API 34 mise à jour lot 8 → lot 9 (nouveau) | 12 | 12 / 12 — versionCode 10 → 11, même certificat, sans désinstallation, 1 ticket et 1 budget identiques avant / après |
+| Lecteur de dates API 22 à 25 | 2 chacun | 2 chacun |
+| Mise à jour A → B (11 → 12) | conforme | conforme (API 21, 34, 36) |
+
+Constats (journal des jobs) :
+- **Hors ligne** (mode avion, Wi-Fi et données coupés, app neuve jamais lancée) : 1re lecture ML Kit en ≈ 5 s,
+  ESSO / 23,45 / date lue. Aucun téléchargement de modèle nécessaire.
+- **Vrai sélecteur** : Android 14 ouvre le sélecteur de photos (`com.google.android.providers.media.module`) ;
+  image choisie → formulaire prérempli (ESSO, 23,45), aucun ticket.
+- **Vraie application appareil photo** (`com.android.camera2`, caméra « emulated ») : eTix n'affiche aucune demande
+  d'autorisation ; refus de l'accès caméra dans l'application appareil photo → retour à l'intro d'eTix, aucun
+  ticket ; après un refus, cette application ne redemande plus l'accès (« Camera error ») : accès rétabli comme
+  dans les Paramètres (`pm grant` sur l'application appareil photo, jamais sur eTix), photo prise et validée →
+  lue par eTix (« Aucune information détectée » : scène de synthèse sans texte), photo temporaire supprimée.
+- **Images** : EXIF 6 (1500 × 1080 stocké) → 1080 × 1500 redressé ; 6000 × 8000 → 1732 × 2309 (4,0 Mpx) en
+  120 à 190 ms, sans erreur mémoire, y compris API 21 (tas 256 Mo) ; ticket long 1000 × 7000 → 756 × 5292,
+  total en bas du ticket lu (23,45, « Détecté »).
+- **Petit écran** (API 36, mesuré) : barre basse / hauteur de l'étape = 33 % (360 dp, 1,3), 18 % (360 dp, 2,0,
+  compact), 37 % (320 dp, 1,3), **20 % (320 dp, 2,0, compact ; ≈ 60 % avant)** ; barre d'onglets masquée ; trois
+  boutons entièrement visibles sans défilement.
+- **Robustesse** (API 21, 34, 36) : double appui → 1 ticket ; retour pendant la lecture puis fin de la lecture →
+  formulaire vide, aucun ticket ; rotation pendant la lecture et après correction → corrections, date, catégorie
+  et marques conservées, 1 ticket.
+
+Défauts trouvés et corrigés pendant cette revue : « Vérifié » affiché sans action de l'utilisateur ; double appui
+= deux tickets ; marques perdues à la rotation ; résultat de scan perdu si l'écran est recréé pendant la lecture de
+l'historique ; permission CAMERA inutile ; barre basse ≈ 60 % de l'écran à 320 dp / police 2,0 ; photo 12 Mpx gardée
+en pleine résolution. Échecs CI intermédiaires (run 36987368919, `da40313`) : deux erreurs de test (vue vérifiée
+après fermeture de l'écran ; accès caméra non rétabli après refus), corrigées en `0d7894e`.
+
+Aperçus examinés : `docs/preview/lot9-revue/` (sélecteur réel, refus caméra, appareil photo réel, 320 dp police
+2,0, champs « Non lu »). Liens des jobs d'aperçu : voir le compte rendu de la PR #78.
+
+Limites : aucun téléphone physique ; images de ticket générées (texte net) ; scène de synthèse pour l'appareil
+photo ; appareil photo et sélecteur d'un constructeur non testés ; ML Kit peut envoyer des statistiques
+d'utilisation à Google (pas d'image) quand le réseau est disponible — non mesuré.
+
+### Première version du lot 9
+
+Commit de code testé : **`897e536`**, résultat de fusion proposé de la PR #78 (cible `457f49e`) — run
+https://github.com/Nourdine84/eTix/actions/runs/36930688922 (label `apercus` : 95 jobs dont 84 d'aperçu, tous verts).
+
+| Niveau | Attendu | Observé |
+|---|---|---|
+| JVM + Robolectric | 201 `@Test` déclarés | 201 découverts, 200 réussis, 0 échec, 1 ignoré (`OCRValidationTest`, obsolète) |
+| Émulateur API 21 / 34 / 36 | 33 chacun (29 + `E2eScanTest` 4) | 33 chacun ; ML Kit réel sur l'image de test, formulaire prérempli (ESSO, 23,45, 12/01/2026, Carburant), enregistrement après correction, rien détecté |
+| Émulateur API 34 fr-FR | 6 | 6 |
+| Émulateur API 36 petit écran | 18 (6 × 3 passes, dont `k07` scanner) | 18 |
+| Lecteur de dates API 22 à 25 | 2 chacun | 2 chacun |
+| Mise à jour A → B | versionCode 11 → 12 sans désinstallation | conforme (API 21, 34, 36), aucun plantage |
+
+Défauts trouvés en cours de lot (CI, aperçus) et corrigés :
+- toute image jugée « introuvable » (lecture des dimensions mal testée) — tests Robolectric, `9ec6e46` ;
+- boutons du scanner hors de l'écran sur petit écran / grande police → barre basse toujours visible, `0fb922b` ;
+- bandeau de vérification écrasé lettre par lettre à 320 dp / police 2,0 → empilé, `80a055a` ;
+- fonds du bandeau et des badges absents sur Android 5 (teinte ignorée) → fonds construits directement, `897e536`.
+
+Aperçus : `docs/preview/lot9/` (Robolectric) et `docs/preview/lot9-emulateur/`.
+
 ## Lot 8 — revue avant fusion : fiabilité CI, résultat de fusion (01/10/2026)
 
 Résultat de fusion proposé de la PR #76 (`refs/pull/76/merge`, source `1540145`, cible `8c1af76`) — run

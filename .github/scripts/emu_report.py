@@ -76,6 +76,19 @@ mes = read(f"{out}/shots/mesures_clavier.txt").strip()
 if mes:
     notice("Clavier petit écran (mesures)", mes)
 
+# Lot 9 : mesures et constats du scanner, regroupés en une annotation (limite de 10 notices par étape)
+scan_parts = []
+for fname, title in (("mesures_scan.txt", "Petit écran (mesures)"), ("scan_images.txt", "Images"),
+                     ("scan_systeme.txt", "Applications du système"), ("scan_hors_ligne.txt", "Hors ligne"),
+                     ("maj_donnees.txt", "Mise à jour : données"), ("apk_permissions.txt", "Permissions de l'app installée"),
+                     ("scan_reseau.txt", "Réseau")):
+    t = read(f"{out}/shots/{fname}").strip()
+    if t:
+        scan_parts.append(f"== {title}\n{t}")
+        print(f"--- {fname}\n{t}")          # journal complet (l'annotation est tronquée à 3800 caractères)
+if scan_parts:
+    notice("Scanner et mise à jour (constats)", "\n".join(scan_parts))
+
 dem = read(f"{out}/shots/demarrage.txt").strip()
 if dem:
     notice("Démarrages (état réel de l'app)", dem[:3500])
@@ -106,9 +119,10 @@ notice("Plantages (logcat)", crash[:3500] if crash else "aucun FATAL EXCEPTION",
 # ---------------------------------------------------------------------------
 SRC = os.environ.get("ANDROID_TEST_SRC", "app/src/androidTest/java")
 
-def declared(cls):
-    """(@Test, @Ignore) déclarés dans le corps de la classe Kotlin `cls`, ou None si introuvable."""
-    for path in glob.glob(f"{SRC}/**/*.kt", recursive=True):
+def declared(cls, src=None):
+    """(@Test, @Ignore) déclarés dans le corps de la classe Kotlin `cls`, ou None si introuvable.
+    `src` : sources d'une autre version (mode maj8 : tests du lot 8), sinon SRC."""
+    for path in glob.glob(f"{src or SRC}/**/*.kt", recursive=True):
         txt = read(path)
         m = re.search(r"^(?:@\S+\s+)*class\s+" + re.escape(cls) + r"\b", txt, re.M)
         if not m:
@@ -122,9 +136,11 @@ def declared(cls):
 expected_runs = [l.split() for l in read(f"{out}/expected_runs.txt").splitlines() if l.strip()]
 table, exp_total, obs_total, mismatch = [], 0, 0, []
 for parts in expected_runs:
-    cls = parts[0].split(".")[-1]; suf = f"_{parts[1]}" if len(parts) > 1 else ""
+    srcs = [p[4:] for p in parts[1:] if p.startswith("src=")]
+    rest = [p for p in parts[1:] if not p.startswith("src=")]
+    cls = parts[0].split(".")[-1]; suf = f"_{rest[0]}" if rest else ""
     fname = f"instr_{parts[0].replace('.', '_')}{suf}.txt"
-    d = declared(cls)
+    d = declared(cls, srcs[0] if srcs else None)
     c = per_file.get(fname)
     if d is None:
         mismatch.append(f"{cls}{suf} : classe introuvable dans les sources"); continue

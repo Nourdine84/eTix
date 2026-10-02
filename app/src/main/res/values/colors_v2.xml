@@ -41,4 +41,6 @@
     <!-- Carte Budget de l'Accueil (lot 8) : fond teinté iOS orange / rouge à 8 % (16 % en sombre), pré-mélangé sur le fond de l'Accueil : opaque, sinon l'ombre de la carte apparaît en gris à travers (constaté sur Android 14) -->
     <color name="v2_attention_08">#EFEBEB</color>
     <color name="v2_negative_08">#EFE3EE</color>
+    <!-- Lot 9 : fond du badge « À vérifier » (orange 12 %) -->
+    <color name="v2_attention_12">#1FFF9500</color>
 </resources>

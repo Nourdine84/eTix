@@ -1,4 +1,4 @@
-# OCR — cas de référence proposés (à valider)
+# OCR — cas de référence (décisions Q1 à Q4 validées le 01/10/2026)
 
 Statut : **proposition**. `OCRValidationTest` reste désactivé (`@Ignore`). Aucune attente n'a été modifiée
 pour faire passer un test. Les résultats « observés » viennent du moteur réel
@@ -36,7 +36,7 @@ Fichiers référencés par le test mais **absents** : `ticket_carrefour.txt`, `t
 | 004 | Date | `12/01/2026` lue jj/mm/aaaa (12 janvier) | `12/01/2026` | — |
 | 004 | Catégorie | `Carburant` (iOS : `esso` → Carburant) | aucune | **Oui** : `esso` inconnu ; Android range le carburant dans `Transport` |
 
-## Décisions à prendre
+## Décisions (Q1 à Q4 validées par le produit le 01/10/2026, lot 9)
 
 | # | Question | Proposition |
 |---|---|---|
@@ -58,7 +58,7 @@ Fichiers référencés par le test mais **absents** : `ticket_carrefour.txt`, `t
 
 Un test par fichier et par champ. Seules les attentes **établies par le texte** sont actives ; les autres sont
 `@Ignore` avec leur motif exact. Aucune attente ajustée sur le moteur ; moteur et catégories **inchangés**.
-`OCRValidationTest` (ancien, jeux de données absents) reste désactivé tel quel. Q1–Q4 restent des **propositions**.
+`OCRValidationTest` (ancien, jeux de données absents) reste désactivé tel quel. Q1–Q4 : **validées au lot 9** (voir ci-dessous).
 
 | Fichier | Actifs (passent) | Bloqués (`@Ignore`) | Motif du blocage |
 |---|---|---|---|
@@ -105,3 +105,15 @@ ils ne valident pas ce comportement. Toute évolution de la règle devra modifie
 | L6 | deux `TOTAL TTC` (10,00 puis 12,00) | 12,00 (dernier) | Ticket corrigé/dupliqué : dernier plausible |
 | L7 | `TOTAL 12,500` (3 décimales) + `CB 12,50` | 12,50 (repli carte) | Correct par chance ; 3 décimales non reconnues |
 | L8 | `TOTAL 12.345,67` | 12 345,67 | Correct |
+
+## Lot 9 — décisions Q1 à Q4 validées et appliquées
+
+| # | Décision validée | Application | Tests |
+|---|---|---|---|
+| Q1 | « TOTAL » seul est un libellé de montant, pas une enseigne ; une enseigne explicitement TotalEnergies reste reconnue | `OCRProcessor.extractMerchant` : une ligne faite uniquement de libellés de montant / paiement / politesse n'est jamais une enseigne ; « TOTALENERGIES », « TOTAL ENERGIES », « TotalEnergies » restent des enseignes (catégorie Carburant). Longueur minimale d'enseigne 3 (iOS) au lieu de 4 : « KFC », « H&M », « BUT » | `t003_enseigne`, `t003_categorie`, `OCRScanRulesTest` |
+| Q2 | Catégories de référence iOS (ESSO → Carburant) ; aucun ticket existant reclassé | `OCRCategoryGuesser` : dictionnaire iOS `StoreCategoryMapper.knownStores` sur l'enseigne (mots entiers, ordre déterministe), sinon mots d'activité de l'en-tête rangés dans les catégories iOS ; sans enseigne, aucune catégorie. Suggestion seulement : rien n'est écrit sur les tickets existants | `t001/t002/t003/t004_categorie`, `s_restaurant_categorie`, `s_long_categorie`, `OCRScanRulesTest` |
+| Q3 | Dates numériques lues jour/mois/année (12/01/2026 = 12 janvier 2026) | Inchangé ; en plus, une date délimitée dans la ligne lue est prioritaire (corrige « 03.10.26 18:42 », lu jusqu'ici comme l'année 2618) | `t004_date`, `OCRScanRulesTest.dates_jour_mois_annee` |
+| Q4 | Les dates extraites sont vérifiées par les tests | Dates présentes et absentes vérifiées | `t004_date`, `s_long_date`, `t00x_sans_date_dans_le_texte` |
+
+Sur les 9 tests réactivés, 7 passaient déjà avec le moteur précédent (décision seule) ; 2 ont nécessité une
+correction du moteur (`t003_enseigne`, `t004_categorie`). Aucune attente modifiée.

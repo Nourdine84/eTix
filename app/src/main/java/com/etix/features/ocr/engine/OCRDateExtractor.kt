@@ -35,7 +35,42 @@ object OCRDateExtractor {
     /** Date civile (calendrier grégorien proleptique, comme java.time). */
     private class Ymd(val year: Int, val month: Int, val day: Int)
 
+    /**
+     * Lot 9 (décisions Q3 / Q4, dates lues jour/mois/année et vérifiées) : avant les règles d'origine, une date
+     * délimitée dans la ligne telle qu'elle est lue (espaces conservés) est prise en priorité. Corrige
+     * « 03.10.26 18:42 » : une fois les espaces retirés (« 03.10.2618:42 »), les règles d'origine lisaient
+     * l'année 2618. Hors de ce cas, comportement inchangé ([extractDateMillisOriginalRules]).
+     */
     fun extractDateMillis(lines: List<String>): Long? {
+        for (line in lines.map { it.trim() }.filter { it.isNotBlank() }) {
+            val parsed = delimitedDate(line) ?: tryParse(line.replace(" ", "")) ?: continue
+            return startOfDayMillis(parsed) ?: continue
+        }
+        return null
+    }
+
+    /**
+     * Lot 9 — nombre de dates différentes lisibles (jj?mm?aaaa ou jj?mm?aa délimitées) dans le texte. Sert
+     * uniquement à signaler une date ambiguë (ex. date d'achat et date de validité) : la date retenue par
+     * [extractDateMillis] est inchangée.
+     */
+    fun distinctDateCount(lines: List<String>): Int = lines.flatMap { line ->
+        DELIMITED.findAll(line).mapNotNull { m ->
+            val (d, mo, y) = m.destructured
+            parse("$d/$mo/$y", if (y.length == 4) "dd/MM/yyyy" else "dd/MM/yy")?.let { "${it.year}-${it.month}-${it.day}" }
+        }.toList()
+    }.distinct().size
+
+    /** Date jj?mm?aaaa ou jj?mm?aa non collée à d'autres chiffres, séparateurs « / », « - » ou « . ». */
+    private val DELIMITED = Regex("""(?<!\d)(\d{2})[./-](\d{2})[./-](\d{4}|\d{2})(?!\d)""")
+
+    private fun delimitedDate(line: String): Ymd? = DELIMITED.findAll(line).firstNotNullOfOrNull { m ->
+        val (d, mo, y) = m.destructured
+        parse("$d/$mo/$y", if (y.length == 4) "dd/MM/yyyy" else "dd/MM/yy")
+    }
+
+    /** Règles d'origine (portage exact de java.time, lot 8), sans la priorité aux dates délimitées. */
+    internal fun extractDateMillisOriginalRules(lines: List<String>): Long? {
         val cleaned = lines
             .map { it.trim() }
             .filter { it.isNotBlank() }

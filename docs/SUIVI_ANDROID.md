@@ -229,13 +229,49 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
 - **Revue visuelle** : pour toute modification d'interface, poser `apercus` et examiner les aperçus concernés avant
   de déclarer la revue visuelle effectuée.
 
+### Lot 9 — Scanner (`feature/android-lot9-scanner`, depuis `457f49e`)
+- **Décisions OCR Q1 à Q4 validées** (01/10/2026) et appliquées : « TOTAL » seul n'est pas une enseigne
+  (TotalEnergies reste une enseigne) ; catégories de référence iOS (ESSO → Carburant), sans reclasser aucun ticket ;
+  dates jj/mm/aaaa vérifiées. 9 tests réactivés, attentes inchangées (7 passaient déjà, 2 ont demandé une
+  correction du moteur). Correction en plus : « 03.10.26 18:42 » lu comme l'année 2618. `OCRValidationTest`
+  (obsolète) reste désactivé. Détail : `docs/OCR_CAS_DE_REFERENCE.md`.
+- **Parcours de scan** (iOS ScannerFlowView) : Accueil ou Ajouter → intro → photo (appareil photo du système,
+  autorisation expliquée avant la demande, refus → Paramètres) ou image choisie → lecture ML Kit sur l'appareil
+  (étapes affichées) → formulaire « Ajouter » prérempli, badges (« Détecté » / « À vérifier » / « Non lu » depuis le 02/10), catégorie
+  « Suggéré par l'OCR » → **enregistrement uniquement par « Enregistrer »**. « Rien détecté » / erreur :
+  « Réessayer » ou « Saisir manuellement ». Annuler, Retour, « Annuler le scan » : aucun ticket.
+  Ancien écran de scan simulé (`OCRScannerFragment`, valeurs fictives) : jamais branché, conservé. Détail et
+  écarts iOS : `docs/SCANNER.md`.
+- Version `1.9.0-lot9` (versionCode 11). PR brouillon #78 (non fusionnée) ; résultats : `docs/VALIDATION_EMULATEUR.md`.
+  - Finalisation (02/10/2026) : INTERNET et ACCESS_NETWORK_STATE retirées (apportées uniquement par les statistiques
+    de ML Kit, aucune fonctionnalité réseau) ; montant vide : « Saisir le montant », enregistrement refusé avec un
+    message précis ; date absente : « Date non lue — aujourd'hui proposé ». Description de la PR #78 mise à jour.
+- **Revue avant décision de fusion (02/10/2026)**, demandée par Nourdine, sans téléphone physique :
+  - Marques : « Vérifié » s'affichait sans action de l'utilisateur (montant sur une ligne de total, toute date
+    lue). Remplacé par « Détecté » / « À vérifier » / « Non lu » ; marque retirée dès que l'utilisateur modifie
+    le champ ; montant ou date ambigus (deux totaux différents, plusieurs dates, date future ou de plus de 2 ans)
+    « À vérifier » ; champ absent « Non lu » (dont la date du jour par défaut). Écart iOS voulu.
+  - Robustesse : double appui sur « Enregistrer » créait deux tickets → un seul (ViewModel) ; rotation pendant
+    l'insertion sans doublon ; marques et résultat de scan en attente conservés à la recréation.
+  - Permission CAMERA retirée (inutile pour l'application appareil photo du système) et étape d'autorisation
+    supprimée ; contrôle CI des permissions de l'APK (restent INTERNET et ACCESS_NETWORK_STATE, apportées par
+    ML Kit : l'app elle-même ne fait aucun appel réseau).
+  - Petit écran : barre d'onglets masquée pendant le scan (iOS fullScreenCover) ; barre basse limitée à 40 %
+    (mesurée sur émulateur à 320 dp / police 2,0 : 20 %, contre ≈ 60 % avant).
+  - Images : budget de 4 Mpx (une photo 12 Mpx était gardée en pleine résolution ; un ticket long aurait été
+    réduit à 256 px de large).
+  - Nouveaux contrôles émulateur : vrai sélecteur de photos et vraie application appareil photo (refus puis
+    accès rétabli), ML Kit hors ligne au premier lancement, EXIF / 48 Mpx / ticket long, rotation, double
+    appui, annulation pendant la lecture, scan en français, passe 320 dp police 2,0, mise à jour depuis le lot 8
+    fusionné (versionCode 10 → 11) avec tickets et budgets comparés. Résultats : `docs/VALIDATION_EMULATEUR.md`.
+
 ## Écarts restants avec iOS (référence `feature/home-hero-v2`)
 
 | Écran | Écart | Lot envisagé |
 |---|---|---|
 | Accueil | Insights (≤ 2), carte Budget / Magasin, étoiles du header sombre, animations d'entrée, lien Tendance → rapport mensuel | 4 |
-| Accueil | Scanner indisponible (flux OCR non branché) | OCR |
-| Ajouter | Scanner indisponible ; pas de suggestion de catégorie (OCR / historique) | OCR |
+| Accueil | Scanner : branché au lot 9 (voir `docs/SCANNER.md` pour les écarts) | 9 |
+| Ajouter | Scanner et suggestion de catégorie (historique puis OCR) : lot 9 | 9 |
 | Historique | Suppression par balayage (iOS) non portée | 5 |
 | Détail ticket | Aligné au lot 6 ; dégradé du montant iOS rendu en bleu uni ; pas de retour haptique | — |
 | Catégories | Budgets portés (lot 7) ; export non porté | à planifier |
