@@ -56,8 +56,9 @@ class ProtectedActionsTest {
     fun clear_all_button_is_disabled_in_dark_layout_too() {
         val a = Robolectric.buildActivity(MainActivityV2::class.java).setup().get(); idle()
         a.openSettings(); idle()
-        // variante layout-night : identifiant historique différent
-        assertFalse(a.findViewById<View>(R.id.btnDeleteDatabase).isEnabled)
+        // Lot 10 : une seule mise en page pour les deux thèmes (l'ancienne variante layout-night a été retirée)
+        assertFalse(a.findViewById<View>(R.id.btnClearAll).isEnabled)
+        a.findViewById<View>(R.id.btnClearAll).performClick(); idle()
         assertEquals(2, ticketCount())
     }
 

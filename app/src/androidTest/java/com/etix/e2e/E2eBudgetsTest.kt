@@ -206,9 +206,9 @@ class E2eBudgetsTest {
     @Test fun g03_theme_sombre() {
         BudgetE2e.startMain()
         onView(withId(R.id.btnSettings)).perform(click())
-        waitFor(withId(R.id.btnToggleTheme))
-        onView(withId(R.id.btnToggleTheme)).perform(click())
-        waitFor(withId(R.id.btnToggleTheme))
+        waitFor(withId(R.id.rowTheme))
+        E2e.chooseTheme("Sombre")
+        waitFor(withId(R.id.rowTheme))
         pressBack()
         E2e.waitForAppReady("E2eBudgetsTest.g03"); waitFor(withId(R.id.tvTicketCount))
         BudgetE2e.openCategoriesMonth()
@@ -220,8 +220,8 @@ class E2eBudgetsTest {
         pressBack()
         onView(withId(R.id.menu_home)).perform(click())
         onView(withId(R.id.btnSettings)).perform(click())
-        waitFor(withId(R.id.btnToggleTheme))
-        onView(withId(R.id.btnToggleTheme)).perform(click())   // retour au clair
-        waitFor(withId(R.id.btnToggleTheme))
+        waitFor(withId(R.id.rowTheme))
+        E2e.chooseTheme("Système")   // → Système (préférence par défaut rétablie)
+        waitFor(withId(R.id.rowTheme))
     }
 }

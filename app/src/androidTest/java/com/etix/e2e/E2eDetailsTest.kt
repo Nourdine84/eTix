@@ -120,9 +120,9 @@ class E2eDetailsTest {
     fun e03_theme_sombre() {
         startMain()
         onView(withId(R.id.btnSettings)).perform(click())
-        waitFor(withId(R.id.btnToggleTheme))
-        onView(withId(R.id.btnToggleTheme)).perform(click())   // → sombre
-        waitFor(withId(R.id.btnToggleTheme))
+        waitFor(withId(R.id.rowTheme))
+        E2e.chooseTheme("Sombre")   // → sombre
+        waitFor(withId(R.id.rowTheme))
         pressBack()
         waitFor(withId(R.id.tvTicketCount))
         openCategory("E2E Hausse")
@@ -136,8 +136,8 @@ class E2eDetailsTest {
 
         onView(withId(R.id.menu_home)).perform(click())
         onView(withId(R.id.btnSettings)).perform(click())
-        waitFor(withId(R.id.btnToggleTheme))
-        onView(withId(R.id.btnToggleTheme)).perform(click())   // → clair (préférence rétablie)
-        waitFor(withId(R.id.btnToggleTheme))
+        waitFor(withId(R.id.rowTheme))
+        E2e.chooseTheme("Système")   // → Système (préférence par défaut rétablie)
+        waitFor(withId(R.id.rowTheme))
     }
 }

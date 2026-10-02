@@ -139,15 +139,15 @@ class E2eAccueilBudgetTest {
     @Test fun h03_theme_sombre() {
         BudgetE2e.startMain()
         onView(withId(R.id.btnSettings)).perform(E2e.nestedScrollTo(), click())
-        waitFor(withId(R.id.btnToggleTheme))
-        onView(withId(R.id.btnToggleTheme)).perform(click())
-        waitFor(withId(R.id.btnToggleTheme))
+        waitFor(withId(R.id.rowTheme))
+        E2e.chooseTheme("Sombre")
+        waitFor(withId(R.id.rowTheme))
         pressBack()
         E2e.waitForAppReady("E2eAccueilBudgetTest.h03"); waitFor(withId(R.id.tvTicketCount))
         AccueilBudgetE2e.checkCard("63_accueil_carte_budget_sombre")
         onView(withId(R.id.btnSettings)).perform(E2e.nestedScrollTo(), click())
-        waitFor(withId(R.id.btnToggleTheme))
-        onView(withId(R.id.btnToggleTheme)).perform(click())   // retour au clair
-        waitFor(withId(R.id.btnToggleTheme))
+        waitFor(withId(R.id.rowTheme))
+        E2e.chooseTheme("Système")   // → Système (préférence par défaut rétablie)
+        waitFor(withId(R.id.rowTheme))
     }
 }
