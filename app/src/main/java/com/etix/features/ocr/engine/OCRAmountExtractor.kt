@@ -36,8 +36,12 @@ object OCRAmountExtractor {
     private val CASH = Regex("""\b(ESPECES|ESP|CASH)\b""")
     private val CHANGE = Regex("""\b(RENDU|A RENDRE|MONNAIE)\b""")
 
-    /** Montant retenu et sa provenance : [fromTotalLine] = ligne « total à payer » (règle 2), sinon repli. */
-    data class Hit(val value: Double, val fromTotalLine: Boolean)
+    /**
+     * Montant retenu et sa provenance : [fromTotalLine] = ligne « total à payer » (règle 2), sinon repli.
+     * [ambiguous] (lot 9) : plusieurs lignes de même priorité donnent des montants différents ; le montant retenu
+     * est inchangé (dernière ligne), seule la confiance affichée baisse.
+     */
+    data class Hit(val value: Double, val fromTotalLine: Boolean, val ambiguous: Boolean = false)
 
     fun extract(rawLines: List<String>): Double? = extractDetailed(rawLines)?.value
 
@@ -52,13 +56,13 @@ object OCRAmountExtractor {
 
         // 2. Total à payer : premier montant APRÈS le mot-clé (« TOTAL TTC 40,80 DONT TVA 2,13 » → 40,80)
         for (rule in listOf(DUE_STRONG, DUE_TTC, DUE_TOTAL)) {
-            val hit = norm.indices.mapNotNull { i ->
+            val hits = norm.indices.mapNotNull { i ->
                 val m = rule.find(norm[i]) ?: return@mapNotNull null
                 if (isNotDue(norm[i])) return@mapNotNull null
                 (firstAmountAfter(norm[i], m.range.last + 1) ?: lines.getOrNull(i + 1)
                     ?.takeIf { isAmountOnly(it) }?.let(::lastAmount))?.takeIf { it > 0 }
-            }.lastOrNull()
-            if (hit != null) return Hit(hit, true)
+            }
+            if (hits.isNotEmpty()) return Hit(hits.last(), true, ambiguous = hits.distinct().size > 1)
         }
 
         // 3. Montant payé

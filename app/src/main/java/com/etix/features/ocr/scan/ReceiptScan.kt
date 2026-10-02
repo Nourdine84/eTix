@@ -9,7 +9,8 @@ import com.etix.model.Ticket
 
 /**
  * Niveau de confiance d'un champ lu sur un ticket — iOS `OCRConfidence` (paliers, jamais de pourcentage).
- * Affichage (iOS) : HIGH → « Vérifié », MEDIUM / LOW → « À vérifier », NONE → aucun badge.
+ * Affichage Android (décision du 02/10/2026, écart iOS) : HIGH → « Détecté » (jamais « Vérifié » : seul
+ * l'utilisateur vérifie, en enregistrant), MEDIUM / LOW → « À vérifier », NONE (non lu) → « Non lu ».
  */
 enum class ScanConfidence { HIGH, MEDIUM, LOW, NONE }
 
@@ -36,19 +37,33 @@ data class ReceiptScan(
 /**
  * Texte reconnu → informations du ticket (iOS `ReceiptParser`), avec les règles OCR Android :
  * enseigne `OCRProcessor` (Q1), montant `OCRAmountExtractor` (lot 6), date `OCRDateExtractor` (Q3), catégorie
- * `OCRCategoryGuesser` (Q2). Confiances iOS : enseigne MEDIUM ; montant HIGH sur une ligne de total, sinon LOW ;
- * date HIGH.
+ * `OCRCategoryGuesser` (Q2). Confiances : enseigne MEDIUM (iOS) ; montant HIGH sur une seule ligne de total,
+ * LOW hors ligne de total (iOS) ou si plusieurs lignes de total donnent des montants différents ; date HIGH
+ * (iOS), LOW si plusieurs dates différentes figurent sur le ticket, si elle est dans le futur (au-delà de
+ * demain) ou antérieure de plus de [MAX_AGE_YEARS] ans. Les valeurs retenues ne dépendent pas de la confiance.
+ * Un champ absent reste absent : aucune valeur par défaut n'est produite ici.
  */
 object ReceiptScanParser {
-    fun parse(text: String): ReceiptScan {
+    const val MAX_AGE_YEARS = 2
+
+    fun parse(text: String, now: Long = System.currentTimeMillis()): ReceiptScan {
         val lines = text.lines().map { it.trim() }.filter { it.isNotBlank() }
         val amount = OCRAmountExtractor.extractDetailed(lines)
+        val date = OCRDateExtractor.extractDateMillis(lines)
         return ReceiptScan(
             store = ScanField.of(OCRProcessor.extractMerchant(lines), ScanConfidence.MEDIUM),
-            amount = ScanField.of(amount?.value, if (amount?.fromTotalLine == true) ScanConfidence.HIGH else ScanConfidence.LOW),
-            date = ScanField.of(OCRDateExtractor.extractDateMillis(lines), ScanConfidence.HIGH),
+            amount = ScanField.of(amount?.value,
+                if (amount?.fromTotalLine == true && !amount.ambiguous) ScanConfidence.HIGH else ScanConfidence.LOW),
+            date = ScanField.of(date,
+                if (date != null && isPlausible(date, now) && OCRDateExtractor.distinctDateCount(lines) <= 1)
+                    ScanConfidence.HIGH else ScanConfidence.LOW),
             category = OCRCategoryGuesser.guess(text)
         )
+    }
+
+    private fun isPlausible(date: Long, now: Long): Boolean {
+        val oldest = java.util.Calendar.getInstance().apply { timeInMillis = now; add(java.util.Calendar.YEAR, -MAX_AGE_YEARS) }
+        return date <= now + 86_400_000L && date >= oldest.timeInMillis
     }
 }
 

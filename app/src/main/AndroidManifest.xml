@@ -1,10 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- ========================= -->
     <!-- PERMISSIONS -->
     <!-- ========================= -->
-    <uses-permission android:name="android.permission.CAMERA" />
+    <!-- Lot 9 : pas de permission CAMERA. Le scan passe par l'application appareil photo du système
+         (ACTION_IMAGE_CAPTURE), qui n'en demande aucune à eTix ; déclarée, elle obligerait à la demander
+         (Android refuse ACTION_IMAGE_CAPTURE sinon). Retirée aussi si une bibliothèque la déclarait.
+         L'ancien écran CameraX (features/ocr/ui, nav_graph) n'est relié à aucune activité. -->
+    <uses-permission
+        android:name="android.permission.CAMERA"
+        tools:node="remove" />
 
     <!-- Caméra non obligatoire (tablettes, émulateurs, etc.) -->
     <uses-feature

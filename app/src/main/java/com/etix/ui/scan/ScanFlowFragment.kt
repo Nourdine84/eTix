@@ -1,13 +1,7 @@
 package com.etix.ui.scan
 
-import android.Manifest
 import android.content.ActivityNotFoundException
-import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Bundle
-import android.provider.Settings
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,18 +18,22 @@ import com.etix.R
 import com.etix.databinding.FragmentScanFlowBinding
 import com.etix.features.ocr.scan.ReceiptScan
 import com.etix.ui.main.MainActivityV2
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
 import java.io.File
 
 /**
- * Lot 9 — parcours de scan (iOS ScannerFlowView) : intro → (autorisation caméra) → photo ou image →
+ * Lot 9 — parcours de scan (iOS ScannerFlowView) : intro → photo ou image →
  * lecture → résultat remis au formulaire « Ajouter », ou « Aucune information détectée » / erreur avec
  * « Réessayer ». Annuler, Retour ou « Saisir manuellement » ne créent aucun ticket : seul le bouton
  * « Enregistrer » du formulaire enregistre, après vérification par l'utilisateur.
  *
  * Écarts Android : capture par l'application appareil photo du système (iOS : VNDocumentCameraViewController)
  * et choix d'une image dans la galerie (absent d'iOS, demandé pour Android).
+ *
+ * Aucune autorisation demandée (02/10/2026) : la photo est prise par l'application appareil photo du système
+ * (ACTION_IMAGE_CAPTURE), qui détient elle-même l'accès à la caméra. eTix ne déclare pas la permission CAMERA
+ * (retirée du manifeste) : la déclarer obligerait à la demander, et Android refuse alors ACTION_IMAGE_CAPTURE
+ * tant qu'elle n'est pas accordée. iOS demande l'accès car il capture lui-même (CameraPrimingView) : écart voulu.
  */
 class ScanFlowFragment : Fragment() {
 
@@ -53,23 +51,19 @@ class ScanFlowFragment : Fragment() {
         if (uri != null) vm.process(uri, deleteAfter = false) else vm.showIntro()
     }
 
-    private val askCamera = registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (granted) launchCamera() else { vm.showIntro(); showCameraDenied() }
-    }
-
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _b = FragmentScanFlowBinding.inflate(inflater, container, false)
         return b.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        b.btnTakePhoto.setOnClickListener { startCamera() }
+        b.btnTakePhoto.setOnClickListener { launchCamera() }
         b.btnPickImage.setOnClickListener { launchPicker() }
         b.btnScanCancel.setOnClickListener { close() }
-        b.btnPrimingAllow.setOnClickListener { requestCamera() }
-        b.btnPrimingRefuse.setOnClickListener { vm.showIntro() }
         b.btnRetry.setOnClickListener { vm.showIntro() }
         b.btnManualEntry.setOnClickListener { close() }
+        compactIfNeeded(b.stepIntro, b.introBar, listOf(b.btnPickImage, b.btnScanCancel), b.introCompactActions, b.imgScanFrame)
+        compactIfNeeded(b.stepFailure, b.failureBar, listOf(b.btnManualEntry), b.failureCompactActions, null)
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -80,7 +74,6 @@ class ScanFlowFragment : Fragment() {
 
     private fun render(step: ScanStep) {
         b.stepIntro.visibility = if (step is ScanStep.Intro) View.VISIBLE else View.GONE
-        b.stepPriming.visibility = if (step is ScanStep.Priming) View.VISIBLE else View.GONE
         b.stepProcessing.visibility = if (step is ScanStep.Processing) View.VISIBLE else View.GONE
         b.stepFailure.visibility = if (step is ScanStep.NotFound || step is ScanStep.Failed) View.VISIBLE else View.GONE
         when (step) {
@@ -123,21 +116,28 @@ class ScanFlowFragment : Fragment() {
         }
     }
 
-    // ---------- Caméra (autorisation iOS : priming, puis demande système ; refus → explication + Paramètres) ----------
+    // ---------- Petit écran / grande police ----------
 
-    private fun startCamera() {
-        val ctx = requireContext()
-        when {
-            ContextCompat.checkSelfPermission(ctx, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED ->
-                launchCamera()
-            !wasAsked(ctx) || shouldShowRequestPermissionRationale(Manifest.permission.CAMERA) -> vm.showPriming()
-            else -> showCameraDenied()   // refus définitif : seul le réglage système peut rétablir l'accès
-        }
-    }
-
-    private fun requestCamera() {
-        markAsked(requireContext())
-        askCamera.launch(Manifest.permission.CAMERA)
+    /**
+     * Barre basse limitée à [MAX_BAR_FRACTION] de la hauteur de l'étape : au-delà (constaté à 320 dp / police 2,0,
+     * barre ≈ 60 % de l'écran), seule l'action principale reste dans la barre ; les autres boutons passent en
+     * haut du contenu défilant ([target], juste sous le titre) et l'illustration décorative est masquée.
+     * Décidé une fois par création de la vue (rotation et changement de police recréent la vue).
+     */
+    private fun compactIfNeeded(step: View, bar: ViewGroup, secondary: List<View>, target: ViewGroup, decorative: View?) {
+        step.viewTreeObserver.addOnGlobalLayoutListener(object : android.view.ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                if (step.height == 0 || bar.height == 0) return     // étape masquée : décision à son 1er affichage
+                step.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                if (bar.height <= step.height * MAX_BAR_FRACTION) return
+                secondary.forEach { v ->
+                    (v.parent as ViewGroup).removeView(v)
+                    target.addView(v)
+                }
+                target.visibility = View.VISIBLE
+                decorative?.visibility = View.GONE
+            }
+        })
     }
 
     private fun launchCamera() {
@@ -148,7 +148,7 @@ class ScanFlowFragment : Fragment() {
         vm.pendingPhoto = uri
         try {
             takePicture.launch(uri)
-        } catch (e: ActivityNotFoundException) {
+        } catch (e: ActivityNotFoundException) {   // aucune application appareil photo
             vm.pendingPhoto = null
             vm.fail(ScanStep.Reason.NO_CAMERA_APP)
         }
@@ -161,23 +161,6 @@ class ScanFlowFragment : Fragment() {
             vm.fail(ScanStep.Reason.UNREADABLE_IMAGE)
         }
     }
-
-    private fun showCameraDenied() {
-        MaterialAlertDialogBuilder(requireContext())
-            .setTitle("Accès caméra requis")
-            .setMessage("Autorise l'accès à la caméra dans les paramètres de l'application pour scanner tes tickets. Tu peux aussi choisir une image.")
-            .setPositiveButton("Paramètres") { _, _ ->
-                runCatching {
-                    startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
-                        Uri.fromParts("package", requireContext().packageName, null)))
-                }
-            }
-            .setNegativeButton("Annuler", null)
-            .show()
-    }
-
-    private fun wasAsked(ctx: Context) = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getBoolean(KEY_ASKED, false)
-    private fun markAsked(ctx: Context) = ctx.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit().putBoolean(KEY_ASKED, true).apply()
 
     // ---------- Sortie ----------
 
@@ -200,8 +183,8 @@ class ScanFlowFragment : Fragment() {
 
     companion object {
         const val RESULT_KEY = "scan_result"
-        private const val PREFS = "etix_scan"
-        private const val KEY_ASKED = "camera_permission_asked"
+        /** Part maximale de la hauteur occupée par la barre basse avant passage en mode compact. */
+        const val MAX_BAR_FRACTION = 0.4f
 
         fun ReceiptScan.toBundle() = bundleOf(
             "store" to store.value, "storeConf" to store.confidence.name,

@@ -160,6 +160,8 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-contrib:3.5.1")
     // Lot 9 : réponses simulées de l'appareil photo et du sélecteur d'image (tests du scanner)
     androidTestImplementation("androidx.test.espresso:espresso-intents:3.5.1")
+    // Lot 9 : pilotage des VRAIES applications du système (sélecteur d'image, appareil photo) sur émulateur
+    androidTestImplementation("androidx.test.uiautomator:uiautomator:2.2.0")
 
     // 🔍 ML Kit – Text Recognition (OCR)
     implementation("com.google.mlkit:text-recognition:16.0.0")

@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Lot 9 — parcours de scan, référence iOS ScannerFlowView : une seule vue, étapes échangées
-     (intro, autorisation caméra, lecture, rien détecté, erreur). Aucune écriture en base ici. -->
+     (intro, lecture, rien détecté, erreur). Aucune écriture en base ici. Pas d'étape d'autorisation : la
+     photo est prise par l'application appareil photo du système, eTix ne demande pas l'accès à la caméra. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -57,12 +58,21 @@
                     android:textStyle="bold"
                     tools:targetApi="p" />
 
+                <!-- Petit écran / grande police : boutons secondaires déplacés ici (ScanFlowFragment.compactIfNeeded) -->
+                <LinearLayout
+                    android:id="@+id/introCompactActions"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical"
+                    android:visibility="gone" />
+
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:gravity="center"
-                    android:text="Prends ton ticket en photo, à plat et en entier, ou choisis une image. La lecture se fait sur ton téléphone : aucune image n'est envoyée sur un serveur."
+                    android:text="Prends ton ticket en photo, à plat et en entier, ou choisis une image. La lecture du texte se fait sur ton téléphone : aucune image n'est envoyée sur un serveur."
                     android:textColor="@color/v2_text_secondary"
                     android:textSize="15sp" />
 
@@ -71,6 +81,7 @@
         </ScrollView>
 
         <LinearLayout
+            android:id="@+id/introBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"
@@ -114,107 +125,6 @@
                 android:text="Annuler"
                 android:textColor="@color/v2_text_secondary"
                 android:textSize="15sp" />
-        </LinearLayout>
-    </LinearLayout>
-
-    <!-- ===== AUTORISATION CAMÉRA (iOS CameraPrimingView) ===== -->
-    <LinearLayout
-        android:id="@+id/stepPriming"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:visibility="gone">
-
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:fillViewport="true">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:orientation="vertical"
-            android:paddingStart="32dp"
-            android:paddingTop="24dp"
-            android:paddingEnd="32dp"
-            android:paddingBottom="24dp">
-
-            <Space android:layout_width="1dp" android:layout_height="0dp" android:layout_weight="1" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:accessibilityHeading="true"
-                android:gravity="center"
-                android:text="Autoriser l'accès à ton appareil photo"
-                android:textColor="@color/v2_text_primary"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                tools:targetApi="p" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:gravity="center"
-                android:text="Tu pourras scanner tes tickets pour en extraire automatiquement les informations. Aucune image n'est envoyée sur un serveur."
-                android:textColor="@color/v2_text_secondary"
-                android:textSize="15sp" />
-
-            <ImageView
-                android:layout_width="68dp"
-                android:layout_height="68dp"
-                android:layout_marginTop="40dp"
-                android:importantForAccessibility="no"
-                android:src="@drawable/ic_v2_scan"
-                app:tint="@color/v2_primary" />
-
-            <Space android:layout_width="1dp" android:layout_height="0dp" android:layout_weight="1" />
-        </LinearLayout>
-    </ScrollView>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_horizontal"
-            android:orientation="vertical"
-            android:paddingStart="32dp"
-            android:paddingEnd="32dp"
-            android:paddingBottom="16dp">
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:orientation="horizontal">
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnPrimingRefuse"
-                    style="@style/Widget.Material3.Button.TonalButton"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginEnd="6dp"
-                    android:layout_weight="1"
-                    android:minHeight="52dp"
-                    android:text="Refuser"
-                    android:textColor="@color/v2_text_primary"
-                    android:textSize="16sp"
-                    app:backgroundTint="@color/v2_surface_home"
-                    app:cornerRadius="14dp" />
-
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnPrimingAllow"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="6dp"
-                    android:layout_weight="1"
-                    android:minHeight="52dp"
-                    android:text="Autoriser"
-                    android:textSize="16sp"
-                    app:backgroundTint="@color/v2_primary"
-                    app:cornerRadius="14dp" />
-            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 
@@ -320,11 +230,21 @@
                 android:textColor="@color/v2_text_secondary"
                 android:textSize="15sp" />
 
+            <LinearLayout
+                android:id="@+id/failureCompactActions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:visibility="gone" />
+
             <Space android:layout_width="1dp" android:layout_height="0dp" android:layout_weight="1" />
         </LinearLayout>
     </ScrollView>
 
         <LinearLayout
+            android:id="@+id/failureBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_horizontal"

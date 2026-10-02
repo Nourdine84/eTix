@@ -20,7 +20,6 @@ import kotlinx.coroutines.withContext
 /** Étapes du parcours (iOS ScannerStep) ; READY = ticket lu, à remettre au formulaire. */
 sealed interface ScanStep {
     data object Intro : ScanStep
-    data object Priming : ScanStep
     data class Processing(val phase: Int) : ScanStep   // 0 image, 1 texte, 2 extraction
     data object NotFound : ScanStep
     data class Failed(val reason: Reason) : ScanStep
@@ -45,7 +44,6 @@ class ScanFlowViewModel(app: Application, private val saved: SavedStateHandle) :
         set(v) { saved[KEY_PHOTO] = v }
 
     fun showIntro() { job?.cancel(); _step.value = ScanStep.Intro }
-    fun showPriming() { _step.value = ScanStep.Priming }
     fun fail(reason: ScanStep.Reason) { _step.value = ScanStep.Failed(reason) }
 
     fun process(uri: Uri, deleteAfter: Boolean) {

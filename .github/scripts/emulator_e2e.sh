@@ -4,6 +4,8 @@
 # MODE=standard (défaut) : parcours complet + mise à jour A→B + isolation QA + persistance + lot 4 + Catégories
 # MODE=fr : émulateur en français, tests de locale (saisie, dates, filtres inclusifs, limites de période)
 # MODE=petit : petit écran / grande police ; MODE=compat : lecteur de dates OCR seul (API 22 à 25)
+# MODE=systeme (lot 9) : ML Kit sans réseau au 1er lancement, vrais sélecteur d'image et appareil photo
+# MODE=maj8 (lot 9) : mise à jour depuis le lot 8 fusionné (versionCode 10) vers cette version, données comparées
 set -u
 MODE="${MODE:-standard}"
 
@@ -58,9 +60,18 @@ T() { # T <secondes> <commande…> : limite de durée ; en cas de dépassement, 
 
 pkginfo() { adb shell dumpsys package com.etix | grep -E "versionCode|versionName|lastUpdateTime|firstInstallTime" | tr -d '\r' | sed 's/^ *//'; }
 
+pkgperms() { adb shell dumpsys package com.etix | tr -d '\r' | sed -n '/requested permissions:/,/install permissions:/p' | sed 's/^ *//'; }
+
+if [ "$MODE" = "maj8" ]; then
+  # Lot 8 fusionné (versionCode 10) installé neuf, données créées par SES propres tests (sources du lot 8)
+  T 300 adb install -r dist/lot8-app.apk > "$OUT/install.txt" 2>&1
+  T 300 adb install -r dist/lot8-androidTest.apk >> "$OUT/install.txt" 2>&1
+fi
+if [ "$MODE" != "maj8" ]; then
 # Build A (versionCode N) — même code que B, voir workflow
 T 300 adb install -r dist/app-A.apk > "$OUT/install.txt" 2>&1
 T 300 adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk >> "$OUT/install.txt" 2>&1
+fi
 
 run() { # $1 = classe de test, $2 = suffixe/passe facultatif (limite 12 min par classe)
   local extra="" suf=""
@@ -69,7 +80,8 @@ run() { # $1 = classe de test, $2 = suffixe/passe facultatif (limite 12 min par 
   timeout 20 adb shell wm dismiss-keyguard >/dev/null 2>&1 || true
   timeout 20 adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS >/dev/null 2>&1 || true
   [ -n "${2:-}" ] && { extra="-e passe $2"; suf="_$2"; }
-  echo "$1 ${2:-}" >> "$OUT/expected_runs.txt"   # attendu, comparé aux résultats par emu_report.py
+  # attendu, comparé aux résultats par emu_report.py ; RUN_SRC = sources d'une autre version (lot 8, mode maj8)
+  echo "$1 ${2:-}${RUN_SRC:+ src=$RUN_SRC}" >> "$OUT/expected_runs.txt"
   T 720 adb shell am instrument -w -r $extra -e class "$1" com.etix.test/androidx.test.runner.AndroidJUnitRunner > "$OUT/instr_$(basename "${1//./_}")$suf.txt" 2>&1
   timeout 20 adb shell am force-stop com.etix.test >/dev/null 2>&1 || true
   # Plantage natif (signal) : lignes fatales du journal relevées tout de suite (tampon limité sur API 21)
@@ -95,8 +107,9 @@ fi
 
 if [ "$MODE" = "petit" ]; then
   # Petit écran + grande police, clavier ouvert. Passes : a = 360x640 dp police 1,3 ; b = 360x640 dp police 2,0 ;
-  # c = 320x569 dp (densité 360) police 1,3. Réglages de l'émulateur uniquement (jetable).
-  for cfg in "a 720x1280 320 1.3" "b 720x1280 320 2.0" "c 720x1280 360 1.3"; do
+  # c = 320x569 dp (densité 360) police 1,3 ; d = 320x569 dp police 2,0 (cas le plus contraint, lot 9).
+  # Réglages de l'émulateur uniquement (jetable).
+  for cfg in "a 720x1280 320 1.3" "b 720x1280 320 2.0" "c 720x1280 360 1.3" "d 720x1280 360 2.0"; do
     set -- $cfg
     adb shell wm size "$2"; adb shell wm density "$3"; adb shell settings put system font_scale "$4"
     echo "passe $1 : wm size $2, densité $3, police $4" >> "$OUT/device.txt"
@@ -109,6 +122,49 @@ fi
 
 if [ "$MODE" = "fr" ]; then
   run com.etix.e2e.E2eFrancaisTest
+  run com.etix.e2e.E2eScanFrTest
+  collect
+  exit 0
+fi
+
+if [ "$MODE" = "systeme" ]; then
+  pkgperms > "$OUT/shots/apk_permissions.txt"
+  # 1) App neuve, jamais lancée, SANS réseau : 1re reconnaissance ML Kit (modèle embarqué attendu)
+  timeout 30 adb shell cmd connectivity airplane-mode enable >/dev/null 2>&1 || true
+  timeout 30 adb shell svc wifi disable >/dev/null 2>&1 || true
+  timeout 30 adb shell svc data disable >/dev/null 2>&1 || true
+  sleep 5
+  { echo "réseau coupé (mode avion, Wi-Fi, données) :"; timeout 30 adb shell dumpsys connectivity 2>/dev/null | grep -m3 -E "Active default network|NetworkAgentInfo|Default network" | tr -d '\r'; } >> "$OUT/device.txt"
+  run com.etix.e2e.E2eScanHorsLigneTest
+  timeout 30 adb shell cmd connectivity airplane-mode disable >/dev/null 2>&1 || true
+  timeout 30 adb shell svc wifi enable >/dev/null 2>&1 || true
+  timeout 30 adb shell svc data enable >/dev/null 2>&1 || true
+  sleep 5
+  # 2) Vrais sélecteur d'image et application appareil photo de l'émulateur (caméra arrière « emulated »)
+  adb shell am force-stop com.etix
+  run com.etix.e2e.E2eScanSystemeTest
+  collect
+  exit 0
+fi
+
+if [ "$MODE" = "maj8" ]; then
+  # Phase A (lot 8) : parcours et budget avec les tests du lot 8 eux-mêmes
+  RUN_SRC=base/app/src/androidTest/java run com.etix.e2e.E2eParcoursTest
+  RUN_SRC=base/app/src/androidTest/java run com.etix.e2e.E2eBudgetAvantMajTest
+  adb shell am force-stop com.etix
+  # Instantané des données du lot 8 (tests de cette version, lecture seule, avant la mise à jour)
+  T 300 adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk >> "$OUT/install.txt" 2>&1
+  run com.etix.e2e.E2eMajInstantaneAvantTest
+  adb shell am force-stop com.etix
+  # Mise à jour lot 8 → lot 9 sans désinstallation
+  pkginfo > "$OUT/update_avant.txt"
+  T 300 adb install -r dist/app-A.apk > "$OUT/update_install.txt" 2>&1
+  pkginfo > "$OUT/update_apres.txt"
+  adb shell am force-stop com.etix
+  # Phase B (lot 9) : mêmes tickets et budgets, session conservée
+  run com.etix.e2e.E2eMajInstantaneApresTest
+  run com.etix.e2e.E2ePersistanceTest
+  run com.etix.e2e.E2eBudgetApresMajTest
   collect
   exit 0
 fi

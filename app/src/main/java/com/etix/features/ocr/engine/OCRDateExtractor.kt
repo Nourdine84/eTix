@@ -49,6 +49,18 @@ object OCRDateExtractor {
         return null
     }
 
+    /**
+     * Lot 9 — nombre de dates différentes lisibles (jj?mm?aaaa ou jj?mm?aa délimitées) dans le texte. Sert
+     * uniquement à signaler une date ambiguë (ex. date d'achat et date de validité) : la date retenue par
+     * [extractDateMillis] est inchangée.
+     */
+    fun distinctDateCount(lines: List<String>): Int = lines.flatMap { line ->
+        DELIMITED.findAll(line).mapNotNull { m ->
+            val (d, mo, y) = m.destructured
+            parse("$d/$mo/$y", if (y.length == 4) "dd/MM/yyyy" else "dd/MM/yy")?.let { "${it.year}-${it.month}-${it.day}" }
+        }.toList()
+    }.distinct().size
+
     /** Date jj?mm?aaaa ou jj?mm?aa non collée à d'autres chiffres, séparateurs « / », « - » ou « . ». */
     private val DELIMITED = Regex("""(?<!\d)(\d{2})[./-](\d{2})[./-](\d{4}|\d{2})(?!\d)""")
 

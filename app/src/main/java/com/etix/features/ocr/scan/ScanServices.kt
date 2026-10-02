@@ -34,30 +34,49 @@ object ScanServices {
     @Volatile var reader: ScanTextReader = MlKitTextReader
 }
 
-/** Image choisie ou photographiée → Bitmap réduit (côté le plus long ≤ [maxSide]) et redressé (EXIF). */
+/**
+ * Image choisie ou photographiée → Bitmap redressé (orientation EXIF) et réduit à [MAX_PIXELS] pixels au plus.
+ *
+ * Réduction par nombre de pixels (lot 9, 02/10/2026) et non plus par côté : l'ancienne règle (côté ≤ 2048 par
+ * puissances de 2 seulement) laissait une photo 4000 × 3000 en pleine résolution (48 Mo en mémoire), et un
+ * ticket long (ex. 1000 × 8000) aurait été réduit à 256 px de large, texte illisible. Décodage sous-échantillonné
+ * (puissance de 2, ≤ 4 × le budget), puis mise à l'échelle exacte.
+ */
 object ScanImageLoader {
 
     class UnreadableImage(message: String) : Exception(message)
 
-    fun load(context: Context, uri: Uri, maxSide: Int = 2048): Bitmap {
+    /** ≈ 2000 × 2000 : texte d'un ticket photographié lisible, 16 Mo au plus en mémoire (ARGB_8888). */
+    const val MAX_PIXELS = 4_000_000L
+
+    fun load(context: Context, uri: Uri, maxPixels: Long = MAX_PIXELS): Bitmap {
         val resolver = context.contentResolver
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         // decodeStream renvoie null en mode « bornes seules » : seule l'absence de flux signifie « introuvable »
         val stream = resolver.openInputStream(uri) ?: throw UnreadableImage("image introuvable")
         stream.use { BitmapFactory.decodeStream(it, null, bounds) }
         if (bounds.outWidth <= 0 || bounds.outHeight <= 0) throw UnreadableImage("format d'image non reconnu")
-        var sample = 1
-        while (maxOf(bounds.outWidth, bounds.outHeight) / (sample * 2) >= maxSide) sample *= 2
-        val opts = BitmapFactory.Options().apply { inSampleSize = sample }
+        val opts = BitmapFactory.Options().apply {
+            inSampleSize = sampleSize(bounds.outWidth.toLong(), bounds.outHeight.toLong(), maxPixels)
+        }
         val decoded = resolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it, null, opts) }
             ?: throw UnreadableImage("image illisible")
         val rotation = try {
             resolver.openInputStream(uri)?.use { ExifInterface(it).rotationDegrees } ?: 0
         } catch (_: Exception) { 0 }
-        if (rotation == 0) return decoded
-        val rotated = Bitmap.createBitmap(decoded, 0, 0, decoded.width, decoded.height,
-            Matrix().apply { postRotate(rotation.toFloat()) }, true)
-        if (rotated !== decoded) decoded.recycle()
-        return rotated
+        val px = decoded.width.toLong() * decoded.height
+        val scale = if (px > maxPixels) Math.sqrt(maxPixels.toDouble() / px).toFloat() else 1f
+        if (rotation == 0 && scale == 1f) return decoded
+        val m = Matrix().apply { postScale(scale, scale); postRotate(rotation.toFloat()) }
+        val out = Bitmap.createBitmap(decoded, 0, 0, decoded.width, decoded.height, m, true)
+        if (out !== decoded) decoded.recycle()
+        return out
+    }
+
+    /** Plus grande puissance de 2 laissant au moins [maxPixels] pixels (la mise à l'échelle exacte suit). */
+    internal fun sampleSize(w: Long, h: Long, maxPixels: Long): Int {
+        var sample = 1
+        while ((w / (sample * 2)) * (h / (sample * 2)) >= maxPixels) sample *= 2
+        return sample
     }
 }

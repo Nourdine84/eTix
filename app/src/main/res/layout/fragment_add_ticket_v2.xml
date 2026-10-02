@@ -72,7 +72,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
                 android:accessibilityLiveRegion="polite"
-                android:text="Informations lues sur le ticket. Vérifie-les avant d'enregistrer."
+                android:text="Informations détectées sur le ticket, non vérifiées. Contrôle chaque champ avant d'enregistrer."
                 android:textColor="@color/v2_text_primary"
                 android:textSize="14sp" />
 

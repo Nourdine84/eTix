@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -28,8 +29,11 @@ import kotlinx.coroutines.launch
  * Ajouter un ticket — référence iOS AddTicketView : magasin, montant, date, catégorie, description.
  * Validation iOS : magasin non vide + montant > 0 (virgule acceptée). Après enregistrement : formulaire
  * réinitialisé, on reste sur l'écran (décision produit iOS, ROADMAP « retour Home différé »).
- * Lot 9 : « Scanner un ticket » ouvre le parcours de scan ; son résultat préremplit ce formulaire (badges de
- * confiance iOS) sans rien enregistrer ; « Annuler le scan » vide le formulaire.
+ * Lot 9 : « Scanner un ticket » ouvre le parcours de scan ; son résultat préremplit ce formulaire (marques
+ * « Détecté » / « À vérifier » / « Non lu ») sans rien enregistrer ; « Annuler le scan » vide le formulaire.
+ * Enregistrement par [AddTicketSaveViewModel] : un seul ticket par validation, même en cas de double appui ou de
+ * recréation de l'écran pendant l'insertion. Corrections, marques et résultat de scan en attente conservés à la
+ * recréation de l'écran.
  */
 class AddTicketFragmentV2 : Fragment() {
 
@@ -39,6 +43,9 @@ class AddTicketFragmentV2 : Fragment() {
     private lateinit var repository: TicketRepository
     private lateinit var form: TicketFormController
     private var usedCategories: List<String> = emptyList()
+    private val saver: AddTicketSaveViewModel by viewModels()
+    /** Résultat de scan reçu mais pas encore appliqué (lecture de l'historique en cours) : conservé si l'écran est recréé. */
+    private var pendingScan: Bundle? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentAddTicketV2Binding.inflate(inflater, container, false)
@@ -50,6 +57,7 @@ class AddTicketFragmentV2 : Fragment() {
         form = TicketFormController(this, binding.form) { usedCategories }
         savedInstanceState?.let {
             form.restore(it.getLong(KEY_DATE, System.currentTimeMillis()), it.getString(KEY_CATEGORY).orEmpty())
+            form.restoreScanMarks(it)
         }
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -74,11 +82,19 @@ class AddTicketFragmentV2 : Fragment() {
             binding.scanBanner.visibility = View.GONE
         }
         if (savedInstanceState?.getBoolean(KEY_SCAN_BANNER) == true) binding.scanBanner.visibility = View.VISIBLE
+        savedInstanceState?.getBundle(KEY_PENDING_SCAN)?.let { applyScan(it) }
 
         binding.btnSaveTicket.setOnClickListener { save() }
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch { saver.saving.collect { binding.btnSaveTicket.isEnabled = !it } }
+                saver.results.collect(::onSaveResult)
+            }
+        }
     }
 
     private fun applyScan(bundle: Bundle) {
+        pendingScan = bundle
         fun conf(key: String) = runCatching { ScanConfidence.valueOf(bundle.getString(key).orEmpty()) }
             .getOrDefault(ScanConfidence.NONE)
         val store = bundle.getString("store")
@@ -91,6 +107,7 @@ class AddTicketFragmentV2 : Fragment() {
             val suggestion = ScanCategoryResolver.resolve(store,
                 ocrCategory?.let { OCRCategoryGuesser.Guess(it, OCRCategoryGuesser.Source.STORE_DICTIONARY) }, existing)
             if (_binding == null) return@launch
+            pendingScan = null
             form.applyScan(store, conf("storeConf"), amount, conf("amountConf"), date, conf("dateConf"),
                 suggestion?.category, suggestion?.showBadge ?: false)
             binding.scanBanner.visibility = View.VISIBLE
@@ -107,12 +124,20 @@ class AddTicketFragmentV2 : Fragment() {
         }
         val ticket = Ticket(store = v.store, amount = v.amount, dateMillis = v.dateMillis,
             category = v.category, description = v.description)
-        viewLifecycleOwner.lifecycleScope.launch {
-            repository.insert(ticket)
-            Toast.makeText(requireContext(), "Ticket enregistré", Toast.LENGTH_SHORT).show()
-            form.reset()
-            binding.scanBanner.visibility = View.GONE
+        saver.save(ticket)   // ignoré si un enregistrement est déjà en cours (double appui)
+    }
+
+    private fun onSaveResult(r: AddTicketSaveViewModel.Result) {
+        when (r) {
+            AddTicketSaveViewModel.Result.Saved -> {
+                Toast.makeText(requireContext(), "Ticket enregistré", Toast.LENGTH_SHORT).show()
+                form.reset()
+                binding.scanBanner.visibility = View.GONE
+            }
+            AddTicketSaveViewModel.Result.Failed ->
+                Toast.makeText(requireContext(), "Le ticket n'a pas pu être enregistré. Réessaie.", Toast.LENGTH_LONG).show()
         }
+        saver.acknowledge()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -121,7 +146,9 @@ class AddTicketFragmentV2 : Fragment() {
             outState.putLong(KEY_DATE, form.dateMillis)
             outState.putString(KEY_CATEGORY, form.category)
             outState.putBoolean(KEY_SCAN_BANNER, binding.scanBanner.visibility == View.VISIBLE)
+            form.saveScanMarks(outState)
         }
+        pendingScan?.let { outState.putBundle(KEY_PENDING_SCAN, it) }
     }
 
     override fun onDestroyView() {
@@ -133,5 +160,6 @@ class AddTicketFragmentV2 : Fragment() {
         private const val KEY_DATE = "add_date"
         private const val KEY_CATEGORY = "add_category"
         private const val KEY_SCAN_BANNER = "add_scan_banner"
+        private const val KEY_PENDING_SCAN = "add_pending_scan"
     }
 }

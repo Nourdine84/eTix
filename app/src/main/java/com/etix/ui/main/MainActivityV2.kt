@@ -124,7 +124,8 @@ class MainActivityV2 : AppCompatActivity() {
     }
 
     /**
-     * Lot 9 : parcours de scan (iOS ScannerFlowView), au-dessus de l'onglet « Ajouter » qui reçoit le résultat.
+     * Lot 9 : parcours de scan (iOS ScannerFlowView), au-dessus de l'onglet « Ajouter » qui reçoit le résultat,
+     * en plein écran (barre d'onglets masquée, comme la fullScreenCover iOS).
      * Depuis l'Accueil (iOS : CTA « Scanner un ticket » → AddTicketView avec scanner ouvert).
      */
     fun openScanFlow() {
@@ -174,8 +175,11 @@ class MainActivityV2 : AppCompatActivity() {
     }
 
     private fun syncOverlayVisibility() {
-        overlay.visibility =
-            if (supportFragmentManager.backStackEntryCount > 0) View.VISIBLE else View.GONE
+        val count = supportFragmentManager.backStackEntryCount
+        overlay.visibility = if (count > 0) View.VISIBLE else View.GONE
+        // Lot 9 : le parcours de scan occupe tout l'écran, sans barre d'onglets (iOS : fullScreenCover)
+        val top = if (count > 0) supportFragmentManager.getBackStackEntryAt(count - 1).name else null
+        bottomNav.visibility = if (top == BACKSTACK_SCAN) View.GONE else View.VISIBLE
     }
 
     companion object {
