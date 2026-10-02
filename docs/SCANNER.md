@@ -30,11 +30,16 @@ Avant le 02/10/2026, « Vérifié » s'affichait **sans aucune action de l'utili
 venait d'une ligne de total (NET À PAYER, TOTAL TTC, TOTAL), pour la date dès qu'une date était lue. C'était une
 confiance de l'OCR, pas une vérification. Désormais :
 
+Montant absent : champ vide avec le texte indicatif « Saisir le montant » (et non plus « 0,00 € ») ;
+« Enregistrer » est refusé avec « Impossible d'enregistrer : saisis un montant supérieur à 0. » (jamais converti
+en 0). Date absente : pas de badge, mention « Date non lue — aujourd'hui proposé » sous la date (ou « date déjà
+saisie conservée » si l'utilisateur avait choisi une autre date avant le scan), retirée dès qu'il choisit une date.
+
 | Marque | Quand | Couleur |
 |---|---|---|
 | **Détecté** / **Détectée** | Montant lu sur une seule ligne de total (ou plusieurs lignes de même montant) ; date lue, unique sur le ticket, ni future (au-delà de demain), ni antérieure de plus de 2 ans | bleu (primaire) |
 | **À vérifier** | Enseigne (toujours, comme iOS) ; montant hors ligne de total (paiement CB, repli) ou lignes de total de montants différents ; plusieurs dates différentes, date future ou très ancienne | orange |
-| **Non lu** / **Non lue** | Champ absent du ticket : le contenu affiché (vide, saisie précédente, **date du jour**) n'a pas été lu | orange |
+| **Non lu** | Magasin ou montant absent du ticket : le contenu affiché (vide ou saisie précédente) n'a pas été lu | orange |
 | aucune | Champ modifié par l'utilisateur après le scan (la valeur est la sienne) ; la marque revient s'il rétablit la valeur lue | — |
 
 Les valeurs retenues ne changent pas (règles Q1 à Q4 et lot 6) : seule la marque reflète l'ambiguïté. Aucune valeur
@@ -61,10 +66,16 @@ ticket.
   les services Google Play (`play-services-mlkit-text-recognition`) n'est pas utilisée.
 - Reconnaissance **sur l'appareil** : l'image (Bitmap) est passée à ML Kit en mémoire ; eTix n'envoie aucune
   image. Vérifié sur émulateur sans réseau au premier lancement (`E2eScanHorsLigneTest`, mode avion).
-- Point à connaître : d'après la documentation de Google, les API ML Kit peuvent envoyer à Google des
-  **statistiques d'utilisation et de performance** (pas les images ni le texte lu) quand le réseau est disponible.
-  Permissions réseau de l'APK : voir l'annotation « Permissions de l'APK » du job `build`. Les couper (par exemple
-  en retirant la permission INTERNET si l'app n'en a pas besoin) est une décision produit, non prise.
+- Réseau (02/10/2026) : INTERNET et ACCESS_NETWORK_STATE n'étaient apportées que par les bibliothèques de
+  statistiques d'utilisation de ML Kit (`com.google.android.datatransport:transport-backend-cct:2.3.3`,
+  `transport-runtime:2.2.6`, d'après le rapport de fusion du manifeste publié par le job `build`). Aucune
+  fonctionnalité d'eTix n'utilise le réseau : **retirées du manifeste final** (`tools:node="remove"`), contrôle CI
+  bloquant. Constaté sur émulateur (job `emulator-api34-systeme`) : processus eTix sans le groupe `inet` (3003,
+  attribué par Android avec INTERNET ; sans lui le noyau refuse l'ouverture de connexions), aucune tâche planifiée
+  par ces bibliothèques, lecture ML Kit fonctionnelle avec et sans réseau, aucun plantage d'eTix. Cela empêche
+  l'app d'ouvrir une connexion ; ce n'est pas une mesure du trafic de l'appareil.
+- Seule permission restante : `com.etix.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` (androidx.core, interne à
+  l'app, protection par signature, aucun accès système).
 
 ## Composants réels et simulés
 

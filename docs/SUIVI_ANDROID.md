@@ -243,6 +243,9 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
   Ancien écran de scan simulé (`OCRScannerFragment`, valeurs fictives) : jamais branché, conservé. Détail et
   écarts iOS : `docs/SCANNER.md`.
 - Version `1.9.0-lot9` (versionCode 11). PR brouillon #78 (non fusionnée) ; résultats : `docs/VALIDATION_EMULATEUR.md`.
+  - Finalisation (02/10/2026) : INTERNET et ACCESS_NETWORK_STATE retirées (apportées uniquement par les statistiques
+    de ML Kit, aucune fonctionnalité réseau) ; montant vide : « Saisir le montant », enregistrement refusé avec un
+    message précis ; date absente : « Date non lue — aujourd'hui proposé ». Description de la PR #78 mise à jour.
 - **Revue avant décision de fusion (02/10/2026)**, demandée par Nourdine, sans téléphone physique :
   - Marques : « Vérifié » s'affichait sans action de l'utilisateur (montant sur une ligne de total, toute date
     lue). Remplacé par « Détecté » / « À vérifier » / « Non lu » ; marque retirée dès que l'utilisateur modifie

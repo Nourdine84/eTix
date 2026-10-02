@@ -66,6 +66,23 @@ Aperçus : `docs/preview/lot8/` (Robolectric) et `docs/preview/lot8-emulateur/`.
 
 ## Lot 9 — scanner (branche `feature/android-lot9-scanner`)
 
+### Finalisation avant décision de fusion (02/10/2026)
+
+- Permissions : INTERNET et ACCESS_NETWORK_STATE retirées du manifeste final ; elles venaient uniquement de
+  `transport-backend-cct:2.3.3` et `transport-runtime:2.2.6` (statistiques de ML Kit), d'après le rapport de fusion
+  du manifeste. APK final : seule `com.etix.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` (androidx.core, interne).
+- Run de `f4e3ddf` (https://github.com/Nourdine84/eTix/actions/runs/36993023967) : build vert, émulateurs
+  API 21 / 34 / 36, fr, petit écran, mise à jour lot 8 verts ; job système en échec sur **le test lui-même**
+  (`E2eScanHorsLigneTest` interrogeait ConnectivityManager, qui exige ACCESS_NETWORK_STATE) — corrigé (état du
+  réseau lu par `dumpsys connectivity`). Constats du même job : processus eTix sans groupe `inet` (Groups 9997
+  20192 50192), aucune tâche planifiée, vrai sélecteur et vraie application appareil photo lus par ML Kit sans
+  permission réseau, aucun plantage d'eTix. Run de branche : API 36 en échec sur le plantage d'une application
+  système (`com.google.android.settings.intelligence`, « Service not registered »), sans rapport avec eTix ;
+  vert sur le run PR du même code.
+- Champs non lus : `s10` (émulateur, ML Kit réel) et Robolectric : « Saisir le montant », « Date non lue —
+  aujourd'hui proposé », enregistrement refusé sans montant (ni 0), accepté après saisie.
+- Run final et SHA : description de la PR #78.
+
 ### Revue avant décision de fusion (02/10/2026, sans téléphone physique)
 
 Commit de code testé : **`0d7894e`** (source), cible `feature/android-v2` **`457f49e`**, résultat de fusion testé

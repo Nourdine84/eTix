@@ -1,8 +1,8 @@
 package com.etix.e2e
 
-import android.content.Context
 import android.graphics.BitmapFactory
-import android.net.ConnectivityManager
+import android.os.ParcelFileDescriptor
+import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.etix.e2e.E2e.ctx
 import com.etix.features.ocr.scan.MlKitTextReader
@@ -22,11 +22,13 @@ import org.junit.runner.RunWith
 class E2eScanHorsLigneTest {
 
     @Test fun lecture_sans_reseau_au_premier_lancement() {
-        val cm = ctx.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        @Suppress("DEPRECATION")
-        val net = cm.activeNetworkInfo
-        ScanE2e.log("scan_hors_ligne", "réseau actif avant lecture : ${net?.typeName ?: "aucun"} (connecté=${net?.isConnected == true})")
-        assertTrue("le test doit tourner sans réseau", net?.isConnected != true)
+        // eTix n'a plus ACCESS_NETWORK_STATE (02/10/2026) : l'état du réseau est lu par l'outil système (shell),
+        // pas par l'API ConnectivityManager depuis le processus de l'app (SecurityException).
+        val pfd = InstrumentationRegistry.getInstrumentation().uiAutomation.executeShellCommand("dumpsys connectivity")
+        val dump = ParcelFileDescriptor.AutoCloseInputStream(pfd).bufferedReader().use { it.readText() }
+        val active = dump.lines().firstOrNull { it.contains("Active default network") }?.trim() ?: "?"
+        ScanE2e.log("scan_hors_ligne", "réseau avant lecture (dumpsys connectivity) : $active")
+        assertTrue("le test doit tourner sans réseau : $active", active.endsWith("none"))
         val bmp = BitmapFactory.decodeFile(ScanE2e.ticketImage("hors_ligne.png").path)
         val t0 = System.currentTimeMillis()
         val text = runBlocking { MlKitTextReader.read(bmp) }

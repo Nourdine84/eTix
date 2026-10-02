@@ -88,8 +88,8 @@ Document de reprise. À lire en entier avant toute action. Détail : `docs/SUIVI
   double appui, rotation, permission CAMERA retirée, barre basse compacte, vrais sélecteur et appareil photo,
   hors ligne, mise à jour depuis le lot 8) : `docs/VALIDATION_EMULATEUR.md`. Dernier résultat de fusion vérifié
   dans ce document ; toujours vérifier le run du dernier commit avant toute décision. **Non fusionnée.**
-- Décision produit à proposer : ML Kit apporte INTERNET / ACCESS_NETWORK_STATE (statistiques d'utilisation
-  Google possibles, jamais d'image) ; l'app elle-même n'en a pas besoin.
+- Permissions de l'APK : aucune permission système (CAMERA, INTERNET, ACCESS_NETWORK_STATE retirées, contrôle CI
+  bloquant). Une future fonctionnalité réseau devra les redéclarer explicitement (et ajuster ce contrôle).
 - Branche `demo/ci-verdict` : démonstration du verdict, jamais proposée à la fusion, à conserver.
 - Copie locale Mac `~/AndroidStudioProjects/eTix` : était sur `dev` (12/2025) ; récupérer les branches
   (`git fetch`) sans rien écraser avant de travailler.
