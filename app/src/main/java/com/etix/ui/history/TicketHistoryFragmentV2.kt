@@ -1,5 +1,6 @@
 package com.etix.ui.history
 
+import android.content.ActivityNotFoundException
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -29,10 +30,12 @@ import com.google.android.material.datepicker.DateValidatorPointBackward
 import com.google.android.material.datepicker.DateValidatorPointForward
 import com.google.android.material.datepicker.MaterialDatePicker
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.util.Calendar
 import java.util.Date
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * Historique — référence iOS TicketHistoryView : recherche (magasin / catégorie), filtre de dates,
@@ -64,6 +67,7 @@ class TicketHistoryFragmentV2 : Fragment() {
                 viewModel.tickets.collect { list ->
                     adapter.submitSections(HistoryRules.group(list))
                     renderEmpty(list.isEmpty())
+                    renderExport(list.size)
                 }
             }
         }
@@ -160,14 +164,31 @@ class TicketHistoryFragmentV2 : Fragment() {
             .show()
     }
 
+    /**
+     * Lot 10 : l'export de l'Historique ne contient que les tickets affichés (recherche et filtre de dates actifs),
+     * ce que dit le libellé. Tous les tickets s'exportent depuis les Réglages.
+     */
+    private fun renderExport(count: Int) {
+        binding.btnExportCsv.isEnabled = count > 0
+        binding.btnExportCsv.text = if (count == 1) "Exporter le ticket affiché (CSV)"
+        else "Exporter les $count tickets affichés (CSV)"
+    }
+
     private fun exportCsv() {
         val tickets = viewModel.tickets.value
         if (tickets.isEmpty()) {
             Toast.makeText(requireContext(), "Aucun ticket à exporter", Toast.LENGTH_SHORT).show()
             return
         }
-        val file = CsvExporter.export(requireContext(), tickets)
-        Toast.makeText(requireContext(), "CSV exporté : ${file.name}", Toast.LENGTH_LONG).show()
+        val ctx = requireContext().applicationContext
+        viewLifecycleOwner.lifecycleScope.launch {
+            val file = withContext(Dispatchers.IO) { CsvExporter.writeFile(ctx, tickets, "eTix_tickets_affiches") }
+            try {
+                startActivity(CsvExporter.shareIntent(requireContext(), file, "Exporter les tickets affichés"))
+            } catch (e: ActivityNotFoundException) {
+                Toast.makeText(requireContext(), "Aucune application ne peut recevoir le fichier", Toast.LENGTH_LONG).show()
+            }
+        }
     }
 
     override fun onDestroyView() {

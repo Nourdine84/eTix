@@ -1,136 +1,218 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Lot 10 — Réglages, référence iOS SettingsView (sections Apparence, Période par défaut, Données, Informations), présentés
+     comme l'écran « Budgets mensuels » (en-tête avec retour, cartes groupées). Sections Android conservées en fin
+     d'écran : Compte (connexion locale) et Diagnostic (journaux de plantage, jamais envoyés).
+     Thème et période : lignes « libellé / valeur » ouvrant une liste à choix unique (équivalent Android du Picker
+     iOS dans une List). Une seule mise en page pour les thèmes clair et sombre (couleurs v2_* déclinées dans values-night). -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/md_background">
+    android:background="@color/v2_bg_grouped"
+    android:clickable="true"
+    android:focusable="true"
+    android:orientation="vertical">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp"
-        android:gravity="center_horizontal">
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="12dp"
+        android:paddingEnd="24dp"
+        android:paddingTop="8dp">
+
+        <ImageButton
+            android:id="@+id/btnSettingsBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Retour"
+            android:src="@drawable/ic_arrow_back_v2" />
 
         <TextView
             android:id="@+id/textViewTitle"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="Paramètres"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:textColor="@color/md_onBackground"
-            android:layout_marginBottom="24dp" />
-
-        <TextView
-            android:id="@+id/textUser"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Connecté en tant que : ..."
-            android:textSize="16sp"
-            android:textStyle="italic"
-            android:textColor="@color/md_onBackground"
-            android:layout_marginBottom="16dp" />
-
-        <TextView
-            android:id="@+id/textVersion"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Version 1.0"
-            android:textSize="14sp"
-            android:textColor="@color/md_onSurface"
-            android:layout_marginBottom="24dp" />
-
-        <Button
-            android:id="@+id/btnToggleTheme"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Changer de thème"
-            android:textAllCaps="false"
-            android:layout_marginBottom="16dp"
-            android:background="@drawable/bg_button_secondary"
-            android:textColor="@android:color/white"
-            android:textSize="16sp"
-            android:padding="12dp"
-            style="@style/Shape" />
-
-        <Button
-            android:id="@+id/btnClearAll"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Vider tous les tickets — indisponible"
-            android:enabled="false"
-            android:alpha="0.5"
-            android:contentDescription="Vider tous les tickets, indisponible dans cette version"
-            android:textAllCaps="false"
-            android:layout_marginBottom="4dp"
-            android:background="@drawable/bg_button"
-            android:textColor="@color/v2_text_secondary"
-            android:backgroundTint="@color/v2_neutral_12"
-            android:textSize="16sp"
-            android:padding="12dp"
-            style="@style/Shape" />
-
-        <!-- Lot 3 : suppression globale non branchée (action destructive → décision produit).
-             Bouton volontairement désactivé pour ne pas sembler fonctionner. -->
-        <TextView
-            android:id="@+id/tvClearAllUnavailable"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_marginStart="4dp"
+            android:layout_marginEnd="48dp"
+            android:layout_weight="1"
             android:gravity="center"
-            android:text="Suppression de tous les tickets non disponible dans cette version"
-            android:textColor="@color/v2_text_secondary"
-            android:textSize="12sp" />
-
-        <Button
-            android:id="@+id/btnShowCrash"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Afficher crash log"
-            android:textAllCaps="false"
-            android:layout_marginBottom="8dp"
-            android:background="@drawable/bg_button_secondary"
-            android:textColor="@android:color/white"
-            android:textSize="16sp"
-            android:padding="12dp"
-            style="@style/Shape" />
-
-        <Button
-            android:id="@+id/btnClearCrash"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Supprimer logs de crash"
-            android:textAllCaps="false"
-            android:layout_marginBottom="24dp"
-            android:background="@drawable/bg_button_secondary"
-            android:textColor="@android:color/white"
-            android:textSize="16sp"
-            android:padding="12dp"
-            style="@style/Shape" />
-
-        <TextView
-            android:id="@+id/textCrashPreview"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text=""
-            android:textColor="@color/md_onSurfaceVariant"
-            android:textSize="12sp"
-            android:layout_marginBottom="24dp"
-            android:maxLines="10"
-            android:scrollbars="vertical" />
-
-        <Button
-            android:id="@+id/btnLogout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Se déconnecter"
-            android:textAllCaps="false"
-            android:textColor="@android:color/white"
-            android:background="@drawable/bg_button"
-            android:textSize="16sp"
-            android:padding="12dp"
-            style="@style/Shape" />
-
+            android:text="Réglages"
+            android:textColor="@color/v2_text_primary"
+            android:textSize="17sp"
+            android:textStyle="bold" />
     </LinearLayout>
-</ScrollView>
+
+    <ScrollView
+        android:id="@+id/settingsScroll"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="24dp">
+
+            <!-- ===== APPARENCE ===== (iOS : Picker « Thème » d'une List = ligne libellé / valeur ouvrant un choix) -->
+            <TextView style="@style/V2.SettingsHeader" android:text="APPARENCE" />
+            <com.google.android.material.card.MaterialCardView style="@style/V2.SettingsCard">
+                <LinearLayout
+                    android:id="@+id/rowTheme"
+                    style="@style/V2.SettingsValueRow"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+                    <TextView style="@style/V2.SettingsValueLabel" android:text="Thème" />
+                    <TextView android:id="@+id/tvThemeValue" style="@style/V2.SettingsValue" android:text="Système" />
+                    <ImageView style="@style/V2.SettingsChevron" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ===== PÉRIODE PAR DÉFAUT ===== (iOS : Picker « Période ») -->
+            <TextView style="@style/V2.SettingsHeader" android:text="PÉRIODE PAR DÉFAUT" />
+            <com.google.android.material.card.MaterialCardView style="@style/V2.SettingsCard">
+                <LinearLayout
+                    android:id="@+id/rowDefaultRange"
+                    style="@style/V2.SettingsValueRow"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true">
+                    <TextView style="@style/V2.SettingsValueLabel" android:text="Période" />
+                    <TextView android:id="@+id/tvDefaultRangeValue" style="@style/V2.SettingsValue" android:text="Ce mois" />
+                    <ImageView style="@style/V2.SettingsChevron" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+            <TextView style="@style/V2.SettingsFooter" android:text="Appliquée à l’ouverture de l’Accueil, des Catégories et des Magasins." />
+
+            <!-- ===== DONNÉES ===== -->
+            <TextView style="@style/V2.SettingsHeader" android:text="DONNÉES" />
+            <com.google.android.material.card.MaterialCardView style="@style/V2.SettingsCard">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <Button
+                        android:id="@+id/btnExportAllCsv"
+                        style="@style/V2.SettingsAction"
+                        android:text="Exporter tous les tickets (CSV)" />
+                    <View style="@style/V2.SettingsDivider" />
+                    <Button
+                        android:id="@+id/btnClearAll"
+                        style="@style/V2.SettingsAction"
+                        android:enabled="false"
+                        android:text="Supprimer tous les tickets"
+                        android:textColor="@color/v2_text_secondary" />
+                    <TextView
+                        android:id="@+id/tvClearAllUnavailable"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:paddingBottom="12dp"
+                        android:text="Indisponible dans cette version."
+                        android:textColor="@color/v2_text_secondary"
+                        android:textSize="13sp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+            <TextView
+                android:id="@+id/tvSettingsTicketCount"
+                style="@style/V2.SettingsFooter"
+                android:text="0 ticket(s) enregistré(s)" />
+
+            <!-- ===== INFORMATIONS ===== -->
+            <TextView style="@style/V2.SettingsHeader" android:text="INFORMATIONS" />
+            <com.google.android.material.card.MaterialCardView style="@style/V2.SettingsCard">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <LinearLayout style="@style/V2.SettingsValueRow">
+                        <TextView style="@style/V2.SettingsValueLabel" android:text="Version" />
+                        <TextView android:id="@+id/textVersion" style="@style/V2.SettingsValue" />
+                    </LinearLayout>
+                    <View style="@style/V2.SettingsDivider" />
+                    <LinearLayout style="@style/V2.SettingsValueRow">
+                        <TextView style="@style/V2.SettingsValueLabel" android:text="Build" />
+                        <TextView android:id="@+id/textBuild" style="@style/V2.SettingsValue" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ===== COMPTE (Android, sans équivalent iOS) ===== -->
+            <TextView style="@style/V2.SettingsHeader" android:text="COMPTE" />
+            <com.google.android.material.card.MaterialCardView style="@style/V2.SettingsCard">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView
+                        android:id="@+id/textUser"
+                        style="@style/V2.SettingsRowTitle"
+                        android:paddingStart="16dp"
+                        android:paddingTop="14dp"
+                        android:paddingEnd="16dp"
+                        android:text="Connecté en tant que : …" />
+                    <TextView
+                        android:id="@+id/tvAccountNote"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingStart="16dp"
+                        android:paddingTop="4dp"
+                        android:paddingEnd="16dp"
+                        android:text="Connexion locale : aucun mot de passe n’est vérifié. Elle ne protège pas tes données."
+                        android:textColor="@color/v2_text_secondary"
+                        android:textSize="13sp" />
+                    <Button
+                        android:id="@+id/btnLogout"
+                        style="@style/V2.SettingsAction"
+                        android:text="Se déconnecter" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- ===== DIAGNOSTIC (Android, sans équivalent iOS) ===== -->
+            <TextView style="@style/V2.SettingsHeader" android:text="DIAGNOSTIC" />
+            <com.google.android.material.card.MaterialCardView style="@style/V2.SettingsCard">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingStart="16dp"
+                        android:paddingTop="14dp"
+                        android:paddingEnd="16dp"
+                        android:text="Journaux de plantage : conservés sur ce téléphone, jamais envoyés."
+                        android:textColor="@color/v2_text_secondary"
+                        android:textSize="13sp" />
+                    <Button
+                        android:id="@+id/btnShowCrash"
+                        style="@style/V2.SettingsAction"
+                        android:text="Afficher le dernier journal" />
+                    <View style="@style/V2.SettingsDivider" />
+                    <Button
+                        android:id="@+id/btnClearCrash"
+                        style="@style/V2.SettingsAction"
+                        android:text="Supprimer les journaux de plantage" />
+                    <TextView
+                        android:id="@+id/textCrashPreview"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp"
+                        android:textColor="@color/v2_text_secondary"
+                        android:textIsSelectable="true"
+                        android:textSize="12sp"
+                        android:typeface="monospace"
+                        android:visibility="gone" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>

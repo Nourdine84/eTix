@@ -121,7 +121,7 @@ SRC = os.environ.get("ANDROID_TEST_SRC", "app/src/androidTest/java")
 
 def declared(cls, src=None):
     """(@Test, @Ignore) déclarés dans le corps de la classe Kotlin `cls`, ou None si introuvable.
-    `src` : sources d'une autre version (mode maj8 : tests du lot 8), sinon SRC."""
+    `src` : sources d'une autre version (mode maj : tests de la version de base), sinon SRC."""
     for path in glob.glob(f"{src or SRC}/**/*.kt", recursive=True):
         txt = read(path)
         m = re.search(r"^(?:@\S+\s+)*class\s+" + re.escape(cls) + r"\b", txt, re.M)

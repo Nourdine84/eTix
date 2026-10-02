@@ -306,4 +306,59 @@ class E2eClavierPetitEcranTest {
             androidx.test.espresso.intent.Intents.release()
         }
     }
+
+    /**
+     * Lot 10 : Réglages sur petit écran / grande police. Lignes Thème et Période : libellé et valeur entiers (ni
+     * tronqués ni coupés en milieu de mot) ; liste de choix lisible ; bas de l'écran atteignable par défilement.
+     * Passe d (320 dp, police 2,0) : aussi en thème sombre, puis Système rétabli. Mesures : shots/mesures_reglages.txt.
+     */
+    @Test
+    fun k09_reglages() {
+        startMain()
+        onView(withId(R.id.menu_home)).perform(click())
+        onView(withId(R.id.btnSettings)).perform(click())
+        waitFor(withId(R.id.rowTheme))
+        val problems = mutableListOf<String>()
+        val measures = StringBuilder()
+        instr.runOnMainSync {
+            val act = resumedOnMain()
+            val res = act.resources
+            measures.append("passe=$passe sdk=${Build.VERSION.SDK_INT} écran=${res.configuration.screenWidthDp}dp " +
+                "police=${res.configuration.fontScale} :")
+            for (row in listOf(R.id.rowTheme, R.id.rowDefaultRange)) {
+                val g = act.findViewById<android.view.ViewGroup>(row)
+                for (i in 0 until g.childCount) {
+                    val t = g.getChildAt(i) as? android.widget.TextView ?: continue
+                    val l = t.layout ?: continue
+                    val ell = (0 until l.lineCount).sumOf { l.getEllipsisCount(it) }
+                    val words = t.text.toString().split(' ', '\u00A0').size
+                    measures.append(" « ${t.text} » ${l.lineCount} ligne(s)${if (ell > 0) " tronqué" else ""}")
+                    if (ell > 0 || l.lineCount > words) problems += "« ${t.text} » : ${l.lineCount} lignes, $ell caractères masqués"
+                }
+            }
+        }
+        File(File(ctx.filesDir, "shots").apply { mkdirs() }, "mesures_reglages.txt").appendText("$measures\n")
+        shot("k09_reglages_haut_${passe}")
+        onView(withId(R.id.rowDefaultRange)).perform(click())
+        onView(withText("Cette année")).inRoot(androidx.test.espresso.matcher.RootMatchers.isDialog())
+            .check(androidx.test.espresso.assertion.ViewAssertions.matches(isDisplayed()))
+        shot("k09_reglages_choix_periode_${passe}")
+        onView(withText("Annuler")).inRoot(androidx.test.espresso.matcher.RootMatchers.isDialog()).perform(click())
+        onView(withId(R.id.btnClearCrash)).perform(scrollTo())
+            .check(androidx.test.espresso.assertion.ViewAssertions.matches(
+                androidx.test.espresso.matcher.ViewMatchers.isCompletelyDisplayed()))
+        shot("k09_reglages_bas_${passe}")
+        if (passe == "d") {
+            onView(withId(R.id.rowTheme)).perform(scrollTo())
+            E2e.chooseTheme("Sombre")
+            waitFor(allOf(withId(R.id.tvThemeValue), withText("Sombre")))
+            shot("k09_reglages_sombre_haut_${passe}")
+            onView(withId(R.id.btnClearCrash)).perform(scrollTo())
+            shot("k09_reglages_sombre_bas_${passe}")
+            onView(withId(R.id.rowTheme)).perform(scrollTo())
+            E2e.chooseTheme("Système")
+            waitFor(allOf(withId(R.id.tvThemeValue), withText("Système")))
+        }
+        assertTrue("Réglages petit écran : ${problems.joinToString("; ")}", problems.isEmpty())
+    }
 }

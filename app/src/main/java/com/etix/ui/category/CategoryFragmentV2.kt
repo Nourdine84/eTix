@@ -9,6 +9,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.etix.features.settings.AppPreferences
 import com.etix.R
 import com.etix.data.AppDatabase
 import com.etix.data.TicketRepository
@@ -32,12 +33,30 @@ class CategoryFragmentV2 : Fragment() {
     private var _binding: FragmentCategoryV2Binding? = null
     private val binding get() = _binding!!
     private val range = MutableStateFlow(TimeRange.DEFAULT)
+    private var appliedDefault: TimeRange = TimeRange.DEFAULT
+    private var defaultRangeListener: android.content.SharedPreferences.OnSharedPreferenceChangeListener? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        savedInstanceState?.getString(KEY_RANGE)
-            ?.let { runCatching { TimeRange.valueOf(it) }.getOrNull() }
-            ?.let { range.value = it }
+        // Lot 10 : période par défaut des Réglages à l'ouverture ; un choix fait sur l'écran est conservé ensuite
+        val prefs = AppPreferences(requireContext())
+        val parse = { k: String -> savedInstanceState?.getString(k)?.let { runCatching { TimeRange.valueOf(it) }.getOrNull() } }
+        appliedDefault = prefs.defaultRange
+        range.value = AppPreferences.initialRange(parse(KEY_RANGE), parse(KEY_APPLIED_DEFAULT), appliedDefault)
+        // Seul un changement du réglage remplace la période affichée ; changer d'onglet ne la réinitialise pas
+        defaultRangeListener = prefs.listenDefaultRange { d ->
+            if (d != appliedDefault) {
+                appliedDefault = d
+                range.value = d
+                _binding?.togglePeriodCategory?.check(buttonFor(d))
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        defaultRangeListener?.let { AppPreferences(requireContext()).stopListening(it) }
+        defaultRangeListener = null
+        super.onDestroy()
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -85,6 +104,7 @@ class CategoryFragmentV2 : Fragment() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putString(KEY_RANGE, range.value.name)
+        outState.putString(KEY_APPLIED_DEFAULT, appliedDefault.name)
     }
 
     override fun onDestroyView() {
@@ -100,5 +120,6 @@ class CategoryFragmentV2 : Fragment() {
 
     companion object {
         private const val KEY_RANGE = "category_range"
+        private const val KEY_APPLIED_DEFAULT = "category_applied_default"
     }
 }

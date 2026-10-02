@@ -97,9 +97,9 @@ class E2eParcoursTest {
 
         tab(R.id.menu_home)
         onView(withId(R.id.btnSettings)).perform(click())
-        waitFor(withId(R.id.btnToggleTheme))
+        waitFor(withId(R.id.rowTheme))
         onView(withId(R.id.btnClearAll)).check(matches(not(isEnabled())))
-        onView(withId(R.id.btnClearAll)).perform(click()) // sans effet attendu
+        onView(withId(R.id.btnClearAll)).perform(scrollTo(), click()) // sans effet attendu
         shot("08_reglages")
         pressBack()
         waitFor(withId(R.id.tvTicketCount))
@@ -198,9 +198,9 @@ class E2eParcoursTest {
     fun a07_theme_sombre_puis_clair() {
         startMain()
         onView(withId(R.id.btnSettings)).perform(click())
-        waitFor(withId(R.id.btnToggleTheme))
-        onView(withId(R.id.btnToggleTheme)).perform(click())   // → sombre (recréation)
-        waitFor(withId(R.id.btnToggleTheme))
+        waitFor(withId(R.id.rowTheme))
+        E2e.chooseTheme("Sombre")   // → sombre
+        waitFor(withId(R.id.rowTheme))
         shot("21_reglages_sombre")
         pressBack()
         waitFor(withId(R.id.tvTicketCount))
@@ -216,9 +216,9 @@ class E2eParcoursTest {
 
         tab(R.id.menu_home)
         onView(withId(R.id.btnSettings)).perform(click())
-        waitFor(withId(R.id.btnToggleTheme))
-        onView(withId(R.id.btnToggleTheme)).perform(click())   // → clair
-        waitFor(withId(R.id.btnToggleTheme))
+        waitFor(withId(R.id.rowTheme))
+        E2e.chooseTheme("Système")   // → Système (préférence par défaut rétablie)
+        waitFor(withId(R.id.rowTheme))
         shot("26_reglages_clair")
     }
 }

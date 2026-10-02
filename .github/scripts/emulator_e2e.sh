@@ -5,9 +5,12 @@
 # MODE=fr : émulateur en français, tests de locale (saisie, dates, filtres inclusifs, limites de période)
 # MODE=petit : petit écran / grande police ; MODE=compat : lecteur de dates OCR seul (API 22 à 25)
 # MODE=systeme (lot 9) : ML Kit sans réseau au 1er lancement, vrais sélecteur d'image et appareil photo
-# MODE=maj8 (lot 9) : mise à jour depuis le lot 8 fusionné (versionCode 10) vers cette version, données comparées
+# MODE=maj (lot 9, étendu au lot 10) : mise à jour depuis une version fusionnée (BASE_LABEL : lot 8 ou lot 9, APK
+#   construits par build_maj_base.sh) vers cette version, données et thème comparés
 set -u
 MODE="${MODE:-standard}"
+[ "$MODE" = "maj8" ] && MODE=maj
+BASE_LABEL="${BASE_LABEL:-base}"
 
 boot_wait() { # attend la fin du démarrage (max ~4 min)
   timeout 60 adb wait-for-device
@@ -62,12 +65,12 @@ pkginfo() { adb shell dumpsys package com.etix | grep -E "versionCode|versionNam
 
 pkgperms() { adb shell dumpsys package com.etix | tr -d '\r' | sed -n '/requested permissions:/,/install permissions:/p' | sed 's/^ *//'; }
 
-if [ "$MODE" = "maj8" ]; then
-  # Lot 8 fusionné (versionCode 10) installé neuf, données créées par SES propres tests (sources du lot 8)
-  T 300 adb install -r dist/lot8-app.apk > "$OUT/install.txt" 2>&1
-  T 300 adb install -r dist/lot8-androidTest.apk >> "$OUT/install.txt" 2>&1
+if [ "$MODE" = "maj" ]; then
+  # Version de base fusionnée installée neuve, données créées par SES propres tests (sources de la base)
+  T 300 adb install -r dist/base-app.apk > "$OUT/install.txt" 2>&1
+  T 300 adb install -r dist/base-androidTest.apk >> "$OUT/install.txt" 2>&1
 fi
-if [ "$MODE" != "maj8" ]; then
+if [ "$MODE" != "maj" ]; then
 # Build A (versionCode N) — même code que B, voir workflow
 T 300 adb install -r dist/app-A.apk > "$OUT/install.txt" 2>&1
 T 300 adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk >> "$OUT/install.txt" 2>&1
@@ -80,7 +83,7 @@ run() { # $1 = classe de test, $2 = suffixe/passe facultatif (limite 12 min par 
   timeout 20 adb shell wm dismiss-keyguard >/dev/null 2>&1 || true
   timeout 20 adb shell am broadcast -a android.intent.action.CLOSE_SYSTEM_DIALOGS >/dev/null 2>&1 || true
   [ -n "${2:-}" ] && { extra="-e passe $2"; suf="_$2"; }
-  # attendu, comparé aux résultats par emu_report.py ; RUN_SRC = sources d'une autre version (lot 8, mode maj8)
+  # attendu, comparé aux résultats par emu_report.py ; RUN_SRC = sources d'une autre version (base fusionnée, mode maj)
   echo "$1 ${2:-}${RUN_SRC:+ src=$RUN_SRC}" >> "$OUT/expected_runs.txt"
   T 720 adb shell am instrument -w -r $extra -e class "$1" com.etix.test/androidx.test.runner.AndroidJUnitRunner > "$OUT/instr_$(basename "${1//./_}")$suf.txt" 2>&1
   timeout 20 adb shell am force-stop com.etix.test >/dev/null 2>&1 || true
@@ -164,24 +167,27 @@ if [ "$MODE" = "systeme" ]; then
   exit 0
 fi
 
-if [ "$MODE" = "maj8" ]; then
-  # Phase A (lot 8) : parcours et budget avec les tests du lot 8 eux-mêmes
+if [ "$MODE" = "maj" ]; then
+  # Phase A (base) : parcours et budget avec les tests de la base elle-même (thème laissé tel que ses tests le
+  # laissent : clair pour le lot 8, préférence enregistrée pour le lot 9)
   RUN_SRC=base/app/src/androidTest/java run com.etix.e2e.E2eParcoursTest
   RUN_SRC=base/app/src/androidTest/java run com.etix.e2e.E2eBudgetAvantMajTest
   adb shell am force-stop com.etix
-  # Instantané des données du lot 8 (tests de cette version, lecture seule, avant la mise à jour)
+  # Instantané des données de la base (tests de cette version, lecture seule, avant la mise à jour)
   T 300 adb install -r app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk >> "$OUT/install.txt" 2>&1
   run com.etix.e2e.E2eMajInstantaneAvantTest
   adb shell am force-stop com.etix
-  # Mise à jour lot 8 → lot 9 sans désinstallation
+  # Mise à jour base → cette version sans désinstallation
+  echo "base : $BASE_LABEL" >> "$OUT/device.txt"
   pkginfo > "$OUT/update_avant.txt"
   T 300 adb install -r dist/app-A.apk > "$OUT/update_install.txt" 2>&1
   pkginfo > "$OUT/update_apres.txt"
   adb shell am force-stop com.etix
-  # Phase B (lot 9) : mêmes tickets et budgets, session conservée
+  # Phase B (cette version) : mêmes tickets, budgets et thème, session conservée ; Réglages affichant le thème conservé
   run com.etix.e2e.E2eMajInstantaneApresTest
   run com.etix.e2e.E2ePersistanceTest
   run com.etix.e2e.E2eBudgetApresMajTest
+  run com.etix.e2e.E2eMajReglagesApresTest
   collect
   exit 0
 fi
@@ -235,6 +241,13 @@ run com.etix.e2e.E2eCompatDatesOcrTest
 
 # Phase H : lot 9 (parcours de scan, ML Kit réel ; appareil photo et sélecteur d'image simulés)
 run com.etix.e2e.E2eScanTest
+
+# Phase I : lot 10 (Réglages : thème, période par défaut, exports CSV, partage réel annulé, données conservées)
+run com.etix.e2e.E2eReglagesTest
+# Persistance des Réglages après arrêt complet de l'app (processus tué entre les deux classes)
+run com.etix.e2e.E2eReglagesAvantRedemarrageTest
+adb shell am force-stop com.etix
+run com.etix.e2e.E2eReglagesApresRedemarrageTest
 
 collect
 exit 0

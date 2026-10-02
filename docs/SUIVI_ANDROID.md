@@ -331,3 +331,9 @@ Recommandation technique inchangée : A (ou B) pour la parité iOS.
 | 13 | Réglages : « Vider tous les tickets » désactivé et signalé indisponible (lot 3). Implémentation (avec confirmation, parité iOS) = décision produit | P3 |
 | 14 | Thème sombre : corrigé au lot 3 sur les écrans principaux ; écrans V1 restants (fiches, popups) à vérifier sur téléphone | P3 |
 | 12 | Signature QA : clé durable via secrets — **en attente de votre action** (`docs/SIGNATURE_QA.md`) ; tant qu'elle manque, aucun APK QA n'est publié | P1 |
+
+## Lot 10 — Réglages (branche `feature/android-lot10-reglages`, en cours)
+
+- Périmètre validé par Nourdine le 02/10/2026 ; détail, écarts iOS et points ouverts : `docs/REGLAGES.md`.
+- Version `1.10.0-lot10`, versionCode 12. Aucun changement de schéma Room, aucune migration, aucune permission.
+- Statut : implémenté ; résultats CI et revue visuelle à reporter ici (PR en brouillon, label `apercus`).
