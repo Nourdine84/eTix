@@ -84,11 +84,11 @@ mesurés) sur émulateur. Pas de doublon volontaire, sauf le contenu exporté, v
 ## Tests
 
 - JVM : `CsvExporterTest` (en-tête, accents, virgule, guillemets, retours à la ligne, centimes, fuseau, langue).
-- Robolectric : `AppPreferencesTest` (défauts, choix existant conservé, valeurs illisibles, période initiale,
-  écoute) ; `Lot10ScreenshotTest` (aperçus clair / sombre / 320 dp police 2,0, listes de choix, export Réglages et
+- Robolectric : `AppPreferencesTest` (défauts, choix existant conservé, valeurs illisibles, période initiale) ;
+  `Lot10ScreenshotTest` (aperçus clair / sombre / 320 dp police 2,0, listes de choix, thème choisi, export Réglages et
   Historique avec fichier relu, période sur les trois écrans, recréation, tickets et budgets inchangés).
 - Émulateur (`E2eReglagesTest`, mode standard API 21 / 34 / 36) : thème trois états réellement appliqué, compteur,
-  version, build, suppression désactivée ; période sur Accueil / Catégories / Magasins sans réinitialisation ni
+  version, build, suppression désactivée ; période lue à l'ouverture, écrans ouverts inchangés, sans
   effet sur l'Historique ; exports relus par l'URI partagée (contenu exact, données délicates) ; vraie feuille de
   partage annulée ; tickets et budgets inchangés. Persistance après arrêt complet de l'app
   (`E2eReglagesAvantRedemarrageTest` → `am force-stop` → `E2eReglagesApresRedemarrageTest`).
