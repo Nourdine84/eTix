@@ -79,6 +79,15 @@ ticket.
 
 ## Tests
 
+Revue du 02/10/2026 : `docs/VALIDATION_EMULATEUR.md` (résultats, constats, composants réels / simulés ci-dessus).
+Robolectric ajoute : marques « Détecté » / « À vérifier » / « Non lu », valeurs ambiguës, marque retirée à la
+modification, double appui, annulation pendant la lecture, recréation pendant la lecture / après correction /
+pendant l'insertion, appareil photo sans autorisation, barre compacte à 320 dp police 2,0. Émulateur ajoute :
+`E2eScanTest` s04 à s09, `E2eScanFrTest`, `E2eScanSystemeTest`, `E2eScanHorsLigneTest`, `k07` / `k08` (4 passes),
+`E2eMajInstantaneAvant/ApresTest`.
+
+Version initiale :
+
 - JVM : `ReceiptScanParserTest` (confiances, rien détecté, historique / dictionnaire), `OCRScanRulesTest`
   (Q1 à Q4), `OCRFixturesTest` (9 tests réactivés).
 - Robolectric (`Lot9ScanTest`, lecteur simulé) : intro, autorisation puis refus, lecture en cours, formulaire

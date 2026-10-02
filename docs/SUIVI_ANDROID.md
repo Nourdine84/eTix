@@ -237,12 +237,30 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
   (obsolète) reste désactivé. Détail : `docs/OCR_CAS_DE_REFERENCE.md`.
 - **Parcours de scan** (iOS ScannerFlowView) : Accueil ou Ajouter → intro → photo (appareil photo du système,
   autorisation expliquée avant la demande, refus → Paramètres) ou image choisie → lecture ML Kit sur l'appareil
-  (étapes affichées) → formulaire « Ajouter » prérempli, badges « Vérifié » / « À vérifier », catégorie
+  (étapes affichées) → formulaire « Ajouter » prérempli, badges (« Détecté » / « À vérifier » / « Non lu » depuis le 02/10), catégorie
   « Suggéré par l'OCR » → **enregistrement uniquement par « Enregistrer »**. « Rien détecté » / erreur :
   « Réessayer » ou « Saisir manuellement ». Annuler, Retour, « Annuler le scan » : aucun ticket.
   Ancien écran de scan simulé (`OCRScannerFragment`, valeurs fictives) : jamais branché, conservé. Détail et
   écarts iOS : `docs/SCANNER.md`.
 - Version `1.9.0-lot9` (versionCode 11). PR brouillon #78 (non fusionnée) ; résultats : `docs/VALIDATION_EMULATEUR.md`.
+- **Revue avant décision de fusion (02/10/2026)**, demandée par Nourdine, sans téléphone physique :
+  - Marques : « Vérifié » s'affichait sans action de l'utilisateur (montant sur une ligne de total, toute date
+    lue). Remplacé par « Détecté » / « À vérifier » / « Non lu » ; marque retirée dès que l'utilisateur modifie
+    le champ ; montant ou date ambigus (deux totaux différents, plusieurs dates, date future ou de plus de 2 ans)
+    « À vérifier » ; champ absent « Non lu » (dont la date du jour par défaut). Écart iOS voulu.
+  - Robustesse : double appui sur « Enregistrer » créait deux tickets → un seul (ViewModel) ; rotation pendant
+    l'insertion sans doublon ; marques et résultat de scan en attente conservés à la recréation.
+  - Permission CAMERA retirée (inutile pour l'application appareil photo du système) et étape d'autorisation
+    supprimée ; contrôle CI des permissions de l'APK (restent INTERNET et ACCESS_NETWORK_STATE, apportées par
+    ML Kit : l'app elle-même ne fait aucun appel réseau).
+  - Petit écran : barre d'onglets masquée pendant le scan (iOS fullScreenCover) ; barre basse limitée à 40 %
+    (mesurée sur émulateur à 320 dp / police 2,0 : 20 %, contre ≈ 60 % avant).
+  - Images : budget de 4 Mpx (une photo 12 Mpx était gardée en pleine résolution ; un ticket long aurait été
+    réduit à 256 px de large).
+  - Nouveaux contrôles émulateur : vrai sélecteur de photos et vraie application appareil photo (refus puis
+    accès rétabli), ML Kit hors ligne au premier lancement, EXIF / 48 Mpx / ticket long, rotation, double
+    appui, annulation pendant la lecture, scan en français, passe 320 dp police 2,0, mise à jour depuis le lot 8
+    fusionné (versionCode 10 → 11) avec tickets et budgets comparés. Résultats : `docs/VALIDATION_EMULATEUR.md`.
 
 ## Écarts restants avec iOS (référence `feature/home-hero-v2`)
 

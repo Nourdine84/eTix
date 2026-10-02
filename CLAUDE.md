@@ -84,18 +84,23 @@ Document de reprise. À lire en entier avant toute action. Détail : `docs/SUIVI
 
 - `feature/android-v2` = intégration, tête `457f49e` : lots 1 à 8 + CI (PR #75, #76, #77 fusionnées).
 - **PR #78 en brouillon** : `feature/android-lot9-scanner` (scanner + Q1–Q4), version `1.9.0-lot9`
-  (versionCode 11). CI verte sur le résultat de fusion (run 36930688922) : JVM 200/201 (1 ignoré :
-  `OCRValidationTest`, obsolète, à garder désactivé), émulateurs 33/33 par API, fr 6/6, petit 18/18,
-  dates API 22–25. **Non fusionnée.**
+  (versionCode 11). Revue avant fusion du 02/10 faite sur émulateur (marques « Détecté / À vérifier / Non lu »,
+  double appui, rotation, permission CAMERA retirée, barre basse compacte, vrais sélecteur et appareil photo,
+  hors ligne, mise à jour depuis le lot 8) : `docs/VALIDATION_EMULATEUR.md`. Dernier résultat de fusion vérifié
+  dans ce document ; toujours vérifier le run du dernier commit avant toute décision. **Non fusionnée.**
+- Décision produit à proposer : ML Kit apporte INTERNET / ACCESS_NETWORK_STATE (statistiques d'utilisation
+  Google possibles, jamais d'image) ; l'app elle-même n'en a pas besoin.
 - Branche `demo/ci-verdict` : démonstration du verdict, jamais proposée à la fusion, à conserver.
 - Copie locale Mac `~/AndroidStudioProjects/eTix` : était sur `dev` (12/2025) ; récupérer les branches
   (`git fetch`) sans rien écraser avant de travailler.
 
 ## Prochaine étape
 
-Tests du scanner sur **téléphone physique** avec l'APK QA (jamais l'app `com.etix`) : vraie application appareil
-photo, vraies photos (flou, pli, lumière, ticket long), refus puis rétablissement de l'autorisation caméra,
-choix d'image, retour arrière à chaque étape, aucun ticket créé sans « Enregistrer ». Puis revue visuelle par
+Tests du scanner sur **téléphone physique** avec l'APK QA (jamais l'app `com.etix`) quand un téléphone sera
+disponible : application appareil photo du constructeur, vraies photos (flou, pli, lumière, ticket long), refus
+puis rétablissement de l'accès caméra dans l'application appareil photo (eTix ne demande plus rien), sélecteur du
+téléphone, retour arrière à chaque étape, aucun ticket créé sans « Enregistrer ». Leur absence est une limite
+documentée ; Nourdine décide de la fusion après le bilan. Puis revue visuelle par
 Nourdine, puis décision de fusion de la PR #78 (par Nourdine).
 
 ## Pièges déjà rencontrés
