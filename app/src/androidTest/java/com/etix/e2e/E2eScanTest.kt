@@ -242,7 +242,8 @@ class E2eScanTest {
         onView(withId(R.id.inputStore)).check(matches(withText("")))
         onView(withId(R.id.inputAmount)).check(matches(withText("")))
         gone(R.id.scanBanner)
-        gone(R.id.stepProcessing)
+        // parcours de scan fermé (retiré de l'écran) : aucune étape de lecture réaffichée
+        onView(withId(R.id.stepProcessing)).check(androidx.test.espresso.assertion.ViewAssertions.doesNotExist())
         assertEquals(before, tickets())
     }
 

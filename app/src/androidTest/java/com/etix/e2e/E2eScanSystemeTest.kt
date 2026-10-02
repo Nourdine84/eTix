@@ -42,7 +42,8 @@ import java.util.regex.Pattern
  *   de ticket déposée dans la galerie de l'émulateur → lecture ML Kit → formulaire prérempli ;
  * - p02 : vraie application appareil photo de l'émulateur (caméra arrière « emulated », image de synthèse,
  *   sans texte) : 1) l'utilisateur refuse l'accès caméra à l'application appareil photo → retour à l'intro
- *   d'eTix, aucun ticket ; 2) il l'accorde, prend une photo et la valide → photo lue par eTix (aucune
+ *   d'eTix, aucun ticket ; 2) accès rétabli (équivalent Paramètres : pm grant sur l'application appareil photo),
+ *   photo prise et validée → photo lue par eTix (aucune
  *   information détectée attendue sur l'image de synthèse), photo temporaire supprimée, aucun ticket.
  * eTix ne demande aucune autorisation (pas de permission CAMERA) : le refus porte sur l'application appareil
  * photo elle-même, seul refus possible sur ce parcours. Étapes et écrans consignés dans shots/scan_systeme.txt.
@@ -219,7 +220,14 @@ class E2eScanSystemeTest {
         log("p02 : après refus → intro d'eTix (« Prendre une photo » visible), aucun ticket")
         assertEquals(before, tickets())
 
-        // 2) Accès accordé à l'application appareil photo, photo prise et validée
+        // 2) Accès rétabli puis photo prise et validée. Après un refus, l'application appareil photo de l'émulateur
+        //    ne redemande plus l'accès (« Camera error… critical permissions », constaté au run 36987368919) :
+        //    l'utilisateur doit le rétablir dans les Paramètres de CETTE application. Équivalent ici : pm grant sur
+        //    l'application appareil photo (jamais sur eTix, qui ne déclare pas CAMERA).
+        for (perm in listOf("android.permission.CAMERA", "android.permission.RECORD_AUDIO")) {
+            val r = shell("pm grant $camPkg $perm")
+            log("p02 : accès rétabli pour $camPkg : $perm ${if (r.isBlank()) "accordé" else "→ $r"}")
+        }
         onView(withId(R.id.btnTakePhoto)).perform(click())
         val pkg2 = waitOtherApp()
         val endAllow = System.currentTimeMillis() + 30_000
