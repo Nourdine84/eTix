@@ -34,13 +34,13 @@ object ScanE2e {
     fun dir(): File = File(ctx.cacheDir, "e2e").apply { mkdirs() }
 
     /** Ticket de test dessiné (texte net) ; [blank] = image blanche. */
-    fun ticketImage(name: String, blank: Boolean = false): File {
+    fun ticketImage(name: String, blank: Boolean = false, lines: List<String> = LINES): File {
         val bmp = Bitmap.createBitmap(1080, 1500, Bitmap.Config.ARGB_8888)
         Canvas(bmp).apply {
             drawColor(Color.WHITE)
             if (!blank) {
                 val p = Paint().apply { color = Color.BLACK; textSize = 84f; isAntiAlias = true; typeface = Typeface.DEFAULT_BOLD }
-                LINES.forEachIndexed { i, l -> drawText(l, 90f, 260f + i * 170f, p) }
+                lines.forEachIndexed { i, l -> drawText(l, 90f, 260f + i * 170f, p) }
             }
         }
         val f = File(dir(), name)

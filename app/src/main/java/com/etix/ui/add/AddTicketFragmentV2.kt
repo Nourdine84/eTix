@@ -118,13 +118,20 @@ class AddTicketFragmentV2 : Fragment() {
     private fun save() {
         val v = form.read()
         if (v.store.isEmpty() || v.amount == null) {
+            // Montant vide ou nul : jamais converti en 0, l'enregistrement est refusé avec un message explicite
             form.setAmountInvalid(v.amount == null)
-            Toast.makeText(requireContext(), "Impossible d'enregistrer. Vérifie le magasin et le montant.", Toast.LENGTH_LONG).show()
+            Toast.makeText(requireContext(), missingMessage(v.store.isEmpty(), v.amount == null), Toast.LENGTH_LONG).show()
             return
         }
         val ticket = Ticket(store = v.store, amount = v.amount, dateMillis = v.dateMillis,
             category = v.category, description = v.description)
         saver.save(ticket)   // ignoré si un enregistrement est déjà en cours (double appui)
+    }
+
+    private fun missingMessage(noStore: Boolean, noAmount: Boolean) = when {
+        noStore && noAmount -> "Impossible d'enregistrer : saisis le magasin et un montant supérieur à 0."
+        noAmount -> "Impossible d'enregistrer : saisis un montant supérieur à 0."
+        else -> "Impossible d'enregistrer : saisis le magasin."
     }
 
     private fun onSaveResult(r: AddTicketSaveViewModel.Result) {

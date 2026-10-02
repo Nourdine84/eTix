@@ -284,12 +284,43 @@ class Lot9ScanTest {
         assertEquals("À vérifier", a.text(R.id.badgeStore))
         assertEquals("", a.text(R.id.inputAmount))
         assertEquals("Non lu", a.text(R.id.badgeAmount))
-        assertEquals("Non lue", a.text(R.id.badgeDate))
-        assertTrue(a.visible(R.id.badgeAmount) && a.visible(R.id.badgeDate))
+        assertTrue(a.visible(R.id.badgeAmount))
+        assertEquals("Saisir le montant", a.add().findViewById<EditText>(R.id.inputAmount).hint.toString())
+        // 02/10/2026 : date absente → mention explicite de la date proposée (et non un badge seul)
+        assertTrue(!a.visible(R.id.badgeDate))
+        assertTrue(a.visible(R.id.tvDateNote))
+        assertEquals("Date non lue — aujourd'hui proposé", a.text(R.id.tvDateNote))
         assertEquals("Choisir une catégorie", a.text(R.id.tvCategoryValue))   // aucune catégorie affichée comme lue
         assertTrue(!a.visible(R.id.tvCategorySuggested))
         capture(a, "l9_09_champs_non_lus_light")
         assertEquals(existing, tickets())
+        // date choisie par l'utilisateur : la mention disparaît
+        val f = a.addFragment().javaClass.getDeclaredField("form").apply { isAccessible = true }
+        (f.get(a.addFragment()) as com.etix.ui.ticket.TicketFormController).restore(a.formDate() - 2 * 86_400_000L, "")
+        idle()
+        assertTrue(!a.visible(R.id.tvDateNote))
+    }
+
+    /** Montant absent : l'enregistrement est refusé avec un message clair, jamais converti en 0 ; idem pour « 0 ». */
+    @Test fun montant_vide_refuse_sans_conversion_en_zero() {
+        val a = launch()
+        openFromAdd(a)
+        scanInto(a, "MAGASIN DUPONT\nMERCI DE VOTRE VISITE")
+        val save = a.add().findViewById<View>(R.id.btnSaveTicket)
+        save.performClick(); idle()
+        assertEquals("Impossible d'enregistrer : saisis un montant supérieur à 0.",
+            org.robolectric.shadows.ShadowToast.getTextOfLatestToast())
+        a.add().findViewById<EditText>(R.id.inputAmount).setText("0"); idle()
+        save.performClick(); idle()
+        assertEquals("Impossible d'enregistrer : saisis un montant supérieur à 0.",
+            org.robolectric.shadows.ShadowToast.getTextOfLatestToast())
+        a.add().findViewById<EditText>(R.id.inputStore).setText(""); a.add().findViewById<EditText>(R.id.inputAmount).setText("")
+        save.performClick(); idle()
+        assertEquals("Impossible d'enregistrer : saisis le magasin et un montant supérieur à 0.",
+            org.robolectric.shadows.ShadowToast.getTextOfLatestToast())
+        Thread.sleep(200); idle()
+        assertEquals("aucun ticket créé, aucun montant 0 enregistré", existing, tickets())
+        assertTrue(a.visible(R.id.scanBanner))
     }
 
     /** Valeurs ambiguës : conservées mais « À vérifier » (deux totaux différents, deux dates). */

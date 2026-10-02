@@ -88,10 +88,19 @@ jobs:
           P=$("$BT/aapt2" dump permissions app/build/outputs/apk/debug/app-debug.apk | grep -oP "name='\K[^']+" | sort -u)
           echo "$P"
           echo "::notice title=Permissions de l'APK::$(echo "$P" | sed ':a;N;$!ba;s/\n/%0A/g')"
-          if echo "$P" | grep -qx "android.permission.CAMERA"; then
-            echo "::error title=Permissions de l'APK::android.permission.CAMERA déclarée : inutile pour ACTION_IMAGE_CAPTURE et bloquante tant qu'elle n'est pas accordée"
-            exit 1
+          # Origine de chaque permission (rapport de fusion du manifeste) : bibliothèque qui la demande, retrait éventuel
+          R=app/build/outputs/logs/manifest-merger-debug-report.txt
+          if [ -f "$R" ]; then
+            ORIG=$(awk '/^uses-permission#/{p=1} /^[a-z-]+#/{if($0 !~ /^uses-permission#/)p=0} p' "$R" | grep -E "^uses-permission#|ADDED from|MERGED from|REJECTED from|was tagged" | sed 's/^[[:space:]]*//' | cut -c1-200)
+            echo "$ORIG"
+            echo "::notice title=Origine des permissions (fusion du manifeste)::$(echo "$ORIG" | sed ':a;N;$!ba;s/\n/%0A/g' | cut -c1-3900)"
           fi
+          for X in CAMERA INTERNET ACCESS_NETWORK_STATE; do
+            if echo "$P" | grep -qx "android.permission.$X"; then
+              echo "::error title=Permissions de l'APK::android.permission.$X déclarée dans l'APK final : non nécessaire aux fonctionnalités actuelles (voir AndroidManifest.xml)"
+              exit 1
+            fi
+          done
 
       # Contrôles de l'APK QA : package, version, empreinte complète du certificat
       - name: Inspect QA APK

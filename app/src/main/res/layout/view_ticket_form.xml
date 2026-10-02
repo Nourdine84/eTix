@@ -47,7 +47,7 @@
             android:id="@+id/inputAmount"
             style="@style/V2.FieldInput"
             android:digits="0123456789,."
-            android:hint="0,00 €"
+            android:hint="Saisir le montant"
             android:importantForAutofill="no"
             android:inputType="numberDecimal"
             android:maxLength="12" />
@@ -69,6 +69,16 @@
             android:clickable="true"
             android:focusable="true"
             android:minHeight="48dp" />
+        <!-- Lot 9 : date absente du ticket scanné — la date affichée est proposée, pas lue -->
+        <TextView
+            android:id="@+id/tvDateNote"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:accessibilityLiveRegion="polite"
+            android:textColor="@color/v2_attention"
+            android:textSize="13sp"
+            android:visibility="gone" />
 
         <View style="@style/V2.FieldDivider" />
 

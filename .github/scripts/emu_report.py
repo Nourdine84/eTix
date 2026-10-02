@@ -80,7 +80,8 @@ if mes:
 scan_parts = []
 for fname, title in (("mesures_scan.txt", "Petit écran (mesures)"), ("scan_images.txt", "Images"),
                      ("scan_systeme.txt", "Applications du système"), ("scan_hors_ligne.txt", "Hors ligne"),
-                     ("maj_donnees.txt", "Mise à jour : données"), ("apk_permissions.txt", "Permissions de l'app installée")):
+                     ("maj_donnees.txt", "Mise à jour : données"), ("apk_permissions.txt", "Permissions de l'app installée"),
+                     ("scan_reseau.txt", "Réseau")):
     t = read(f"{out}/shots/{fname}").strip()
     if t:
         scan_parts.append(f"== {title}\n{t}")

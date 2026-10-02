@@ -150,7 +150,17 @@ class TicketFormController(
         if (_bound) {
             setBadge(b.badgeStore, storeMark?.takeIf { it.scanned == b.inputStore.text.toString() }, "Magasin", false)
             setBadge(b.badgeAmount, amountMark?.takeIf { it.scanned == b.inputAmount.text.toString() }, "Montant", false)
-            setBadge(b.badgeDate, dateMark?.takeIf { it.scanned == dateMillis.toString() }, "Date", true)
+            val date = dateMark?.takeIf { it.scanned == dateMillis.toString() }
+            // Date absente du ticket : pas de badge mais une mention explicite de la date proposée
+            setBadge(b.badgeDate, date?.takeIf { it.mark != ScanMark.NOT_READ }, "Date", true)
+            if (date?.mark == ScanMark.NOT_READ) {
+                b.tvDateNote.text = if (TicketFormRules.toPickerSelection(dateMillis) ==
+                    TicketFormRules.toPickerSelection(System.currentTimeMillis())) "Date non lue — aujourd'hui proposé"
+                else "Date non lue — date déjà saisie conservée"
+                b.tvDateNote.visibility = android.view.View.VISIBLE
+            } else {
+                b.tvDateNote.visibility = android.view.View.GONE
+            }
         }
     }
 

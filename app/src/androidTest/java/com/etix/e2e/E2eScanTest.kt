@@ -336,4 +336,36 @@ class E2eScanTest {
         assertEquals("ESSO", scan.store.value)
         assertEquals(23.45, scan.amount.value!!, 0.001)
     }
+
+    /**
+     * Ticket sans montant ni date (ML Kit réel) : « Non lu », texte indicatif « Saisir le montant », mention « Date non
+     * lue — aujourd'hui proposé » ; « Enregistrer » refusé (aucun ticket, aucun montant 0), puis accepté une fois le
+     * montant saisi.
+     */
+    @Test fun s10_champs_non_lus_et_montant_obligatoire() {
+        val before = tickets()
+        startMain()
+        openScanFromAdd()
+        stubPicker(ticketImage("sans_montant.png", lines = listOf("MAGASIN DUPONT", "MERCI")))
+        onView(withId(R.id.btnPickImage)).perform(click())
+        waitFor(allOf(withId(R.id.scanBanner), isDisplayed()), 60_000)
+        onView(withId(R.id.inputAmount)).check(matches(withText("")))
+        onView(withId(R.id.inputAmount)).check(matches(androidx.test.espresso.matcher.ViewMatchers.withHint("Saisir le montant")))
+        onView(withId(R.id.badgeAmount)).check(matches(withText("Non lu")))
+        onView(withId(R.id.tvDateNote)).check(matches(withText("Date non lue — aujourd'hui proposé")))
+        effectivelyVisible(R.id.tvDateNote)
+        gone(R.id.badgeDate)
+        shot("76_scan_champs_non_lus")
+        onView(withId(R.id.btnSaveTicket)).perform(scrollTo(), click())
+        Thread.sleep(1_500)
+        assertEquals("montant vide : aucun ticket", before, tickets())
+        onView(withId(R.id.scanBanner)).check(matches(withEffectiveVisibility(Visibility.VISIBLE)))
+        onView(withId(R.id.inputAmount)).perform(scrollTo(), replaceText("7,50"))
+        E2e.closeKeyboard()
+        onView(withId(R.id.btnSaveTicket)).perform(scrollTo(), click())
+        waitTickets(before.size + 1)
+        val after = tickets()
+        assertEquals(before.size + 1, after.size)
+        assertEquals(7.50, after.last().amount, 0.001)
+    }
 }

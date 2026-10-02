@@ -143,6 +143,23 @@ if [ "$MODE" = "systeme" ]; then
   # 2) Vrais sélecteur d'image et application appareil photo de l'émulateur (caméra arrière « emulated »)
   adb shell am force-stop com.etix
   run com.etix.e2e.E2eScanSystemeTest
+  # 3) Réseau (lot 9) : permissions accordées, groupes du processus (sans INTERNET : pas de groupe inet 3003, toute
+  #    ouverture de connexion est refusée par le noyau), tâches planifiées par les bibliothèques (statistiques ML Kit)
+  #    exécutées de force, puis recherche de plantage. Réseau de l'émulateur actif pendant cette étape.
+  R="$OUT/shots/scan_reseau.txt"
+  { echo "permissions installées de com.etix :"; adb shell dumpsys package com.etix | tr -d '\r' | sed -n '/install permissions:/,/User 0:/p' | grep -i "permission" | sed 's/^ *//'; } > "$R"
+  adb shell monkey -p com.etix -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1; sleep 6
+  PID=$(adb shell pidof com.etix | tr -d '\r')
+  echo "processus com.etix $PID : $(adb shell run-as com.etix cat /proc/$PID/status 2>/dev/null | tr -d '\r' | grep -E '^Groups')" >> "$R"
+  JOBS=$(adb shell dumpsys jobscheduler | tr -d '\r' | grep -oE "JOB #u0a[0-9]+/[0-9]+: [0-9a-f]+ com\.etix/[A-Za-z0-9_.$]+" | sort -u)
+  echo "tâches planifiées de com.etix : ${JOBS:-aucune}" >> "$R"
+  for J in $(echo "$JOBS" | sed -E 's#JOB \#u0a[0-9]+/([0-9]+):.*#\1#'); do
+    echo "exécution forcée de la tâche $J : $(timeout 30 adb shell cmd jobscheduler run -f com.etix "$J" 2>&1 | tr -d '\r')" >> "$R"
+  done
+  sleep 25
+  echo "processus com.etix après les tâches : $(adb shell pidof com.etix | tr -d '\r')" >> "$R"
+  { echo "journal datatransport / réseau (extraits) :"; timeout 30 adb logcat -d 2>/dev/null | grep -iE "TRuntime|CctTransportBackend|datatransport|EACCES|Permission denied.*socket|SecurityException" | grep -v "E2e" | tail -15; } >> "$R"
+  adb shell am force-stop com.etix
   collect
   exit 0
 fi
