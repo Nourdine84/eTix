@@ -4,7 +4,7 @@
 # MODE=standard (défaut) : parcours complet + mise à jour A→B + isolation QA + persistance + lot 4 + Catégories
 # MODE=fr : émulateur en français, tests de locale (saisie, dates, filtres inclusifs, limites de période)
 # MODE=petit : petit écran / grande police ; MODE=compat : lecteur de dates OCR seul (API 22 à 25)
-# MODE=revue : émulateur en français, captures de revue visuelle (Accueil clair / sombre, données fictives)
+# MODE=revue : émulateur en français, captures de revue visuelle (Accueil puis Historique, clair / sombre, mêmes données fictives)
 # MODE=systeme (lot 9) : ML Kit sans réseau au 1er lancement, vrais sélecteur d'image et appareil photo
 # MODE=maj (lot 9, étendu au lot 10) : mise à jour depuis une version fusionnée (BASE_LABEL : lot 8 ou lot 9, APK
 #   construits par build_maj_base.sh) vers cette version, données et thème comparés
@@ -134,6 +134,7 @@ fi
 if [ "$MODE" = "revue" ]; then
   # Revue visuelle : app neuve, données fictives injectées par le test, captures seulement
   run com.etix.e2e.E2eRevueAccueilTest
+  run com.etix.e2e.E2eRevueHistoriqueTest   # mêmes données (créées par la classe précédente)
   collect
   exit 0
 fi

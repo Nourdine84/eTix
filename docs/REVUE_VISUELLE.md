@@ -1,8 +1,21 @@
-# Parcours de revue visuelle (proposé, non approuvé)
+# Parcours de revue visuelle
 
-**Aucun écran n'est approuvé par Nourdine.** Ces captures servent de base à la revue ; elles ne valident ni les choix
+**Seul l'Accueil est validé par Nourdine** (04/10/2026, voir ci-dessous). Aucun autre écran n'est approuvé. Ces captures servent de base à la revue ; elles ne valident ni les choix
 visuels ni la parité avec iOS (référence provisoire : code iOS `feature/home-hero-v2`, maquettes introuvables dans les sources
 accessibles, ce qui ne signifie pas qu'elles n'ont jamais existé ni été validées).
+
+## Validations de Nourdine
+
+| Date | Écran | Rendu validé | Portée |
+|---|---|---|---|
+| 04/10/2026 | 1. Accueil, clair et sombre | 6 captures émulateur API 34 en français, commit `6dc0707` (branche `chore/revue-accueil-captures`, PR #81 non fusionnée), run https://github.com/Nourdine84/eTix/actions/runs/37222538785 : [haut clair](preview/revue-accueil-6dc0707/api34_revue_accueil_1_haut_clair.jpg), [haut sombre](preview/revue-accueil-6dc0707/api34_revue_accueil_1_haut_sombre.jpg), [carte Budget clair](preview/revue-accueil-6dc0707/api34_revue_accueil_2_budget_clair.jpg), [carte Budget sombre](preview/revue-accueil-6dc0707/api34_revue_accueil_2_budget_sombre.jpg), [bas clair](preview/revue-accueil-6dc0707/api34_revue_accueil_3_bas_clair.jpg), [bas sombre](preview/revue-accueil-6dc0707/api34_revue_accueil_3_bas_sombre.jpg) | Ce rendu seulement (code de l'Accueil identique à `feature/android-v2` @ `aa4011c`). Ne vaut ni pour les écrans non examinés ni pour des essais sur téléphone physique. |
+
+Accueil (04/10/2026) : rendu jugé suffisamment proche d'iOS, écarts actuels acceptables. Présentation conservée :
+pas de refonte de l'en-tête, de la carte Budget, du sélecteur de période ni de la navigation. Panier moyen, « Voir
+l'historique » et l'engrenage des Réglages conservés. Animations, étoiles de l'en-tête et cartes d'analyse : lot
+distinct. Restent à vérifier séparément (constats avant toute modification de règle) : cohérence des seuils et
+couleurs de budget entre Accueil et Catégories ; explication de l'écart entre dépenses totales et dépenses des
+catégories budgétées.
 
 ## Captures de référence actuelles
 
@@ -27,7 +40,7 @@ Pour chaque écran : comparer à iOS, puis noter **conforme / à corriger / déc
 
 | Étape | Clair (Robolectric) | Sombre (Robolectric) | Clair (émulateur) | Sombre (émulateur) |
 |---|---|---|---|---|
-| 1. Accueil | [l3_01 clair](preview/revue-f102cfe/l3_01_accueil_light.jpg) | [l3_01 sombre](preview/revue-f102cfe/l3_01_accueil_dark.jpg) | [accueil, 1 ticket](preview/revue-f102cfe/api34_10_accueil_un_ticket.jpg) | [accueil sombre](preview/revue-f102cfe/api34_22_accueil_sombre.jpg) |
+| 1. Accueil (validé, voir plus haut) | [l3_01 clair](preview/revue-f102cfe/l3_01_accueil_light.jpg) | [l3_01 sombre](preview/revue-f102cfe/l3_01_accueil_dark.jpg) | [accueil, 1 ticket](preview/revue-f102cfe/api34_10_accueil_un_ticket.jpg) | [accueil sombre](preview/revue-f102cfe/api34_22_accueil_sombre.jpg) |
 | 2. Historique | [l3_04 clair](preview/revue-f102cfe/l3_04_historique_light.jpg), [filtre + export](preview/revue-f102cfe/l10_08_historique_export_filtre_light.jpg) | [l3_04 sombre](preview/revue-f102cfe/l3_04_historique_dark.jpg) | [sections](preview/revue-f102cfe/api34_33_historique_sections.jpg), [recherche + export](preview/revue-f102cfe/api34_r04_historique_export_filtre.jpg) | [historique sombre](preview/revue-f102cfe/api34_23_historique_sombre.jpg) |
 | 3. Ajouter | [l3_03 clair](preview/revue-f102cfe/l3_03_ajouter_light.jpg) | [l3_03 sombre](preview/revue-f102cfe/l3_03_ajouter_dark.jpg) | [formulaire complet](preview/revue-f102cfe/api34_32_ajout_formulaire_complet.jpg) | [ajouter sombre](preview/revue-f102cfe/api34_25_ajouter_sombre.jpg) |
 | 4a. Scanner | [intro clair](preview/revue-f102cfe/l9_01_scan_intro_light.jpg) | [intro sombre](preview/revue-f102cfe/l9_01_scan_intro_dark.jpg) | [intro](preview/revue-f102cfe/api34_70_scan_intro.jpg) | — (non capturé sur émulateur) |

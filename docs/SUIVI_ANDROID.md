@@ -334,6 +334,18 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
   réelle n'a ouvert le fichier (sur l'émulateur API 21 de la CI, aucune application ne reçoit `text/csv`). La fusion
   ne valide ni les choix visuels ni les décisions produit ouvertes.
 
+### Revue visuelle — Accueil validé (04/10/2026)
+
+- Captures dédiées (aucun changement de l'app) : test `E2eRevueAccueilTest`, job `emulator-api34-revue` (émulateur
+  API 34 en français, app neuve, 11 tickets et 3 budgets fictifs injectés en base, période « Ce mois », Clair puis
+  Sombre, haut / carte Budget / bas). Commit `6dc0707`, PR #81 (brouillon, non fusionnée), run 37222538785 :
+  141 jobs verts, verdict revue 2 / 2.
+- **Validation de Nourdine** : Accueil clair et sombre tel que montré par les 6 captures
+  (`docs/preview/revue-accueil-6dc0707/`, détail dans `docs/REVUE_VISUELLE.md`). Portée : ce rendu seulement, ni les
+  écrans non examinés, ni les essais sur téléphone physique.
+- À vérifier séparément : seuils et couleurs de budget Accueil / Catégories ; écart dépenses totales / dépenses des
+  catégories budgétées.
+
 ## Écarts restants avec iOS (référence `feature/home-hero-v2`)
 
 Bilan détaillé à jour (présent / partiel / absent, émulateur, validations manquantes) : `docs/PARITE_IOS.md`.
