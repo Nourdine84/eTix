@@ -19,7 +19,7 @@ donnée n'ont été modifiés.
 | Période | Commit | Version Room | Entité `Ticket` |
 |---|---|---|---|
 | 08/2025 | `410e8d7` (premier commit) | 1 | `id` Int, `date` String, `description` non nullable, pas de `dateMillis` |
-| depuis le 25/10/2025 | `ab09894` → `86d9a19` (`main`, `dev`, lots 1 à 9) | 1 | schéma actuel (identique jusqu'à `86d9a19`) |
+| depuis le 25/10/2025 | `ab09894` → `f102cfe` (`main`, `dev`, lots 1 à 10) | 1 | schéma actuel (identique jusqu'à `f102cfe` ; le lot 10 ne modifie ni l'entité ni la base) |
 
 Le schéma a changé une fois **sans changer de version** (août → octobre 2025). Depuis le 25/10/2025, il est stable.
 
@@ -29,11 +29,13 @@ Le schéma a changé une fois **sans changer de version** (août → octobre 202
 |---|---|---|---|
 | lot 8 fusionné (`457f49e`, versionCode 10), base créée par les tests du lot 8 | lot 9 (11) | Émulateur API 34 : base ouverte sans migration, 1 ticket et 1 budget identiques avant / après (job `emulator-api34-maj-lot8`) | Bases contenant d'autres données (volumes, caractères, anciennes versions de l'app) |
 | lot 9 (11) | build de test (12) | Émulateur API 21 / 34 / 36, mise à jour A → B : tickets et budgets créés par les tests conservés | Idem |
+| lot 8 fusionné (`457f49e`, 10) et lot 9 fusionné (`86d9a19`, 11), bases créées par leurs propres tests | lot 10 (`f102cfe`, 12) | Émulateur API 34 (jobs `emulator-api34-maj-lot8` et `emulator-api34-maj-lot9`, run 37027739385) : base ouverte sans migration, 1 ticket, 1 budget et préférence de thème identiques avant / après ; Réglages affichant le thème conservé | Idem |
+| lot 10 (12) | build de test (13) | Émulateur API 21 / 34 / 36, mise à jour A → B sans désinstallation | Idem |
 | versions construites depuis le 25/10/2025 (`main`, `dev`, lots 1 à 8) | lot 9 | Le code source de l'entité `Ticket` et `version = 1` sont identiques (lecture du code). L'empreinte de schéma calculée par Room n'a pas été comparée version par version, et aucune mise à jour n'a été exécutée depuis ces versions | Tout le reste : **non testé** |
 | version d'août 2025 (`410e8d7`) | toute version récente | Rien | Voir risque 1 |
 
-Le test lot 8 → version actuelle **ne couvre pas toutes les bases historiques** : il part d'une base neuve créée par le
-lot 8 sur émulateur, pas d'une base produite par une version plus ancienne ni d'une base réelle d'utilisateur.
+Les tests lot 8 → version actuelle et lot 9 → version actuelle **ne couvrent pas toutes les bases historiques** : ils
+partent d'une base neuve créée par la version de base sur émulateur, pas d'une base produite par une version plus ancienne ni d'une base réelle d'utilisateur.
 
 ## Risque 1 — ancienne base à version identique (actuel, non confirmé)
 

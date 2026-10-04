@@ -1,5 +1,10 @@
 # Lot 10 — Réglages : périmètre (validé par Nourdine le 02/10/2026)
 
+> **Réalisé et fusionné** dans `feature/android-v2` (PR #80, commit de fusion `f102cfe`, 02/10/2026). Ce document
+> garde le périmètre tel que validé. Implémentation, écarts par rapport à ce périmètre (liste à choix au lieu de
+> boutons, période sans effet sur les écrans déjà ouverts, protection du CSV contre les formules, journaux signalés
+> indisponibles), tests et procédure d'import du CSV : `docs/REGLAGES.md`. Aucun écran n'est validé visuellement.
+
 Prochain lot retenu par Nourdine : Réglages. Périmètre validé le 02/10/2026 avec les décisions ci-dessous
 (« Décisions de Nourdine »), qui priment sur la proposition. Références : iOS `feature/home-hero-v2` (`Views/Main/SettingsView.swift`,
 `Settings/AppSettings.swift`, `Settings/SettingsViewModel.swift`, `AppAppearance.swift`, `eTixApp.swift`) ;

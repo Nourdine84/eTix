@@ -180,3 +180,11 @@ Rien n'a été désactivé ni supprimé.
   1ʳᵉ tentative : « Performing Streamed Install » sans réponse pendant 300 s, émulateur déclaré démarré 9 s après
   son lancement ; relance ciblée verte). Cause toujours inconnue : un lien avec l'APK n'est pas exclu ; un émulateur
   pas encore réellement prêt reste une hypothèse.
+- Après la fusion du lot 10 (02/10/2026, `feature/android-v2` `f102cfe`, run 37027739385, 1ʳᵉ tentative) : API 24,
+  `app-A.apk` installé (« Success »), puis installation de l'APK de tests `app-debug-androidTest.apk` sans réponse
+  pendant 300 s ; émulateur déclaré démarré environ 12 s après son lancement, juste après un « device offline » ;
+  journal système relevé s'arrêtant sur des événements Wi-Fi du démarrage ; aucun test exécuté. Relance ciblée
+  unique : verte (2 / 2). **Cause inconnue**, mêmes réserves : lien avec l'APK non exclu, émulateur pas encore prêt =
+  hypothèse non démontrée. Total au 02/10/2026 : API 24 trois fois, API 25 trois fois. Proposition si cela se
+  reproduit, avant tout correctif : consigner l'état du gestionnaire de paquets (`dumpsys package`, `pm list
+  packages`) et l'horodatage de `sys.boot_completed` au moment du blocage, pour départager les deux pistes.
