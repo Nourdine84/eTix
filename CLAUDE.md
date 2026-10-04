@@ -55,7 +55,7 @@ Document de reprise. À lire en entier avant toute action. Détail : `docs/SUIVI
 - Kotlin 1.9.22, AGP 8.2.2, Gradle 8.5, JDK 17, minSdk 21 / targetSdk 34, vues XML + ViewBinding,
   ViewPager2 + BottomNavigationView (5 onglets), écrans poussés dans `overlayContainer` de `MainActivityV2`,
   Room 2.6.1 (**aucun changement de schéma sans accord**), budgets en SharedPreferences `etix_budgets`,
-  ML Kit Text Recognition (modèle embarqué), CameraX présent mais non utilisé par le scanner.
+  thème dans `etix_session` (`theme_mode`), période par défaut dans `etix_settings` (`default_range`, lot 10), ML Kit Text Recognition (modèle embarqué), CameraX présent mais non utilisé par le scanner.
 - `gradle.properties` pointe `org.gradle.java.home` vers le JDK d'Android Studio (macOS).
 - Build : `./gradlew assembleDebug` (`com.etix`) ; `./gradlew assembleQa` (`com.etix.qa`, clé QA durable
   seulement via variables d'environnement, sinon clé debug locale — voir `docs/SIGNATURE_QA.md`).
@@ -63,31 +63,48 @@ Document de reprise. À lire en entier avant toute action. Détail : `docs/SUIVI
 - Lint : `./gradlew lintDebug` (NewApi bloquant en CI ; 2 exceptions documentées dans
   `docs/COMPATIBILITE_ANDROID.md`).
 - Tests instrumentés : `app/src/androidTest/java/com/etix/e2e/` (Espresso, données fictives). Ordre et modes
-  (standard, fr, petit, compat) : `.github/scripts/emulator_e2e.sh`.
+  (standard, fr, petit, compat, systeme, maj) : `.github/scripts/emulator_e2e.sh`.
 
 ## CI (`.github/workflows/android-ci.yml`)
 
 - Déclencheurs : push sur `dev`, `feature/**`, `chore/**`, `fix/**` ; PR vers `dev`, `main`, `feature/android-v2`
   (ouverture, push, label `apercus`).
 - Jobs de test : `build` (JVM + Robolectric, lint NewApi bloquant, contrôle de la version livrable),
-  `emulator-api21/34/36` (parcours complet + mise à jour A→B sans désinstallation), `emulator-api34-fr`,
-  `emulator-api36-petit` (3 passes taille / police), `emulator-compat-dates` (API 22 à 25), `verdict-autotest`.
+  `emulator-api21/34/36` (parcours complet + mise à jour A→B sans désinstallation + Réglages et redémarrage),
+  `emulator-api34-fr`, `emulator-api34-systeme` (ML Kit hors ligne, vrais sélecteur et appareil photo),
+  `emulator-api36-petit` (4 passes taille / police, a à d), `emulator-api34-maj-lot8` et `emulator-api34-maj-lot9`
+  (mise à jour depuis les lots 8 et 9 fusionnés : tickets, budgets et thème comparés ; `build_maj_base.sh`),
+  `emulator-compat-dates` (API 22 à 25), `verdict-autotest`.
 - **Verdict émulateur** : le job échoue si les tests réussis ≠ `@Test` déclarés, résultat absent, plantage,
   délai dépassé ou mise à jour non conforme. Avant le 30/09 les jobs émulateur restaient verts malgré des
   échecs : ne jamais se fier au seul statut vert d'un ancien run.
 - Captures : artefacts `screenshots` et `emulator-*` (30 jours) ; aperçus en annotations seulement avec le label
   `apercus`. Annotations lisibles via l'API checks (`gh api`).
-- Incidents connus, cause inconnue : installation de l'APK bloquée > 300 s sur émulateur API 24 / 25 (1 + 2 fois).
-  Pas de relance automatique ; s'ils se reproduisent, recueillir les diagnostics avant de proposer un correctif.
+- Incidents connus, cause inconnue : installation d'un APK (app ou tests) bloquée > 300 s sur émulateur API 24 / 25,
+  aucun test exécuté (API 24 : 3 fois, API 25 : 3 fois au 02/10/2026, détail dans `docs/FIABILITE_CI.md`). Un lien
+  avec l'APK n'est pas exclu ; un émulateur pas encore prêt reste une hypothèse. Pas de relance automatique : une
+  seule relance ciblée, faits consignés ; si elle échoue, diagnostics et proposition ciblée avant toute autre action.
 
-## État au 02/10/2026
+## État au 02/10/2026 (lot 10 fusionné)
 
-- `feature/android-v2` = intégration, tête `457f49e` : lots 1 à 8 + CI (PR #75, #76, #77 fusionnées).
-- **PR #78 en brouillon** : `feature/android-lot9-scanner` (scanner + Q1–Q4), version `1.9.0-lot9`
-  (versionCode 11). Revue avant fusion du 02/10 faite sur émulateur (marques « Détecté / À vérifier / Non lu »,
-  double appui, rotation, permission CAMERA retirée, barre basse compacte, vrais sélecteur et appareil photo,
-  hors ligne, mise à jour depuis le lot 8) : `docs/VALIDATION_EMULATEUR.md`. Dernier résultat de fusion vérifié
-  dans ce document ; toujours vérifier le run du dernier commit avant toute décision. **Non fusionnée.**
+- `feature/android-v2` = intégration : **lots 1 à 10** + CI (PR #75, #76, #77, #78, #80 fusionnées), tête
+  **`f102cfe`** (commit de fusion de la PR #80, parents `86d9a19` et `f09a7e6`, sans squash).
+- **Lot 10 fusionné** (PR #80, 02/10/2026) : Réglages (thème Système / Clair / Sombre, période par défaut, export
+  CSV des Réglages et de l'Historique, compteur, version, build ; journaux de plantage signalés indisponibles),
+  version `1.10.0-lot10`, versionCode 12. Contenu identique au résultat de fusion testé `3cff285`
+  (run 37025069026). CI après fusion : run 37027739385, verte après une relance ciblée de
+  `emulator-compat-dates (24)` (incident d'installation ci-dessus) : JVM + Robolectric 239 réussis / 1 ignoré /
+  0 échec ; émulateurs API 21, 34, 36 : 47 / 47 chacun ; petit écran 32 / 32 ; fr 7 / 7 ; système 3 / 3 ;
+  mises à jour lot 8 → lot 10 et lot 9 → lot 10 : 13 / 13 chacune (tickets, budgets et thème identiques) ; dates
+  API 22 à 25 : 2 / 2. Branche `feature/android-lot10-reglages` conservée. Détail : `docs/REGLAGES.md`,
+  `docs/SUIVI_ANDROID.md`.
+- Lot 9 fusionné le 02/10/2026 (PR #78, `86d9a19`) : scanner + décisions OCR Q1–Q4.
+- **Fusion ≠ validation** : aucune revue visuelle par Nourdine (`docs/REVUE_VISUELLE.md`), aucun essai sur
+  téléphone physique, aucune application destinataire réelle n'a ouvert le CSV exporté.
+- Décisions du 02/10/2026 sur les Réglages : format CSV actuel (iOS : virgule, point décimal, UTF-8) accepté pour le
+  lot 10, avec procédure d'import documentée dans `docs/REGLAGES.md` ; journaux de plantage **non activés**
+  (`ETixApp` toujours non déclarée) ; « Supprimer tous les tickets » reste désactivé.
+- Bilan de parité iOS et pistes : `docs/PARITE_IOS.md` (choix du lot par Nourdine).
 - Permissions de l'APK : aucune permission système (CAMERA, INTERNET, ACCESS_NETWORK_STATE retirées, contrôle CI
   bloquant). Une future fonctionnalité réseau devra les redéclarer explicitement (et ajuster ce contrôle).
 - Branche `demo/ci-verdict` : démonstration du verdict, jamais proposée à la fusion, à conserver.
@@ -96,12 +113,18 @@ Document de reprise. À lire en entier avant toute action. Détail : `docs/SUIVI
 
 ## Prochaine étape
 
-Tests du scanner sur **téléphone physique** avec l'APK QA (jamais l'app `com.etix`) quand un téléphone sera
-disponible : application appareil photo du constructeur, vraies photos (flou, pli, lumière, ticket long), refus
-puis rétablissement de l'accès caméra dans l'application appareil photo (eTix ne demande plus rien), sélecteur du
-téléphone, retour arrière à chaque étape, aucun ticket créé sans « Enregistrer ». Leur absence est une limite
-documentée ; Nourdine décide de la fusion après le bilan. Puis revue visuelle par
-Nourdine, puis décision de fusion de la PR #78 (par Nourdine).
+Aucun nouveau lot fonctionnel sans décision de Nourdine. En attente : revue visuelle par Nourdine
+(`docs/REVUE_VISUELLE.md`), choix du prochain lot (`docs/PARITE_IOS.md`), signature QA durable
+(`docs/SIGNATURE_QA.md`). Essais sur **téléphone physique** avec l'APK QA uniquement (jamais l'app `com.etix`) quand
+un téléphone sera disponible :
+- scanner : application appareil photo du constructeur, vraies photos (flou, pli, lumière, ticket long), refus
+  puis rétablissement de l'accès caméra dans l'application appareil photo (eTix ne demande plus rien), sélecteur du
+  téléphone, retour arrière à chaque étape, aucun ticket créé sans « Enregistrer » ;
+- Réglages : thème (y compris « Système » quand le téléphone change de mode), période par défaut, export CSV
+  ouvert dans une vraie application (messagerie, Drive, Excel / LibreOffice selon `docs/REGLAGES.md`), annulation
+  du partage.
+Leur absence est une limite documentée ; les lots 9 et 10 ont été fusionnés sans eux (décisions de Nourdine du
+02/10/2026).
 
 ## Pièges déjà rencontrés
 
@@ -113,6 +136,10 @@ Nourdine, puis décision de fusion de la PR #78 (par Nourdine).
   attendre la fin des coroutines d'écran avant de vérifier l'interface.
 - Espresso : deux pages du ViewPager portent les mêmes identifiants (`btnScanTicket`…) → préciser le parent ;
   les vues hors écran ne passent pas `isDisplayed`.
-- Petits écrans / police 2,0 : vérifier que les actions principales restent visibles (barres basses).
+- Petits écrans / police 2,0 : vérifier que les actions principales restent visibles (barres basses) et qu'aucun
+  libellé n'est coupé en milieu de mot (boutons segmentés trop étroits à 320 dp, lot 10).
+- Robolectric (lot 10) : `FileProvider` garde en mémoire les dossiers du premier test alors que Robolectric change de
+  dossier à chaque test → vider son cache ; rétablir le thème par défaut dans `@After` recrée les activités encore
+  ouvertes et échoue → les fermer d'abord. Sur appareil, le comportement de l'app n'est pas concerné.
 - Chaque compte rendu de lot : commit testé, liens CI, résultats (réussis / échecs / ignorés séparés), limites,
   et mise à jour de `docs/SUIVI_ANDROID.md`.

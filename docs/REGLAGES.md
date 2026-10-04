@@ -49,15 +49,70 @@ en sombre. Les fonds sombres des autres écrans ne sont pas modifiés (choix vis
 
 ## Points ouverts (décisions de Nourdine)
 
-1. **Format CSV** : virgule + point décimal (iOS). Excel en français ouvre ce fichier sur une seule colonne et lit
-   `1234.56` comme du texte ; l'alternative « Excel FR » (point-virgule, virgule décimale, BOM UTF-8) s'écarterait
-   d'iOS. Non tranché : format iOS conservé.
+1. **Format CSV** : virgule + point décimal (iOS). **Accepté pour le lot 10 par Nourdine (02/10/2026)**, avec la
+   procédure d'import ci-dessous. L'ouverture dans une vraie application destinataire reste une validation à faire.
 2. Thème et période : ligne « titre / valeur choisie » ouvrant une liste à choix unique (Android) au lieu du menu
    déroulant iOS avec la valeur à droite — choix dicté par la lisibilité à 320 dp police 2,0, à valider visuellement.
 3. Journaux de plantage : collecte inactive (`ETixApp` non déclarée dans le manifeste, point ouvert n° 6 du suivi).
-   L'activer est une décision distincte, non prise dans ce lot ; l'écran l'indique.
+   L'activer est une décision distincte : **non activée** (décision de Nourdine du 02/10/2026) ; l'écran l'indique.
 4. iOS : `SettingsView` enregistre le thème sous la clé `appearance` alors que l'app lit `app.appearance` (choix du
    thème probablement sans effet sur iOS) — écart signalé, non reproduit.
+
+## Import du fichier CSV dans Excel (français)
+
+### Format réel du fichier (vérifié par les tests)
+
+Vérifié par `CsvExporterTest` (JVM), `Lot10ScreenshotTest` (fichier écrit, Robolectric) et `E2eReglagesTest` r03 / r04
+(contenu lu par l'URI réellement partagée, émulateur) :
+
+- encodage UTF-8 **sans BOM**, fins de ligne `\n` (LF) ;
+- séparateur de colonnes : **virgule** ; première ligne : `Date,Magasin,Montant (€),Catégorie,Description` ;
+- date `jj/mm/aaaa` (fuseau du téléphone), montant avec **point décimal** et 2 décimales (`1234.56`, `0.05`), sans
+  symbole € ni séparateur de milliers ;
+- champ contenant une virgule, un guillemet ou un retour à la ligne : entre guillemets, guillemets internes doublés
+  (exemples des tests : `"Durand, fils"`, `"Vis ""inox"""`, description sur deux lignes entre guillemets) ;
+- **protection contre les formules** : magasin, catégorie ou description commençant par `=`, `+`, `-`, `@`, une
+  tabulation ou un retour chariot reçoit une apostrophe en tête **dans le fichier seulement** : `=SOMME(A1:A2)` y
+  devient `'=SOMME(A1:A2)` ; le ticket enregistré dans l'app n'est pas modifié. Date et montant ne sont pas concernés.
+
+### Procédure documentée (non essayée)
+
+**Aucun de ces pas n'a été essayé** : pas d'Excel ni de LibreOffice dans l'environnement de travail, et aucune
+application destinataire réelle n'a ouvert le fichier. Étapes tirées du fonctionnement documenté d'Excel 365
+(Windows, interface française) ; les libellés peuvent varier selon la version (Mac, 2016-2019).
+
+1. Récupérer le fichier : depuis le partage Android, l'envoyer par courriel ou l'enregistrer dans Drive, puis le
+   télécharger sur l'ordinateur.
+2. **Ne pas l'ouvrir par double-clic** : avec les paramètres régionaux français, Excel attend le point-virgule ; le
+   fichier s'afficherait vraisemblablement sur une seule colonne et les montants ne seraient pas lus comme des nombres.
+3. Dans un classeur vide : **Données → À partir d'un fichier texte/CSV**, choisir le fichier.
+4. Dans l'aperçu : **Origine du fichier** = « 65001 : Unicode (UTF-8) » (sinon les accents sont altérés) ;
+   **Délimiteur** = « Virgule ».
+5. **Transformer les données** (Power Query) :
+   - colonne « Montant (€) » : Modifier le type → **Utilisation des paramètres régionaux** → Type « Nombre décimal »,
+     Paramètres régionaux « Anglais (États-Unis) » (point décimal) ;
+   - colonne « Date » : Modifier le type → **Utilisation des paramètres régionaux** → Type « Date », Paramètres
+     régionaux « Français (France) » ;
+   - laisser Magasin, Catégorie et Description en « Texte ».
+6. **Fermer et charger**.
+
+Effet attendu de la protection contre les formules (non vérifié dans Excel) : à l'import par Power Query, le champ
+reste du texte ; l'apostrophe ajoutée par eTix devrait rester visible dans la cellule (`'=SOMME(A1:A2)`) et aucune
+formule n'est exécutée. Conséquence : une description commençant volontairement par « - » ou « + » (ex. « -5 % »)
+apparaîtra précédée d'une apostrophe dans le tableur.
+
+Équivalent LibreOffice Calc (non essayé) : ouvrir le fichier ; dans la boîte d'import, Jeu de caractères
+« Unicode (UTF-8) », Séparé par « Virgule », Langue « Anglais (USA) » pour le point décimal, type de la première
+colonne « Date (JMA) ».
+
+### Essais réellement effectués
+
+| Élément | Fait | Où |
+|---|---|---|
+| Contenu exact du fichier (en-tête, séparateurs, guillemets, retours à la ligne, centimes, dates, formules) | oui | JVM, Robolectric, émulateur (lecture par l'URI partagée) |
+| Fichier transmis par la feuille de partage ; annulation sans effet sur les données | oui | émulateur API 21 / 34 / 36 (`r05`) |
+| Ouverture dans une application destinataire réelle (messagerie, Drive) | **non** | à faire sur téléphone |
+| Import dans Excel ou LibreOffice | **non** | à faire (procédure ci-dessus) |
 
 ## Répartition de la couverture (tests)
 

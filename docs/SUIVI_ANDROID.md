@@ -7,7 +7,7 @@ Document de reprise entre sessions. Concis : état, décisions, prochain lot.
 | Élément | Emplacement |
 |---|---|
 | Code Android (référence) | `Nourdine84/eTix`, branche `feature/android-v2` (dernier commit 16/01/2026) |
-| Branches de travail | Lot 1 `fix/android-v2-navigation` ; Lot 2 `feature/android-lot2-magasins` (contient lot 1) ; Lot 3 `feature/android-lot3-accueil-theme` (contient lots 1-2) ; Lot 4 `feature/android-lot4-formulaire-historique` ; Lot 5 `feature/android-lot5-categories` (depuis le lot 4 @ `c77f0ba`) ; Lot 6 `feature/android-lot6-fiabilisation` (depuis le lot 5 @ `959f41e`) ; Lot 7 `feature/android-lot7-budgets` (depuis le lot 6 @ `8172881`). **Lots 1 à 7 fusionnés dans `feature/android-v2`** (PR #75, commit de fusion `8c1af76`, 30/09/2026). **Lot 8 `feature/android-lot8-accueil-budget`** (depuis `8c1af76`) **fusionné dans `feature/android-v2`** (PR #76, commit de fusion `ef40e1f`, 01/10/2026). CI : `chore/ci-apercus-a-la-demande` (depuis `ef40e1f`). Branche de démonstration `demo/ci-verdict` (non destinée à la fusion). Anciennes branches conservées. `main` et `dev` jamais modifiés. |
+| Branches de travail | Lot 1 `fix/android-v2-navigation` ; Lot 2 `feature/android-lot2-magasins` (contient lot 1) ; Lot 3 `feature/android-lot3-accueil-theme` (contient lots 1-2) ; Lot 4 `feature/android-lot4-formulaire-historique` ; Lot 5 `feature/android-lot5-categories` (depuis le lot 4 @ `c77f0ba`) ; Lot 6 `feature/android-lot6-fiabilisation` (depuis le lot 5 @ `959f41e`) ; Lot 7 `feature/android-lot7-budgets` (depuis le lot 6 @ `8172881`). **Lots 1 à 7 fusionnés dans `feature/android-v2`** (PR #75, commit de fusion `8c1af76`, 30/09/2026). **Lot 8 `feature/android-lot8-accueil-budget`** (depuis `8c1af76`) **fusionné dans `feature/android-v2`** (PR #76, commit de fusion `ef40e1f`, 01/10/2026). **Lot 9 `feature/android-lot9-scanner`** fusionné (PR #78, `86d9a19`, 02/10/2026). **Lot 10 `feature/android-lot10-reglages`** fusionné (PR #80, `f102cfe`, 02/10/2026) : `feature/android-v2` contient les lots 1 à 10. CI : `chore/ci-apercus-a-la-demande` (depuis `ef40e1f`). Branche de démonstration `demo/ci-verdict` (non destinée à la fusion). Anciennes branches conservées. `main` et `dev` jamais modifiés. |
 | Historique Git | `feature/android-v2` et `dev` : ancêtre commun `ab7d6f8`, `dev` a 3 commits propres. `main` : racine distincte, sans ancêtre commun. Détail : `docs/REVUE_LOTS_1_2.md`. Intégration `dev`/`main` = décision séparée. |
 | `Nourdine84/etix-android` | Squelette Gradle sans module `app` — **pas** le dépôt de dev |
 | Copie locale Mac `~/AndroidStudioProjects/eTix` | Sur `dev` (19/12/2025), n'a pas `feature/android-v2` |
@@ -265,13 +265,84 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
     appui, annulation pendant la lecture, scan en français, passe 320 dp police 2,0, mise à jour depuis le lot 8
     fusionné (versionCode 10 → 11) avec tickets et budgets comparés. Résultats : `docs/VALIDATION_EMULATEUR.md`.
 
+### Fusion du lot 9 dans `feature/android-v2` (PR #78, 02/10/2026)
+- Fusion autorisée par Nourdine, commit de fusion **`86d9a19`** (parents `457f49e` et `8e6fa6f`, sans squash),
+  arbre identique au résultat de fusion testé `bbb38df` (run https://github.com/Nourdine84/eTix/actions/runs/36994446604,
+  une relance du job `emulator-compat-dates (24)` : installation de l'APK bloquée > 300 s, aucun test démarré,
+  cause inconnue, diagnostics dans le run).
+- Refus des montants nuls ou négatifs : déjà présent avant le lot 9 (`TicketFormRules.parseAmount`, champ sans
+  signe moins) ; le lot 9 n'a changé que le message et le texte indicatif.
+- **CI après fusion** : https://github.com/Nourdine84/eTix/actions/runs/36999579628 — 21 jobs verts, sans relance.
+  JVM 218 déclarés, 217 réussis, 1 ignoré (`OCRValidationTest`), 0 échec ; émulateurs API 21 / 34 / 36 : 40 / 40
+  chacun ; système 3 / 3 ; mise à jour lot 8 → lot 9 12 / 12 (tickets et budgets identiques) ; fr 7 / 7 ; petit
+  écran 28 / 28 ; dates API 22-25. APK : seule `com.etix.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION` (CAMERA, INTERNET,
+  ACCESS_NETWORK_STATE absentes).
+- Limites restantes : aucune revue visuelle par Nourdine (parcours : `docs/REVUE_VISUELLE.md`), aucun essai sur
+  téléphone physique (vraies photos, appareil photo et sélecteur du constructeur), signature QA durable à
+  préparer. La fusion ne valide ni les choix visuels ni les décisions produit ouvertes.
+- Bilan de parité et pistes pour le prochain lot : `docs/PARITE_IOS.md`.
+
+### Lot 10 — Réglages (`feature/android-lot10-reglages`, depuis `86d9a19`)
+- Périmètre validé par Nourdine le 02/10/2026 ; détail, écarts iOS, points ouverts, répartition de la couverture et
+  procédure d'import du CSV : `docs/REGLAGES.md`. Version `1.10.0-lot10`, versionCode 12. Aucun changement de schéma
+  Room, aucune migration, aucune permission (contrôle CI : seule `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`).
+- Demandes du 02/10 après la première revue : période sans effet sur les écrans déjà ouverts ; champs texte du CSV
+  neutralisés contre les formules (fichier seulement) ; collecte des journaux de plantage signalée inactive ;
+  assertions Robolectric de thème restaurées.
+- **Code testé avant fusion : `88175bb`**, tête de la PR à ce moment. Le commit suivant, `f09a7e6`, n'a modifié que
+  deux documents (`docs/SUIVI_ANDROID.md` et `docs/FIABILITE_CI.md`) et a lui-même été testé. Résultat de fusion de
+  `88175bb` avec `feature/android-v2` `86d9a19` : run https://github.com/Nourdine84/eTix/actions/runs/37020784489 —
+  vert après une relance ciblée de `emulator-compat-dates (25)`. Run du commit seul :
+  https://github.com/Nourdine84/eTix/actions/runs/37020777107 (vert).
+  - JVM + Robolectric : 240 `@Test` déclarés, 239 réussis, 0 échec, 1 ignoré (`OCRValidationTest`) ; lint NewApi sans
+    nouvelle incompatibilité.
+  - Émulateurs (réussis / attendus, 0 échec) : API 21, 34, 36 : 47 / 47 chacun (dont `E2eReglagesTest` 5 / 5 et
+    persistance après redémarrage 2 / 2) ; petit écran API 36 : 32 / 32 (4 passes, `k09_reglages` inclus) ;
+    français 7 / 7 ; système 3 / 3 ; mise à jour lot 8 → lot 10 et lot 9 → lot 10 : 13 / 13 chacune (tickets, budgets
+    et thème « Clair » identiques, Réglages affichant « Clair » et build 12) ; dates API 22, 23, 24 : 2 / 2 ; API 25 :
+    2 / 2 à la relance.
+- Incident API 25 (1ʳᵉ tentative, résultat de fusion de `88175bb`) : installation de `app-A.apk` bloquée 300 s sur
+  « Performing Streamed Install », émulateur déclaré démarré 9 s après son lancement, aucun test exécuté. **Cause
+  inconnue** : le blocage avant les tests n'exclut pas un lien avec l'APK ; un émulateur pas encore réellement prêt
+  reste une hypothèse. Autres incidents d'infrastructure du 02/10, sur des commits remplacés : téléchargement de
+  l'émulateur (« Error on ZipFile »), dépendances Maven introuvables, certificat lors du checkout.
+- Aperçus examinés (run de fusion) : Réglages clair / sombre, haut et bas, 360 dp et 320 dp police 2,0 (Robolectric et
+  émulateur API 36, passes a à d, sombre en d), listes de choix, Historique filtré, Accueil avant / après réouverture,
+  feuille de partage API 34 et API 21, Réglages après redémarrage et après mise à jour. Captures reprises dans
+  `docs/preview/revue-f102cfe/` ; revue visuelle par Nourdine à faire (`docs/REVUE_VISUELLE.md`).
+
+### Fusion du lot 10 dans `feature/android-v2` (PR #80, 02/10/2026)
+- Fusion autorisée par Nourdine, commit de fusion **`f102cfe`** (parents `86d9a19` et `f09a7e6`, sans squash). Avant
+  l'opération : source et cible inchangées, résultat de fusion testé `3cff285` (run
+  https://github.com/Nourdine84/eTix/actions/runs/37025069026, vert sans relance) ; arbre de `f102cfe` identique à
+  celui de `3cff285`.
+- **CI après fusion** : https://github.com/Nourdine84/eTix/actions/runs/37027739385 — verte à la 2ᵉ tentative.
+  JVM + Robolectric 240 déclarés, 239 réussis, 1 ignoré (`OCRValidationTest`), 0 échec ; émulateurs API 21 / 34 / 36 :
+  47 / 47 chacun ; petit écran 32 / 32 ; fr 7 / 7 ; système 3 / 3 ; mise à jour lot 8 → lot 10 (versionCode 10 → 12)
+  et lot 9 → lot 10 (11 → 12) : 13 / 13 chacune, tickets, budgets et thème identiques avant / après, Réglages
+  affichant le thème conservé, période « Ce mois » (préférence absente des anciennes versions) ; mises à jour A → B
+  (12 → 13) sans désinstallation sur API 21 / 34 / 36 ; dates API 22, 23, 25 : 2 / 2 ; API 24 : 2 / 2 à la relance.
+- **Incident API 24 (1ʳᵉ tentative après fusion)** : `app-A.apk` installé (« Success »), puis installation de l'APK
+  de tests (`app-debug-androidTest.apk`) bloquée 300 s ; émulateur déclaré démarré environ 12 s après son lancement,
+  juste après un « device offline » ; journal système relevé s'arrêtant sur des événements Wi-Fi du démarrage
+  (15:37:42) ; aucun test exécuté. Une seule relance ciblée, verte. **Cause inconnue** : un lien avec l'APK n'est
+  pas exclu ; l'hypothèse d'un émulateur pas encore prêt n'est pas démontrée. Consigné dans `docs/FIABILITE_CI.md`.
+- Décisions de Nourdine (02/10/2026) : format CSV actuel accepté pour ce lot avec procédure d'import documentée
+  (`docs/REGLAGES.md`) ; ouverture dans une vraie application destinataire = validation à faire ; journaux de
+  plantage non activés.
+- Limites : aucune revue visuelle par Nourdine, aucun essai sur téléphone physique, aucune application destinataire
+  réelle n'a ouvert le fichier (sur l'émulateur API 21 de la CI, aucune application ne reçoit `text/csv`). La fusion
+  ne valide ni les choix visuels ni les décisions produit ouvertes.
+
 ## Écarts restants avec iOS (référence `feature/home-hero-v2`)
+
+Bilan détaillé à jour (présent / partiel / absent, émulateur, validations manquantes) : `docs/PARITE_IOS.md`.
 
 | Écran | Écart | Lot envisagé |
 |---|---|---|
 | Accueil | Insights (≤ 2), carte Budget / Magasin, étoiles du header sombre, animations d'entrée, lien Tendance → rapport mensuel | 4 |
-| Accueil | Scanner : branché au lot 9 (voir `docs/SCANNER.md` pour les écarts) | 9 |
-| Ajouter | Scanner et suggestion de catégorie (historique puis OCR) : lot 9 | 9 |
+| Accueil | Scanner : porté au lot 9, fusionné (`86d9a19`) ; écarts voulus dans `docs/SCANNER.md` | fait |
+| Ajouter | Scanner et suggestion de catégorie (historique puis OCR) : lot 9, fusionné | fait |
 | Historique | Suppression par balayage (iOS) non portée | 5 |
 | Détail ticket | Aligné au lot 6 ; dégradé du montant iOS rendu en bleu uni ; pas de retour haptique | — |
 | Catégories | Budgets portés (lot 7) ; export non porté | à planifier |
@@ -279,7 +350,7 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
 | Détail catégorie | « Voir par magasin » (liste des magasins filtrée) et export non portés | à planifier |
 | Catégories | Choix provisoire « Autre » quand aucune catégorie n'est choisie à l'ajout (iOS : vide) → ces tickets apparaissent sous « Autre » | décision produit |
 | Magasins | Comparaison entre magasins, graphique « Historique des achats » | 5 |
-| Réglages | V1 ; iOS : Apparence (système/clair/sombre), période par défaut, budgets, export CSV, suppression avec confirmation | 5 |
+| Réglages | Portés au lot 10, fusionné (`f102cfe`) : thème, période par défaut, export CSV, compteur, version, build ; écarts voulus (suppression globale désactivée, liste à choix au lieu du menu iOS, Compte et Diagnostic Android, protection contre les formules) dans `docs/REGLAGES.md` | fait |
 | Global | Widget iOS, rapport mensuel / export PDF, onboarding V2 | à décider |
 | Global | Connexion Android sans équivalent iOS (décision reportée) | à décider |
 
@@ -318,47 +389,16 @@ Recommandation technique inchangée : A (ou B) pour la parité iOS.
 | # | Sujet | Priorité |
 |---|---|---|
 | 1 | Magasins : bouton « Comparaison » (iOS `StoreComparisonView`) et graphique « Historique des achats » non portés | P2 |
-| 2 | Bouton « Scanner » de l'ajout sans action ; flux OCR conçu pour NavController (crasherait) | P3 |
+| 2 | ~~Bouton « Scanner » de l'ajout sans action~~ : résolu au lot 9 (parcours de scan, fusionné en `86d9a19`) ; l'ancien flux NavController reste non branché | fait |
 | 3 | Ajout : catégorie non choisie → « Autre » (choix provisoire, écart iOS : vide) — date et description ajoutées au lot 4 | décision produit |
-| 4 | Accueil / Réglages loin d'iOS (insights, budget, apparence, export PDF…) ; Catégories : budgets/détail/export manquants | P2-P3 |
+| 4 | Accueil loin d'iOS (insights, carte Magasin, export PDF…) ; Catégories : export et « Voir par magasin » manquants. Réglages : portés au lot 10 | P2-P3 |
 | 5 | Login / Register Android sans équivalent iOS (iOS : splash → onboarding → app) | À décider |
-| 6 | `ETixApp` non déclarée dans le manifeste → journal de crash jamais alimenté | P4 |
+| 6 | `ETixApp` non déclarée dans le manifeste → journal de crash jamais alimenté ; depuis le lot 10 les Réglages l'indiquent (« Journaux de plantage indisponibles »). Activation = décision distincte, non prise (02/10/2026) | P4 |
 | 7 | Manifeste : `.TicketEditActivity` déclarée mais inexistante | P4 |
 | 8 | Room `fallbackToDestructiveMigration()` → perte de données à tout changement de schéma | P4 |
 | 9 | Login simulé — voir section dédiée | Lié au #5 |
 | 10 | Test `OCRValidationTest` désactivé — voir section dédiée | P3 |
 | 11 | Accueil V2 : fond blanc codé en dur (`#FFFFFF`) → illisible/incohérent en thème sombre | P2 |
-| 13 | Réglages : « Vider tous les tickets » désactivé et signalé indisponible (lot 3). Implémentation (avec confirmation, parité iOS) = décision produit | P3 |
+| 13 | Réglages : « Supprimer tous les tickets » désactivé et signalé indisponible (lots 3 et 10). Implémentation (avec confirmation, parité iOS) = décision produit | P3 |
 | 14 | Thème sombre : corrigé au lot 3 sur les écrans principaux ; écrans V1 restants (fiches, popups) à vérifier sur téléphone | P3 |
 | 12 | Signature QA : clé durable via secrets — **en attente de votre action** (`docs/SIGNATURE_QA.md`) ; tant qu'elle manque, aucun APK QA n'est publié | P1 |
-
-## Lot 10 — Réglages (branche `feature/android-lot10-reglages`, PR #80 en brouillon, non fusionnée)
-
-- Périmètre validé par Nourdine le 02/10/2026 ; détail, écarts iOS, points ouverts et répartition de la couverture :
-  `docs/REGLAGES.md`. Version `1.10.0-lot10`, versionCode 12. Aucun changement de schéma Room, aucune migration,
-  aucune permission (contrôle CI : seule `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`).
-- Demandes du 02/10 après la première revue : période sans effet sur les écrans déjà ouverts ; champs texte du CSV
-  neutralisés contre les formules (fichier seulement) ; collecte des journaux de plantage signalée inactive ;
-  assertions Robolectric de thème restaurées.
-- **Code testé : `88175bb`** (tête de la PR ; seul ce fichier a changé depuis). Résultat de fusion avec
-  `feature/android-v2` `86d9a19` : run https://github.com/Nourdine84/eTix/actions/runs/37020784489 — vert après une
-  relance ciblée de `emulator-compat-dates (25)`. Run du commit seul : https://github.com/Nourdine84/eTix/actions/runs/37020777107 (vert).
-  - JVM + Robolectric : 240 `@Test` déclarés, 239 réussis, 0 échec, 1 ignoré (`OCRValidationTest`) ; lint NewApi sans
-    nouvelle incompatibilité.
-  - Émulateurs (réussis / attendus, 0 échec) : API 21, 34, 36 : 47 / 47 chacun (dont `E2eReglagesTest` 5 / 5 et
-    persistance après redémarrage 2 / 2) ; petit écran API 36 : 32 / 32 (4 passes, `k09_reglages` inclus) ;
-    français 7 / 7 ; système 3 / 3 ; mise à jour lot 8 → lot 10 et lot 9 → lot 10 : 13 / 13 chacune (tickets, budgets
-    et thème « Clair » identiques, Réglages affichant « Clair » et build 12) ; dates API 22, 23, 24 : 2 / 2 ; API 25 :
-    2 / 2 à la relance.
-- Incident API 25 (1ʳᵉ tentative) : installation de `app-A.apk` bloquée 300 s sur « Performing Streamed Install »,
-  émulateur déclaré démarré 9 s après son lancement, aucun test exécuté. **Cause inconnue** : le blocage avant les
-  tests n'exclut pas un lien avec l'APK ; un émulateur pas encore réellement prêt reste une hypothèse. 5ᵉ occurrence
-  connue sur API 24 / 25 (voir `docs/FIABILITE_CI.md`). Autres incidents d'infrastructure du jour, sur des commits
-  remplacés : téléchargement de l'émulateur (« Error on ZipFile »), dépendances Maven introuvables, certificat lors du
-  checkout ; aucun sur le run final hors API 25.
-- Aperçus examinés (run de fusion) : Réglages clair / sombre, haut et bas, 360 dp et 320 dp police 2,0 (Robolectric et
-  émulateur API 36, passes a à d, sombre en d), listes de choix, Historique filtré, Accueil avant / après réouverture,
-  feuille de partage API 34 et API 21, Réglages après redémarrage et après mise à jour. Constats dans le compte rendu
-  de la PR ; revue visuelle par Nourdine à faire (`docs/REVUE_VISUELLE.md`).
-- Limites : pas de téléphone physique ; aucune application destinataire réelle n'a ouvert le fichier (API 21 de la CI :
-  aucune application ne reçoit `text/csv`) ; format CSV (Excel FR) et présentation des choix à décider.
