@@ -1,7 +1,8 @@
 # Parcours de revue visuelle (proposé, non approuvé)
 
 **Aucun écran n'est approuvé par Nourdine.** Ces captures servent de base à la revue ; elles ne valident ni les choix
-visuels ni la parité avec iOS (référence provisoire : code iOS `feature/home-hero-v2`, maquettes introuvables).
+visuels ni la parité avec iOS (référence provisoire : code iOS `feature/home-hero-v2`, maquettes introuvables dans les sources
+accessibles, ce qui ne signifie pas qu'elles n'ont jamais existé ni été validées).
 
 ## Captures de référence actuelles
 

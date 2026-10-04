@@ -10,8 +10,10 @@ Document de reprise. À lire en entier avant toute action. Détail : `docs/SUIVI
   (`Nourdine84/etix-ios`, branche de référence `feature/home-hero-v2`) : fonctionnalités, navigation, design.
 - Nourdine (propriétaire, ingénieur QA senior) décide du produit et valide le visuel. Claude implémente, teste et
   rend compte. ChatGPT aide Nourdine à suivre l'avancement.
-- Maquettes « validées » introuvables : le code iOS est la référence provisoire. Ne jamais affirmer une conformité
-  au design validé ; signaler chaque écart avec iOS.
+- Maquettes « validées » introuvables **dans les sources accessibles** (dépôts, projet, dossiers connectés) : cela
+  ne signifie pas qu'elles n'ont jamais existé ni été validées. Le code iOS est la référence provisoire. Ne jamais
+  affirmer une conformité au design validé ; signaler chaque écart avec iOS. Aucune capture iOS réelle n'est
+  disponible : ne jamais fabriquer de capture iOS à partir du code.
 - Répondre en français, directement, niveau technique senior ; signaler risques et meilleures approches.
 
 ## Règles impératives (validées par Nourdine)

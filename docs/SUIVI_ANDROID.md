@@ -12,7 +12,7 @@ Document de reprise entre sessions. Concis : état, décisions, prochain lot.
 | `Nourdine84/etix-android` | Squelette Gradle sans module `app` — **pas** le dépôt de dev |
 | Copie locale Mac `~/AndroidStudioProjects/eTix` | Sur `dev` (19/12/2025), n'a pas `feature/android-v2` |
 | Référence iOS | `Nourdine84/etix-ios` — `feature/home-hero-v2` (19/08/2026) ; `main` diverge (21 commits propres) |
-| Maquettes validées | `eTix_V2_Maquettes_Completes_Validees_FINAL` (citées dans `Theme.swift` iOS) — **introuvables** (3 dépôts, projet, dossiers Mac connectés). Référence provisoire : code iOS. |
+| Maquettes validées | `eTix_V2_Maquettes_Completes_Validees_FINAL` (citées dans `Theme.swift` iOS) — **introuvables dans les sources accessibles** (3 dépôts, projet, dossiers Mac connectés), ce qui ne signifie pas qu'elles n'ont jamais existé ni été validées. Référence provisoire : code iOS. |
 
 ## Stack
 
