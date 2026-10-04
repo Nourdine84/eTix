@@ -350,3 +350,34 @@ Recommandation technique inchangée : A (ou B) pour la parité iOS.
 | 13 | Réglages : « Vider tous les tickets » désactivé et signalé indisponible (lot 3). Implémentation (avec confirmation, parité iOS) = décision produit | P3 |
 | 14 | Thème sombre : corrigé au lot 3 sur les écrans principaux ; écrans V1 restants (fiches, popups) à vérifier sur téléphone | P3 |
 | 12 | Signature QA : clé durable via secrets — **en attente de votre action** (`docs/SIGNATURE_QA.md`) ; tant qu'elle manque, aucun APK QA n'est publié | P1 |
+
+## Lot 10 — Réglages (branche `feature/android-lot10-reglages`, PR #80 en brouillon, non fusionnée)
+
+- Périmètre validé par Nourdine le 02/10/2026 ; détail, écarts iOS, points ouverts et répartition de la couverture :
+  `docs/REGLAGES.md`. Version `1.10.0-lot10`, versionCode 12. Aucun changement de schéma Room, aucune migration,
+  aucune permission (contrôle CI : seule `DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION`).
+- Demandes du 02/10 après la première revue : période sans effet sur les écrans déjà ouverts ; champs texte du CSV
+  neutralisés contre les formules (fichier seulement) ; collecte des journaux de plantage signalée inactive ;
+  assertions Robolectric de thème restaurées.
+- **Code testé : `88175bb`** (tête de la PR ; seul ce fichier a changé depuis). Résultat de fusion avec
+  `feature/android-v2` `86d9a19` : run https://github.com/Nourdine84/eTix/actions/runs/37020784489 — vert après une
+  relance ciblée de `emulator-compat-dates (25)`. Run du commit seul : https://github.com/Nourdine84/eTix/actions/runs/37020777107 (vert).
+  - JVM + Robolectric : 240 `@Test` déclarés, 239 réussis, 0 échec, 1 ignoré (`OCRValidationTest`) ; lint NewApi sans
+    nouvelle incompatibilité.
+  - Émulateurs (réussis / attendus, 0 échec) : API 21, 34, 36 : 47 / 47 chacun (dont `E2eReglagesTest` 5 / 5 et
+    persistance après redémarrage 2 / 2) ; petit écran API 36 : 32 / 32 (4 passes, `k09_reglages` inclus) ;
+    français 7 / 7 ; système 3 / 3 ; mise à jour lot 8 → lot 10 et lot 9 → lot 10 : 13 / 13 chacune (tickets, budgets
+    et thème « Clair » identiques, Réglages affichant « Clair » et build 12) ; dates API 22, 23, 24 : 2 / 2 ; API 25 :
+    2 / 2 à la relance.
+- Incident API 25 (1ʳᵉ tentative) : installation de `app-A.apk` bloquée 300 s sur « Performing Streamed Install »,
+  émulateur déclaré démarré 9 s après son lancement, aucun test exécuté. **Cause inconnue** : le blocage avant les
+  tests n'exclut pas un lien avec l'APK ; un émulateur pas encore réellement prêt reste une hypothèse. 5ᵉ occurrence
+  connue sur API 24 / 25 (voir `docs/FIABILITE_CI.md`). Autres incidents d'infrastructure du jour, sur des commits
+  remplacés : téléchargement de l'émulateur (« Error on ZipFile »), dépendances Maven introuvables, certificat lors du
+  checkout ; aucun sur le run final hors API 25.
+- Aperçus examinés (run de fusion) : Réglages clair / sombre, haut et bas, 360 dp et 320 dp police 2,0 (Robolectric et
+  émulateur API 36, passes a à d, sombre en d), listes de choix, Historique filtré, Accueil avant / après réouverture,
+  feuille de partage API 34 et API 21, Réglages après redémarrage et après mise à jour. Constats dans le compte rendu
+  de la PR ; revue visuelle par Nourdine à faire (`docs/REVUE_VISUELLE.md`).
+- Limites : pas de téléphone physique ; aucune application destinataire réelle n'a ouvert le fichier (API 21 de la CI :
+  aucune application ne reçoit `text/csv`) ; format CSV (Excel FR) et présentation des choix à décider.

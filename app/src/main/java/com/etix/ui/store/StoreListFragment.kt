@@ -9,6 +9,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.etix.features.settings.AppPreferences
 import com.etix.R
 import com.etix.data.AppDatabase
 import com.etix.data.TicketRepository
@@ -35,9 +36,10 @@ class StoreListFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        savedInstanceState?.getString(KEY_RANGE)
-            ?.let { runCatching { TimeRange.valueOf(it) }.getOrNull() }
-            ?.let { range.value = it }
+        // Lot 10 : période par défaut des Réglages, lue à la création de l'écran. Un écran déjà ouvert garde sa
+        // sélection (changement du réglage, retour entre onglets, recréation) : le réglage vaut pour la prochaine ouverture.
+        val saved = savedInstanceState?.getString(KEY_RANGE)?.let { runCatching { TimeRange.valueOf(it) }.getOrNull() }
+        range.value = AppPreferences.initialRange(saved, AppPreferences(requireContext()).defaultRange)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {

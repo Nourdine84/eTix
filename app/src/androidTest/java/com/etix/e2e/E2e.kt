@@ -73,6 +73,18 @@ object E2e {
         try { androidx.test.espresso.Espresso.closeSoftKeyboard() } catch (_: Throwable) { }
     }
 
+    /**
+     * Lot 10 : choix du thème dans les Réglages (ligne « Thème » → liste à choix unique). L'activité est recréée si
+     * le thème change ; attendre ensuite la ligne « Thème ».
+     */
+    fun chooseTheme(label: String) {
+        onView(androidx.test.espresso.matcher.ViewMatchers.withId(com.etix.R.id.rowTheme))
+            .perform(androidx.test.espresso.action.ViewActions.click())
+        onView(androidx.test.espresso.matcher.ViewMatchers.withText(label))
+            .inRoot(androidx.test.espresso.matcher.RootMatchers.isDialog())
+            .perform(androidx.test.espresso.action.ViewActions.click())
+    }
+
     /** scrollTo pour NestedScrollView (non pris en charge par ViewActions.scrollTo d'Espresso 3.5). */
     fun nestedScrollTo(): androidx.test.espresso.ViewAction = object : androidx.test.espresso.ViewAction {
         override fun getConstraints(): Matcher<View> = allOf(

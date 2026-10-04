@@ -61,4 +61,116 @@
     <style name="V2.TabLabel" parent="TextAppearance.Material3.LabelMedium">
         <item name="android:textSize">11sp</item>
     </style>
+
+    <!-- Lot 10 — Réglages (iOS SettingsView : liste groupée), même présentation que « Budgets mensuels » -->
+    <style name="V2.SettingsHeader" parent="V2.FieldLabel">
+        <item name="android:layout_marginTop">20dp</item>
+        <item name="android:layout_marginBottom">6dp</item>
+        <item name="android:paddingStart">16dp</item>
+    </style>
+
+    <style name="V2.SettingsCard" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="cardBackgroundColor">@color/v2_surface_grouped</item>
+        <item name="cardCornerRadius">12dp</item>
+        <item name="cardElevation">0dp</item>
+        <item name="strokeWidth">0dp</item>
+    </style>
+
+    <style name="V2.SettingsCardContent" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:padding">16dp</item>
+    </style>
+
+    <style name="V2.SettingsRowTitle" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/v2_text_primary</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="V2.SettingsAction" parent="Widget.Material3.Button.TextButton">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:gravity">center_vertical|start</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:textColor">@color/v2_primary</item>
+        <item name="android:textSize">16sp</item>
+        <item name="cornerRadius">0dp</item>
+    </style>
+
+    <style name="V2.SettingsDivider" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:layout_marginStart">16dp</item>
+        <item name="android:background">@color/v2_divider</item>
+    </style>
+
+    <style name="V2.SettingsFooter" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">6dp</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:textColor">@color/v2_text_secondary</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+
+    <style name="V2.SettingsValueRow" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">48dp</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+    </style>
+
+    <style name="V2.SettingsValueLabel" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/v2_text_primary</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="V2.SettingsValue" parent="">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:gravity">end</item>
+        <item name="android:layout_marginStart">8dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/v2_text_secondary</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <!-- Ligne de choix (thème, période) : titre puis valeur choisie, comme une préférence Android à liste -->
+    <style name="V2.SettingsChoiceTitle" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/v2_text_primary</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="V2.SettingsChoiceValue" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">2dp</item>
+        <item name="android:textColor">@color/v2_text_secondary</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <!-- Chevron de fin de ligne (ligne qui ouvre un choix) -->
+    <style name="V2.SettingsChevron" parent="">
+        <item name="android:layout_width">16dp</item>
+        <item name="android:layout_height">16dp</item>
+        <item name="android:layout_marginStart">4dp</item>
+        <item name="android:importantForAccessibility">no</item>
+        <item name="android:src">@drawable/ic_v2_chevron</item>
+    </style>
 </resources>

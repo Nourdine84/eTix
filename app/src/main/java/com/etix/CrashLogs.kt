@@ -5,6 +5,13 @@ import java.io.File
 
 object CrashLogs {
 
+    /**
+     * Collecte active seulement si l'application tourne avec ETixApp (gestionnaire de plantage). Au lot 10, ETixApp
+     * n'est pas déclarée dans le manifeste : aucun journal n'est écrit (point ouvert n° 6 du suivi), ce que les
+     * Réglages affichent.
+     */
+    fun isCollectionActive(context: Context): Boolean = context.applicationContext is ETixApp
+
     fun listLogs(context: Context): List<File> {
         val dir = File(context.filesDir, "crash")
         if (!dir.exists() || !dir.isDirectory) return emptyList()

@@ -176,3 +176,7 @@ Rien n'a été désactivé ni supprimé.
 - Échecs d'environnement possibles (focus perdu au démarrage ; installation de l'APK bloquée plus de 300 s sur
   API 24 une fois et API 25 deux fois le 01/10/2026, cause non établie) : désormais rouges, à relancer et
   consigner, jamais à ignorer.
+- Même blocage le 02/10/2026 : API 24 (fusion du lot 9, run 36994446604) et API 25 (PR #80, run 37020784489,
+  1ʳᵉ tentative : « Performing Streamed Install » sans réponse pendant 300 s, émulateur déclaré démarré 9 s après
+  son lancement ; relance ciblée verte). Cause toujours inconnue : un lien avec l'APK n'est pas exclu ; un émulateur
+  pas encore réellement prêt reste une hypothèse.
