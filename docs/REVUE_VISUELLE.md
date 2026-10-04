@@ -17,6 +17,23 @@ distinct. Restent à vérifier séparément (constats avant toute modification d
 couleurs de budget entre Accueil et Catégories ; explication de l'écart entre dépenses totales et dépenses des
 catégories budgétées.
 
+## Historique — corrections en cours (non validé)
+
+- 04/10/2026, décisions de Nourdine : noms de magasins sur deux lignes au plus, sans mot coupé ni montant masqué
+  (montant sous la date sur petit écran : principe accepté, rendu à valider) ; résumé du filtre actif sur sa propre
+  ligne ; accessibilité de la fenêtre Filtres à vérifier. Recherche « Magasin ou catégorie », format des montants,
+  fenêtre de filtres, regroupements et navigation conservés.
+- Branche `fix/historique-noms-filtre`, PR #82 (brouillon, non fusionnée). Commit testé `df0740a`, run
+  https://github.com/Nourdine84/eTix/actions/runs/37228116871 (146 jobs verts). Avant : commit `147317d` (outils de
+  revue seuls, app inchangée), run https://github.com/Nourdine84/eTix/actions/runs/37227047403.
+- Fenêtre Filtres à 320 dp, police 2,0 : « Réinitialiser » visible à 2 % à l'ouverture, entièrement visible après un
+  glissement dans la zone des boutons (défilante), puis utilisable : accessible par défilement, aucune modification
+  de la fenêtre. Appliquer, Fermer et Réinitialiser vérifiés de façon bloquante (visibles à 90 % au moins, appui et
+  effet contrôlés) en clair, sombre et petit écran police 2,0.
+- **Limite documentée (conservée)** : à 320 dp avec une police à 2,0, le texte indicatif de la recherche est coupé
+  (« Magasin ou catégo… »). Champ de hauteur fixe sur une ligne ; la taille de police n'est pas réduite pour le faire
+  tenir. Le libellé accessible (« Rechercher un magasin ou une catégorie ») reste complet.
+
 ## Captures de référence actuelles
 
 - **Code capturé** : identique à `feature/android-v2` au commit `f102cfe` (lots 1 à 10). Captures produites par le
