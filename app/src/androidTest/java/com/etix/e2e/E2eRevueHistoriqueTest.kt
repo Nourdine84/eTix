@@ -147,6 +147,24 @@ class E2eRevueHistoriqueTest {
         }
     }
 
+    /** Part visible (%) des boutons de la fenêtre « Filtres », consignée dans shots/mesures_clavier.txt. */
+    private fun logDialogButtons(label: String) {
+        val out = StringBuilder("historique fenêtre Filtres $label :")
+        for (t in listOf("Appliquer", "Fermer", "Réinitialiser")) {
+            try {
+                onView(withText(t)).inRoot(isDialog()).check { v, _ ->
+                    val r = android.graphics.Rect()
+                    val visible = v != null && v.getGlobalVisibleRect(r)
+                    val pct = if (visible && v!!.width * v.height > 0) 100 * r.width() * r.height() / (v.width * v.height) else 0
+                    out.append(" $t $pct %")
+                }
+            } catch (e: Throwable) {
+                out.append(" $t absent")
+            }
+        }
+        File(File(ctx.filesDir, "shots").apply { mkdirs() }, "mesures_clavier.txt").appendText(out.toString() + "\n")
+    }
+
     /** Nombre de tickets affichés, lu sur le bouton d'export (liste, recherche et filtre appliqués). */
     private fun waitCount(n: Int) =
         waitFor(allOf(withId(R.id.btnExportCsv), withText("Exporter les $n tickets affichés (CSV)")))
@@ -205,9 +223,12 @@ class E2eRevueHistoriqueTest {
         shot("revue_historique_5_filtre_actif_$suffix")
         checkExport("filtre actif $suffix")
 
-        // Filtre retiré
+        // Filtre retiré : date de début désactivée puis « Appliquer » (accessible à toutes les tailles de police).
+        // Visibilité des boutons de la fenêtre consignée (constat, pas de verdict : fenêtre conservée telle quelle).
         onView(withId(R.id.btnFilter)).perform(click())
-        onView(withText("Réinitialiser")).inRoot(isDialog()).perform(click())
+        onView(withId(R.id.switchStart)).inRoot(isDialog()).perform(click())
+        logDialogButtons(suffix)
+        onView(withText("Appliquer")).inRoot(isDialog()).perform(click())
         waitCount(11)
         assertFalse("Résumé du filtre masqué ($suffix)", shown(R.id.tvFilterSummary))
         File(File(ctx.filesDir, "shots").apply { mkdirs() }, "mesures_clavier.txt")
