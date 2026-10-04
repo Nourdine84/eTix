@@ -80,12 +80,16 @@ class E2eRevueHistoriqueTest {
         E2e.waitForAppReady("E2eRevueHistoriqueTest.$theme"); waitFor(withId(R.id.bottomNav))
     }
 
+    /** Nombre de tickets affichés, lu sur le bouton d'export (liste, recherche et filtre appliqués). */
+    private fun waitCount(n: Int) =
+        waitFor(allOf(withId(R.id.btnExportCsv), withText("Exporter les $n tickets affichés (CSV)")))
+
     private fun captureHistorique(theme: String, suffix: String) {
         startMain()
         chooseTheme(theme)
         onView(withId(R.id.menu_history)).perform(click())
         waitFor(withId(R.id.recyclerHistory))
-        waitFor(withText("Réseau de bus"))
+        waitCount(11)
 
         scrollList(toEnd = false)
         shot("revue_historique_1_liste_haut_$suffix")
@@ -96,13 +100,13 @@ class E2eRevueHistoriqueTest {
         // Recherche (saisie directe, clavier fermé pour voir les résultats)
         onView(withId(R.id.inputSearch)).perform(replaceText("Brasserie"))
         E2e.closeKeyboard()
-        waitFor(withText("Brasserie de la Gare"))
+        waitCount(2) // deux tickets « Brasserie de la Gare » (ce mois et le mois dernier)
         onView(allOf(withText("Marché du Centre"), androidx.test.espresso.matcher.ViewMatchers.isDisplayed()))
             .check(androidx.test.espresso.assertion.ViewAssertions.doesNotExist())
         shot("revue_historique_3_recherche_$suffix")
         onView(withId(R.id.inputSearch)).perform(replaceText(""))
         E2e.closeKeyboard()
-        waitFor(withText("Réseau de bus"))
+        waitCount(11)
 
         // Filtres : date de début activée (valeur proposée par défaut : il y a un mois)
         onView(withId(R.id.btnFilter)).perform(click())
@@ -120,7 +124,7 @@ class E2eRevueHistoriqueTest {
         // Filtre retiré
         onView(withId(R.id.btnFilter)).perform(click())
         onView(withText("Réinitialiser")).inRoot(isDialog()).perform(click())
-        Thread.sleep(600)
+        waitCount(11)
         assertFalse("Résumé du filtre masqué ($suffix)", shown(R.id.tvFilterSummary))
     }
 
