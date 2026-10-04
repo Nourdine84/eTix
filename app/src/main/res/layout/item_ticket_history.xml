@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Carte ticket — iOS TicketHistoryView.ticketCard : magasin, « catégorie · date », montant bleu -->
+<!-- Carte ticket — iOS TicketHistoryView.ticketCard : magasin, « catégorie · date », montant bleu.
+     Nom du magasin sur deux lignes au plus (coupure entre les mots) ; si le nom ne tient pas à côté du montant
+     (petit écran, grande police), le montant passe sous la date. Disposition et écart de 12 dp : TicketCardRow. -->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="12dp"
@@ -12,20 +15,18 @@
     app:cardElevation="0dp"
     app:strokeWidth="0dp">
 
-    <LinearLayout
+    <com.etix.ui.history.TicketCardRow
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
         android:paddingStart="20dp"
         android:paddingTop="14dp"
         android:paddingEnd="20dp"
         android:paddingBottom="14dp">
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:id="@+id/ticketTextColumn"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:orientation="vertical">
 
             <TextView
@@ -33,10 +34,12 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
-                android:maxLines="1"
+                android:hyphenationFrequency="none"
+                android:maxLines="2"
                 android:textColor="@color/v2_text_primary"
                 android:textSize="17sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                tools:targetApi="m" />
 
             <TextView
                 android:id="@+id/tvDate"
@@ -51,9 +54,9 @@
             android:id="@+id/tvAmount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
+            android:maxLines="1"
             android:textColor="@color/v2_primary"
             android:textSize="15sp"
             android:textStyle="bold" />
-    </LinearLayout>
+    </com.etix.ui.history.TicketCardRow>
 </com.google.android.material.card.MaterialCardView>

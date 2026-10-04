@@ -190,6 +190,16 @@ class E2eRevueHistoriqueTest {
         onView(withText("Appliquer")).inRoot(isDialog()).perform(click())
         Thread.sleep(600)
         assertTrue("Résumé du filtre affiché ($suffix)", shown(R.id.tvFilterSummary))
+        // Résumé et bouton d'export sur deux lignes distinctes, sans chevauchement
+        var summaryBottom = 0; var exportTop = 0
+        onActivity { a ->
+            val rs = android.graphics.Rect(); val re = android.graphics.Rect()
+            a.findViewById<View>(R.id.tvFilterSummary).getGlobalVisibleRect(rs)
+            a.findViewById<View>(R.id.btnExportCsv).getGlobalVisibleRect(re)
+            summaryBottom = rs.bottom; exportTop = re.top
+        }
+        assertTrue("Résumé du filtre au-dessus du bouton d'export ($suffix) : $summaryBottom ≤ $exportTop",
+            summaryBottom <= exportTop)
         scrollList(toEnd = false)
         problems += measureCards("filtre actif $suffix")
         shot("revue_historique_5_filtre_actif_$suffix")
@@ -202,6 +212,8 @@ class E2eRevueHistoriqueTest {
         assertFalse("Résumé du filtre masqué ($suffix)", shown(R.id.tvFilterSummary))
         File(File(ctx.filesDir, "shots").apply { mkdirs() }, "mesures_clavier.txt")
             .appendText("historique $suffix anomalies : ${if (problems.isEmpty()) "aucune" else problems.distinct().joinToString(" ; ")}\n")
+        assertEquals("Cartes de l'Historique ($suffix) : nom sur 2 lignes au plus, sans mot coupé ni troncature, " +
+            "montant visible", emptyList<String>(), problems.distinct())
     }
 
     @Test fun b01_historique_clair_puis_sombre() {
