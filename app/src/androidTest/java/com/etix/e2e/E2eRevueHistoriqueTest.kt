@@ -147,22 +147,66 @@ class E2eRevueHistoriqueTest {
         }
     }
 
-    /** Part visible (%) des boutons de la fenêtre « Filtres », consignée dans shots/mesures_clavier.txt. */
-    private fun logDialogButtons(label: String) {
-        val out = StringBuilder("historique fenêtre Filtres $label :")
-        for (t in listOf("Appliquer", "Fermer", "Réinitialiser")) {
-            try {
-                onView(withText(t)).inRoot(isDialog()).check { v, _ ->
-                    val r = android.graphics.Rect()
-                    val visible = v != null && v.getGlobalVisibleRect(r)
-                    val pct = if (visible && v!!.width * v.height > 0) 100 * r.width() * r.height() / (v.width * v.height) else 0
-                    out.append(" $t $pct %")
-                }
-            } catch (e: Throwable) {
-                out.append(" $t absent")
+    /** Part visible (%) d'un bouton de la fenêtre « Filtres » (0 si absent ou hors écran). */
+    private fun dialogButtonPct(label: String): Int {
+        var pct = 0
+        try {
+            onView(withText(label)).inRoot(isDialog()).check { v, _ ->
+                val r = android.graphics.Rect()
+                if (v != null && v.width * v.height > 0 && v.getGlobalVisibleRect(r))
+                    pct = 100 * r.width() * r.height() / (v.width * v.height)
             }
+        } catch (_: Throwable) { }
+        return pct
+    }
+
+    /**
+     * Glissement vers le haut dans la partie VISIBLE d'une zone défilante (swipeUp d'Espresso exige que la vue soit
+     * visible à 90 %, ce qui n'est pas garanti pour une zone en partie hors écran).
+     */
+    private fun swipeUpInVisiblePart() = object : androidx.test.espresso.ViewAction {
+        override fun getConstraints(): org.hamcrest.Matcher<View> =
+            androidx.test.espresso.matcher.ViewMatchers.isDisplayed()
+        override fun getDescription() = "glissement vers le haut dans la partie visible"
+        override fun perform(uiController: androidx.test.espresso.UiController, view: View) {
+            val r = android.graphics.Rect()
+            view.getGlobalVisibleRect(r)
+            val off = IntArray(2); view.rootView.getLocationOnScreen(off)
+            // Coordonnées écran : rectangle visible (fenêtre) décalé de la position de la fenêtre
+            val x = (off[0] + r.centerX()).toFloat()
+            val y0 = (off[1] + r.top + r.height() * 0.85f)
+            val y1 = (off[1] + r.top + r.height() * 0.15f)
+            androidx.test.espresso.action.Swipe.SLOW.sendSwipe(uiController, floatArrayOf(x, y0), floatArrayOf(x, y1),
+                floatArrayOf(1f, 1f))
+            uiController.loopMainThreadForAtLeast(300)
         }
-        File(File(ctx.filesDir, "shots").apply { mkdirs() }, "mesures_clavier.txt").appendText(out.toString() + "\n")
+    }
+
+    /**
+     * Parcours utilisateur vers un bouton de la fenêtre « Filtres » : s'il n'est pas entièrement visible, glissement
+     * vers le haut dans la zone défilante qui le contient (comme le ferait l'utilisateur), puis vérification BLOQUANTE
+     * qu'il est visible à 90 % au moins (seuil d'Espresso pour un appui) avant de l'utiliser.
+     */
+    private fun pressDialogButton(label: String, suffix: String) {
+        val before = dialogButtonPct(label)
+        var after = before
+        var swipes = 0
+        while (after < 90 && swipes < 3) {
+            onView(allOf(
+                org.hamcrest.Matchers.anyOf(
+                    androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom(android.widget.ScrollView::class.java),
+                    androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom(androidx.core.widget.NestedScrollView::class.java)),
+                androidx.test.espresso.matcher.ViewMatchers.hasDescendant(withText(label))))
+                .inRoot(isDialog()).perform(swipeUpInVisiblePart())
+            Thread.sleep(400)
+            after = dialogButtonPct(label); swipes++
+        }
+        File(File(ctx.filesDir, "shots").apply { mkdirs() }, "mesures_clavier.txt").appendText(
+            "historique fenêtre Filtres $suffix : « $label » visible $before %" +
+                (if (swipes > 0) ", après $swipes glissement(s) : $after %" else "") + "\n")
+        assertTrue("« $label » accessible dans la fenêtre Filtres ($suffix) : $after % visible", after >= 90)
+        if (swipes > 0 && label == "Réinitialiser") shot("revue_historique_4b_filtres_defilement_$suffix")
+        onView(withText(label)).inRoot(isDialog()).perform(click())
     }
 
     /** Nombre de tickets affichés, lu sur le bouton d'export (liste, recherche et filtre appliqués). */
@@ -205,7 +249,7 @@ class E2eRevueHistoriqueTest {
             .check(androidx.test.espresso.assertion.ViewAssertions.matches(
                 androidx.test.espresso.matcher.ViewMatchers.isDisplayed()))
         shot("revue_historique_4_filtres_$suffix")
-        onView(withText("Appliquer")).inRoot(isDialog()).perform(click())
+        pressDialogButton("Appliquer", suffix)
         Thread.sleep(600)
         assertTrue("Résumé du filtre affiché ($suffix)", shown(R.id.tvFilterSummary))
         // Résumé et bouton d'export sur deux lignes distinctes, sans chevauchement
@@ -223,12 +267,17 @@ class E2eRevueHistoriqueTest {
         shot("revue_historique_5_filtre_actif_$suffix")
         checkExport("filtre actif $suffix")
 
-        // Filtre retiré : date de début désactivée puis « Appliquer » (accessible à toutes les tailles de police).
-        // Visibilité des boutons de la fenêtre consignée (constat, pas de verdict : fenêtre conservée telle quelle).
+        // « Fermer » : fenêtre fermée, filtre inchangé (même nombre de tickets affichés, résumé toujours visible)
+        var exportLabel = ""
+        onActivity { a -> exportLabel = a.findViewById<android.widget.Button>(R.id.btnExportCsv).text.toString() }
         onView(withId(R.id.btnFilter)).perform(click())
-        onView(withId(R.id.switchStart)).inRoot(isDialog()).perform(click())
-        logDialogButtons(suffix)
-        onView(withText("Appliquer")).inRoot(isDialog()).perform(click())
+        pressDialogButton("Fermer", suffix)
+        waitFor(allOf(withId(R.id.btnExportCsv), withText(exportLabel)))
+        assertTrue("Filtre conservé après « Fermer » ($suffix)", shown(R.id.tvFilterSummary))
+
+        // « Réinitialiser » : filtre retiré, tous les tickets de nouveau affichés
+        onView(withId(R.id.btnFilter)).perform(click())
+        pressDialogButton("Réinitialiser", suffix)
         waitCount(11)
         assertFalse("Résumé du filtre masqué ($suffix)", shown(R.id.tvFilterSummary))
         File(File(ctx.filesDir, "shots").apply { mkdirs() }, "mesures_clavier.txt")
