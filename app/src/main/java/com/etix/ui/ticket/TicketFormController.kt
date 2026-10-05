@@ -236,10 +236,12 @@ class TicketFormController(
         if (textInput) {
             // Plein écran : fermeture et validation en haut, jamais sous le clavier (le message d'erreur d'une date
             // invalide agrandit le contenu ; en fenêtre, OK et Annuler passaient sous le clavier à police 2,0).
+            // En-tête maintenu sous la barre d'état et saisie défilante : FullscreenPickerFit.
             builder.setTheme(com.google.android.material.R.style.ThemeOverlay_Material3_MaterialCalendar_Fullscreen)
                 .setPositiveButtonText("OK")
         }
         val picker = builder.build()
+        if (textInput) FullscreenPickerFit.install(picker)
         picker.addOnPositiveButtonClickListener { sel ->
             dateMillis = TicketFormRules.combineDay(sel, dateMillis)
             render()

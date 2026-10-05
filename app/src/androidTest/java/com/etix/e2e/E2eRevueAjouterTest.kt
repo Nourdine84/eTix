@@ -210,27 +210,39 @@ class E2eRevueAjouterTest {
     }
 
     /**
-     * Saisie au clavier : OK et Annuler entièrement visibles au-dessus du clavier. BLOQUANT. Le clavier est mesuré sur
-     * la fenêtre de l'activité (la fenêtre du sélecteur ne reçoit un retrait que si le clavier la chevauche).
+     * Saisie au clavier : OK et Annuler entièrement visibles entre la barre d'état et le haut du clavier, ainsi que le
+     * champ de date avec son éventuel message d'erreur. BLOQUANT. Le clavier et la barre d'état sont mesurés sur la
+     * fenêtre de l'activité (la fenêtre du sélecteur ne reçoit un retrait que si le clavier la chevauche).
      */
     private fun checkPickerActionsAboveKeyboard(label: String) {
         val ime = waitImeStable()
         assertTrue("Clavier non affiché sur la saisie de date ($label)", ime > 0)
-        var imeTop = 0
+        SystemClock.sleep(400) // défilement de la zone de saisie terminé
+        var imeTop = 0; var barBottom = 0
         instr.runOnMainSync {
             val decor = resumed().window.decorView
             val d = IntArray(2); decor.getLocationOnScreen(d)
+            val bars = ViewCompat.getRootWindowInsets(decor)?.getInsets(WindowInsetsCompat.Type.statusBars())?.top ?: 0
             imeTop = d[1] + decor.height - ime // haut du clavier (coordonnées écran)
+            barBottom = d[1] + bars // bas de la barre d'état
+        }
+        fun within(v: View, what: String) {
+            val loc = IntArray(2); v.getLocationOnScreen(loc)
+            val r = android.graphics.Rect()
+            val visible = v.getGlobalVisibleRect(r) && r.height() == v.height && r.width() == v.width &&
+                loc[1] >= barBottom && loc[1] + v.height <= imeTop
+            val line = "$what [${loc[1]},${loc[1] + v.height}] zone [$barBottom,$imeTop] (clavier ${ime}px) visible=$visible"
+            log("$label sélecteur de date : $line")
+            assertTrue("Élément du sélecteur accessible clavier ouvert ($label) : $line", visible)
         }
         for (id in listOf(com.google.android.material.R.id.confirm_button, com.google.android.material.R.id.cancel_button)) {
-            onView(withId(id)).check { v, _ ->
-                val loc = IntArray(2); v.getLocationOnScreen(loc)
-                val r = android.graphics.Rect()
-                val visible = v.getGlobalVisibleRect(r) && r.height() == v.height && r.width() == v.width &&
-                    loc[1] + v.height <= imeTop
-                val line = "bouton ${v.resources.getResourceEntryName(id)} [${loc[1]},${loc[1] + v.height}] haut du clavier $imeTop (clavier ${ime}px) visible=$visible"
-                log("$label sélecteur de date : $line")
-                assertTrue("Action du sélecteur accessible clavier ouvert ($label) : $line", visible)
+            onView(withId(id)).check { v, _ -> within(v, "bouton ${v.resources.getResourceEntryName(id)}") }
+        }
+        if (pickerInTextMode()) {
+            // Champ et message d'erreur (le TextInputLayout les contient tous deux)
+            onView(withId(com.google.android.material.R.id.mtrl_picker_text_input_date)).check { v, _ ->
+                val err = (v as com.google.android.material.textfield.TextInputLayout).error
+                within(v, "champ de date${if (err != null) " et message « ${err.toString().replace('\n', ' ')} »" else ""}")
             }
         }
     }
