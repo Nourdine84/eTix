@@ -1,6 +1,6 @@
 # Parcours de revue visuelle
 
-**Seul l'Accueil est validé par Nourdine** (04/10/2026, voir ci-dessous). Aucun autre écran n'est approuvé. Ces captures servent de base à la revue ; elles ne valident ni les choix
+**Validés par Nourdine : Accueil et Historique** (voir ci-dessous). Aucun autre écran n'est approuvé. Ces captures servent de base à la revue ; elles ne valident ni les choix
 visuels ni la parité avec iOS (référence provisoire : code iOS `feature/home-hero-v2`, maquettes introuvables dans les sources
 accessibles, ce qui ne signifie pas qu'elles n'ont jamais existé ni été validées).
 
@@ -9,6 +9,7 @@ accessibles, ce qui ne signifie pas qu'elles n'ont jamais existé ni été valid
 | Date | Écran | Rendu validé | Portée |
 |---|---|---|---|
 | 04/10/2026 | 1. Accueil, clair et sombre | 6 captures émulateur API 34 en français, commit `6dc0707` (branche `chore/revue-accueil-captures`, PR #81 non fusionnée), run https://github.com/Nourdine84/eTix/actions/runs/37222538785 : [haut clair](preview/revue-accueil-6dc0707/api34_revue_accueil_1_haut_clair.jpg), [haut sombre](preview/revue-accueil-6dc0707/api34_revue_accueil_1_haut_sombre.jpg), [carte Budget clair](preview/revue-accueil-6dc0707/api34_revue_accueil_2_budget_clair.jpg), [carte Budget sombre](preview/revue-accueil-6dc0707/api34_revue_accueil_2_budget_sombre.jpg), [bas clair](preview/revue-accueil-6dc0707/api34_revue_accueil_3_bas_clair.jpg), [bas sombre](preview/revue-accueil-6dc0707/api34_revue_accueil_3_bas_sombre.jpg) | Ce rendu seulement (code de l'Accueil identique à `feature/android-v2` @ `aa4011c`). Ne vaut ni pour les écrans non examinés ni pour des essais sur téléphone physique. |
+| 05/10/2026 | 2. Historique corrigé, clair et sombre, y compris 320 dp police 2,0 | 22 captures émulateur API 34 en français, commit `df0740a` (branche `fix/historique-noms-filtre`, PR #82 non fusionnée), run https://github.com/Nourdine84/eTix/actions/runs/37228116871 : [dossier](preview/revue-historique-df0740a/) (liste haut / bas, recherche, fenêtre Filtres, fenêtre après défilement, filtre actif ; suffixes `clair`, `sombre`, `clair_petit`, `sombre_petit`) | Ce rendu seulement. Ne vaut ni validation sur téléphone physique ni autorisation de fusion (PR #81 et #82 non fusionnées). |
 
 Accueil (04/10/2026) : rendu jugé suffisamment proche d'iOS, écarts actuels acceptables. Présentation conservée :
 pas de refonte de l'en-tête, de la carte Budget, du sélecteur de période ni de la navigation. Panier moyen, « Voir
@@ -17,7 +18,13 @@ distinct. Restent à vérifier séparément (constats avant toute modification d
 couleurs de budget entre Accueil et Catégories ; explication de l'écart entre dépenses totales et dépenses des
 catégories budgétées.
 
-## Historique — corrections en cours (non validé)
+## Historique — validé le 05/10/2026 (rendu du commit `df0740a`)
+
+Conservés : noms de magasins sur deux lignes ; montant sous la date quand la place manque ; résumé du filtre séparé
+du bouton d'export ; fenêtre Filtres avec accès aux boutons par défilement. Limite connue, non bloquante : texte
+indicatif de recherche coupé en grande police.
+
+### Historique — historique des corrections
 
 - 04/10/2026, décisions de Nourdine : noms de magasins sur deux lignes au plus, sans mot coupé ni montant masqué
   (montant sous la date sur petit écran : principe accepté, rendu à valider) ; résumé du filtre actif sur sa propre

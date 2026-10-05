@@ -346,6 +346,19 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
 - À vérifier séparément : seuils et couleurs de budget Accueil / Catégories ; écart dépenses totales / dépenses des
   catégories budgétées.
 
+### Revue visuelle — Historique validé (05/10/2026)
+
+- Corrections (PR #82, branche `fix/historique-noms-filtre`, non fusionnée) : noms de magasins sur deux lignes sans mot
+  coupé, montant sous la date si la place manque (`TicketCardRow`), résumé du filtre actif sur sa propre ligne ;
+  fenêtre Filtres inchangée (« Réinitialiser » accessible par défilement à 320 dp police 2,0, vérification bloquante
+  d'Appliquer, Fermer et Réinitialiser).
+- Commit testé `df0740a`, run 37228116871 : 146 jobs verts ; JVM + Robolectric 239 réussis / 1 ignoré / 0 échec ;
+  émulateurs API 21 / 34 / 36 47 / 47 ; petit écran 32 / 32 ; fr 7 / 7 ; système 3 / 3 ; mises à jour lot 8 et 9
+  13 / 13 ; dates API 22 à 25 2 / 2 ; revue 4 / 4.
+- **Validation de Nourdine** (05/10/2026) : rendu des 22 captures `docs/preview/revue-historique-df0740a/`, clair,
+  sombre, petit écran police 2,0. Ni validation sur téléphone physique ni autorisation de fusion.
+- Limite connue : texte indicatif de recherche coupé en grande police (non bloquant).
+
 ## Écarts restants avec iOS (référence `feature/home-hero-v2`)
 
 Bilan détaillé à jour (présent / partiel / absent, émulateur, validations manquantes) : `docs/PARITE_IOS.md`.

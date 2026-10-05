@@ -188,3 +188,11 @@ Rien n'a été désactivé ni supprimé.
   hypothèse non démontrée. Total au 02/10/2026 : API 24 trois fois, API 25 trois fois. Proposition si cela se
   reproduit, avant tout correctif : consigner l'état du gestionnaire de paquets (`dumpsys package`, `pm list
   packages`) et l'horodatage de `sys.boot_completed` au moment du blocage, pour départager les deux pistes.
+
+## 04/10/2026 — `emulator-api36-petit`, « Clavier non affiché » (PR #81, `42eaeec`)
+
+- Run 37229126796, 1ʳᵉ tentative : un seul échec, `E2eClavierPetitEcranTest.k01` (passe a, premier test de la passe
+  sur émulateur neuf) : clavier non affiché ; 31 / 32 réussis. Commit ne modifiant que `docs/REVUE_VISUELLE.md` (code
+  de l'app et des tests identique à `8895dc8`, vert ; même test vert sur `df0740a`).
+- Une seule relance ciblée (2ᵉ tentative) : 32 / 32. **Cause inconnue** ; clavier pas encore prêt sur l'émulateur =
+  hypothèse non démontrée.
