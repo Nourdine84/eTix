@@ -209,29 +209,26 @@ class E2eRevueAjouterTest {
         if (v is android.view.ViewGroup) for (i in 0 until v.childCount) collectClipped(v.getChildAt(i), out)
     }
 
-    /** Saisie au clavier : OK et Annuler entièrement visibles au-dessus du clavier. BLOQUANT. */
+    /**
+     * Saisie au clavier : OK et Annuler entièrement visibles au-dessus du clavier. BLOQUANT. Le clavier est mesuré sur
+     * la fenêtre de l'activité (la fenêtre du sélecteur ne reçoit un retrait que si le clavier la chevauche).
+     */
     private fun checkPickerActionsAboveKeyboard(label: String) {
-        var ime = 0
-        val end = SystemClock.uptimeMillis() + 8000
-        while (ime == 0 && SystemClock.uptimeMillis() < end) {
-            onView(withId(com.google.android.material.R.id.confirm_button)).check { v, _ ->
-                ime = ViewCompat.getRootWindowInsets(v.rootView)?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
-            }
-            if (ime == 0) SystemClock.sleep(250)
-        }
+        val ime = waitImeStable()
         assertTrue("Clavier non affiché sur la saisie de date ($label)", ime > 0)
-        SystemClock.sleep(500)
+        var imeTop = 0
+        instr.runOnMainSync {
+            val decor = resumed().window.decorView
+            val d = IntArray(2); decor.getLocationOnScreen(d)
+            imeTop = d[1] + decor.height - ime // haut du clavier (coordonnées écran)
+        }
         for (id in listOf(com.google.android.material.R.id.confirm_button, com.google.android.material.R.id.cancel_button)) {
             onView(withId(id)).check { v, _ ->
                 val loc = IntArray(2); v.getLocationOnScreen(loc)
-                val root = v.rootView
-                val rl = IntArray(2); root.getLocationOnScreen(rl)
-                val ins = ViewCompat.getRootWindowInsets(root)?.getInsets(WindowInsetsCompat.Type.ime())?.bottom ?: 0
-                val imeTop = rl[1] + root.height - ins // haut du clavier (coordonnées écran)
                 val r = android.graphics.Rect()
                 val visible = v.getGlobalVisibleRect(r) && r.height() == v.height && r.width() == v.width &&
                     loc[1] + v.height <= imeTop
-                val line = "bouton ${v.resources.getResourceEntryName(id)} [${loc[1]},${loc[1] + v.height}] haut du clavier $imeTop (clavier ${ins}px) visible=$visible"
+                val line = "bouton ${v.resources.getResourceEntryName(id)} [${loc[1]},${loc[1] + v.height}] haut du clavier $imeTop (clavier ${ime}px) visible=$visible"
                 log("$label sélecteur de date : $line")
                 assertTrue("Action du sélecteur accessible clavier ouvert ($label) : $line", visible)
             }
@@ -334,6 +331,11 @@ class E2eRevueAjouterTest {
         val s = if (passe == null) "modifier" else "modifier_$passe"
         startMain()
         onView(withId(R.id.menu_history)).perform(click())
+        waitFor(withId(R.id.recyclerHistory))
+        // « Réseau de bus » (ticket unique) est plus bas dans la liste : défilement jusqu'à lui
+        onView(withId(R.id.recyclerHistory)).perform(
+            androidx.test.espresso.contrib.RecyclerViewActions.scrollTo<androidx.recyclerview.widget.RecyclerView.ViewHolder>(
+                androidx.test.espresso.matcher.ViewMatchers.hasDescendant(withText("Réseau de bus"))))
         waitFor(allOf(withText("Réseau de bus"), isDescendantOfA(withId(R.id.recyclerHistory))))
         onView(allOf(withText("Réseau de bus"), isDescendantOfA(withId(R.id.recyclerHistory)), isDisplayed())).perform(click())
         val overlay = { id: Int -> allOf(withId(id), isDescendantOfA(withId(R.id.overlayContainer))) }
