@@ -4,6 +4,8 @@
 # MODE=standard (défaut) : parcours complet + mise à jour A→B + isolation QA + persistance + lot 4 + Catégories
 # MODE=fr : émulateur en français, tests de locale (saisie, dates, filtres inclusifs, limites de période)
 # MODE=petit : petit écran / grande police ; MODE=compat : lecteur de dates OCR seul (API 22 à 25)
+# MODE=revue : émulateur en français, captures de revue visuelle (Accueil, Historique, Ajouter ; clair / sombre ; Ajouter aussi en
+#   320 dp police 2,0 ; mêmes données fictives)
 # MODE=systeme (lot 9) : ML Kit sans réseau au 1er lancement, vrais sélecteur d'image et appareil photo
 # MODE=maj (lot 9, étendu au lot 10) : mise à jour depuis une version fusionnée (BASE_LABEL : lot 8 ou lot 9, APK
 #   construits par build_maj_base.sh) vers cette version, données et thème comparés
@@ -22,7 +24,7 @@ boot_wait() { # attend la fin du démarrage (max ~4 min)
   return 1
 }
 
-if [ "$MODE" = "fr" ]; then
+if [ "$MODE" = "fr" ] || [ "$MODE" = "revue" ]; then
   # Langue système fr-FR : propriété persistante (image google_apis, adb root) + redémarrage du framework.
   # (-change-locale redémarrait le framework pendant l'installation : « Broken pipe », langue restée en-US.)
   timeout 60 adb root >/dev/null 2>&1 || true
@@ -126,6 +128,21 @@ fi
 if [ "$MODE" = "fr" ]; then
   run com.etix.e2e.E2eFrancaisTest
   run com.etix.e2e.E2eScanFrTest
+  collect
+  exit 0
+fi
+
+if [ "$MODE" = "revue" ]; then
+  # Revue visuelle : app neuve, données fictives injectées par le test, captures seulement
+  run com.etix.e2e.E2eRevueAccueilTest
+  run com.etix.e2e.E2eRevueHistoriqueTest   # mêmes données (créées par la classe précédente)
+  run com.etix.e2e.E2eRevueAjouterTest      # écran Ajouter, mêmes données, formulaire non enregistré
+  # Ajouter sur petit écran et grande police, clavier ouvert : 320 dp (720x1280, densité 360), police 2,0
+  adb shell wm size 720x1280; adb shell wm density 360; adb shell settings put system font_scale 2.0
+  echo "passe petit : wm size 720x1280, densité 360, police 2.0" >> "$OUT/device.txt"
+  sleep 4
+  run com.etix.e2e.E2eRevueAjouterTest petit
+  adb shell wm size reset; adb shell wm density reset; adb shell settings put system font_scale 1.0
   collect
   exit 0
 fi
