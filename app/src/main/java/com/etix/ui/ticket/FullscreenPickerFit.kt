@@ -85,10 +85,10 @@ internal object FullscreenPickerFit {
         /** Champ en cours de saisie, avec son message d'erreur, ramené au-dessus du clavier. */
         fun keepFocusedFieldVisible() {
             var target: View = findFocus() ?: return
-            var p = target.parent
+            var p: android.view.ViewParent? = target.parent
             while (p is View && p !== this) {
                 if (p is TextInputLayout) { target = p; break }
-                p = p.parent
+                p = (p as View).parent
             }
             val r = Rect(0, 0, target.width, target.height)
             offsetDescendantRectToMyCoords(target, r)
