@@ -279,6 +279,8 @@ class E2eRevueAjouterTest {
         openDatePicker(R.id.inputDate)
         ensureTextInput()
         typeDate("31/02/2026"); assertConfirmEnabled(false, "31/02/2026 ($s)")
+        // Message d'erreur affiché : les actions doivent rester accessibles clavier ouvert (BLOQUANT)
+        checkPickerActionsAboveKeyboard("$s, date invalide")
         shot("revue_ajouter_3b_date_invalide_$s")
         typeDate("29/02/2023"); assertConfirmEnabled(false, "29/02/2023, année non bissextile ($s)")
         typeDate("29/02/2024"); assertConfirmEnabled(true, "29/02/2024, année bissextile ($s)")

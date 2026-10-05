@@ -223,16 +223,23 @@ class TicketFormController(
 
     /**
      * Calendrier si les jours y restent lisibles à la police choisie ; sinon ouverture directe en saisie jj/mm/aaaa
-     * (format indiqué dans le titre), sans réduire la police (DatePickerRules). Partagé par Ajouter et Modifier.
+     * (format indiqué dans le titre), en plein écran, sans réduire la police (DatePickerRules). Partagé par Ajouter
+     * et Modifier.
      */
     private fun pickDate() {
         val conf = fragment.resources.configuration
         val textInput = DatePickerRules.prefersTextInput(conf.screenWidthDp, conf.fontScale)
-        val picker = MaterialDatePicker.Builder.datePicker()
+        val builder = MaterialDatePicker.Builder.datePicker()
             .setTitleText(if (textInput) DatePickerRules.TITLE_TEXT_INPUT else DatePickerRules.TITLE)
             .setSelection(TicketFormRules.toPickerSelection(dateMillis))
             .setInputMode(if (textInput) MaterialDatePicker.INPUT_MODE_TEXT else MaterialDatePicker.INPUT_MODE_CALENDAR)
-            .build()
+        if (textInput) {
+            // Plein écran : fermeture et validation en haut, jamais sous le clavier (le message d'erreur d'une date
+            // invalide agrandit le contenu ; en fenêtre, OK et Annuler passaient sous le clavier à police 2,0).
+            builder.setTheme(com.google.android.material.R.style.ThemeOverlay_Material3_MaterialCalendar_Fullscreen)
+                .setPositiveButtonText("OK")
+        }
+        val picker = builder.build()
         picker.addOnPositiveButtonClickListener { sel ->
             dateMillis = TicketFormRules.combineDay(sel, dateMillis)
             render()
