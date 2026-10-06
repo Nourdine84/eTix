@@ -139,12 +139,25 @@ class E2eRevueScanTest {
     }
 
     /**
+     * Vue entière amenée à l'écran par son parent défilant (requestRectangleOnScreen sur toute la vue). Le scrollTo()
+     * d'Espresso ne fait rien dès que 90 % de la vue sont visibles : une dernière ligne coupée resterait coupée.
+     */
+    private fun bringFullyOnScreen(id: Int, inOverlay: Boolean) {
+        instr.runOnMainSync {
+            val act = resumed()
+            val root: View = if (inOverlay) act.findViewById(R.id.overlayContainer) else act.window.decorView
+            val v = root.findViewById<View>(id) ?: return@runOnMainSync
+            v.requestRectangleOnScreen(android.graphics.Rect(0, 0, v.width, v.height), true)
+        }
+        SystemClock.sleep(600)
+    }
+
+    /**
      * Bouton [id] amené à l'écran (défilement si besoin) puis entièrement visible entre la barre d'état et le haut du
      * clavier (ou le bas de l'écran). BLOQUANT : une action inaccessible n'est jamais seulement consignée.
      */
     private fun assertReachable(id: Int, label: String) {
-        try { onView(withId(id)).perform(scrollTo()) } catch (_: Throwable) {}
-        SystemClock.sleep(500)
+        bringFullyOnScreen(id, false)
         var line = ""; var ok = false
         instr.runOnMainSync {
             val act = resumed()
@@ -174,9 +187,7 @@ class E2eRevueScanTest {
      * [singleLine] : le libellé doit tenir sur une ligne.
      */
     private fun assertReadable(id: Int, label: String, singleLine: Boolean = false, inOverlay: Boolean = false) {
-        val m = if (inOverlay) allOf(withId(id), isDescendantOfA(withId(R.id.overlayContainer))) else withId(id)
-        try { onView(m).perform(scrollTo()) } catch (_: Throwable) {}
-        SystemClock.sleep(500)
+        bringFullyOnScreen(id, inOverlay)
         var line = ""; val problems = mutableListOf<String>()
         instr.runOnMainSync {
             val act = resumed()
@@ -270,7 +281,6 @@ class E2eRevueScanTest {
         SystemClock.sleep(500)
         shot("revue_scan_3_complet_$s")
         // Libellé « CATÉGORIE » sur une ligne et indication « Suggéré par l'OCR » lisible
-        onView(withId(R.id.tvCategorySuggested)).check(matches(isDisplayed()))
         assertReadable(R.id.tvCategoryLabel, "$s catégorie", singleLine = true)
         assertReadable(R.id.tvCategorySuggested, "$s indication OCR")
         assertReadable(R.id.tvCategoryValue, "$s catégorie (valeur)")
