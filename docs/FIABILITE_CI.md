@@ -189,7 +189,7 @@ Rien n'a été désactivé ni supprimé.
   reproduit, avant tout correctif : consigner l'état du gestionnaire de paquets (`dumpsys package`, `pm list
   packages`) et l'horodatage de `sys.boot_completed` au moment du blocage, pour départager les deux pistes.
 
-## 04 et 05/10/2026 — `emulator-api36-petit`, « Clavier non affiché » (PR #81, 2 occurrences)
+## 04 au 06/10/2026 — `emulator-api36-petit`, « Clavier non affiché » (PR #81, 3 occurrences)
 
 - Run 37229126796, 1ʳᵉ tentative : un seul échec, `E2eClavierPetitEcranTest.k01` (passe a, premier test de la passe
   sur émulateur neuf) : clavier non affiché ; 31 / 32 réussis. Commit ne modifiant que `docs/REVUE_VISUELLE.md` (code
@@ -200,6 +200,10 @@ Rien n'a été désactivé ni supprimé.
   l'app ni `E2eClavierPetitEcranTest` modifiés) : même test `k01`, même passe a, premier test de la passe sur
   émulateur neuf, « Clavier non affiché » ; 31 / 32. Une seule relance ciblée (2ᵉ tentative) : 32 / 32.
 - Bilan : 2 occurrences en 3 runs sur cette branche, chacune verte à l'unique relance. **Cause inconnue.**
+- 3ᵉ occurrence (06/10/2026), run 37446781112 (PR #81) sur `ec66665` (intégration de `feature/android-v2` @ `55ecc9a` ;
+  diff de la PR limité à la documentation et aux captures, code de l'app et des tests identique à la cible) : même
+  test `k01`, même passe a, « Clavier non affiché » ; 31 / 32. Une seule relance ciblée (2ᵉ tentative) : 32 / 32. Le
+  run push du même commit (37446774508) a passé `k01` sans relance. **Cause inconnue.**
 - Décision de Nourdine (05/10/2026) : comportement de `k01` conservé ; pas de second toucher ajouté pour rendre la
   CI verte. Une éventuelle récupération ferait l'objet d'un diagnostic distinct et signalerait explicitement son
   utilisation.

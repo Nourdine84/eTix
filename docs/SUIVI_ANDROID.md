@@ -395,6 +395,19 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
   archive », job `emulator-api36` du run push 37325285533, commit `f3961e5`, aucun test exécuté) : non relancé, même
   job vert dans le run PR du même commit.
 
+### Intégrations du 06/10/2026 (PR #82 fusionnée, PR #81 actualisée)
+
+- PR #82 et #81 actualisées par commit de fusion avec `feature/android-v2` @ `55ecc9a` (après la PR #83) :
+  `8c20d6c` (#82 : script de revue combiné, test de revue de l'Historique de #82 conservé) et `ec66665` (#81 : tests et
+  script de revue repris de la version fusionnée, ancien parcours du sélecteur non réintroduit). CI : run 37446715744
+  (#82) 162 jobs verts sans relance ; run 37446781112 (#81) vert après une relance ciblée (k01, voir
+  `docs/FIABILITE_CI.md`, 3ᵉ occurrence, cause inconnue).
+- **PR #82 fusionnée** (06/10/2026, autorisation de Nourdine) : commit de fusion `8f5eafa` (parents `55ecc9a`,
+  `8c20d6c`, sans squash ; arbre identique au résultat testé `d4b3949`). Corrections de l'Historique validées en
+  `df0740a` (noms sur deux lignes, montant adaptatif, résumé du filtre séparé, boutons Filtres accessibles) et
+  sélecteur de date de la PR #83 conservés. Branche `fix/historique-noms-filtre` conservée.
+- PR #81 : actualisée avec `8f5eafa` (`a58cc0b`, sans conflit) ; diff restant : documentation et captures seulement.
+
 ## Écarts restants avec iOS (référence `feature/home-hero-v2`)
 
 Bilan détaillé à jour (présent / partiel / absent, émulateur, validations manquantes) : `docs/PARITE_IOS.md`.

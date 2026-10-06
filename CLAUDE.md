@@ -83,7 +83,7 @@ Document de reprise. À lire en entier avant toute action. Détail : `docs/SUIVI
 - Captures : artefacts `screenshots` et `emulator-*` (30 jours) ; aperçus en annotations seulement avec le label
   `apercus`. Annotations lisibles via l'API checks (`gh api`).
 - Incidents connus, cause inconnue : installation d'un APK (app ou tests) bloquée > 300 s sur émulateur API 24 / 25,
-  aucun test exécuté (API 24 : 3 fois, API 25 : 3 fois au 02/10/2026, détail dans `docs/FIABILITE_CI.md`). Un lien
+  aucun test exécuté (API 24 : 3 fois, API 25 : 3 fois au 02/10/2026, détail dans `docs/FIABILITE_CI.md`). `k01` « Clavier non affiché » (petit écran, passe a) : 3 occurrences au 06/10/2026, chacune verte à l'unique relance, cause inconnue, comportement du test conservé. Un lien
   avec l'APK n'est pas exclu ; un émulateur pas encore prêt reste une hypothèse. Pas de relance automatique : une
   seule relance ciblée, faits consignés ; si elle échoue, diagnostics et proposition ciblée avant toute autre action.
 
@@ -108,10 +108,13 @@ Document de reprise. À lire en entier avant toute action. Détail : `docs/SUIVI
   revue 11 / 11 ; fr 7 / 7 ; système 3 / 3 ; mises à jour lot 8 et 9 13 / 13 ; dates API 22 à 25 2 / 2). Branche
   `fix/ajouter-date-lisible` conservée. Seuil calendrier / saisie mesuré sur l'appareil (pas une règle « police
   > 1,0 ») ; limite acceptée : calendrier choisi manuellement illisible à police 2,0, retour à la saisie accessible.
+- **PR #82 fusionnée** (06/10/2026) : Historique (noms sur deux lignes, montant adaptatif, résumé du filtre séparé).
+  `feature/android-v2` : tête **`8f5eafa`** (commit de fusion, parents `55ecc9a` et `8c20d6c`, sans squash, arbre
+  identique au résultat testé `d4b3949`, run 37446715744). Branche `fix/historique-noms-filtre` conservée.
 - **Fusion ≠ validation** : revue visuelle en cours (`docs/REVUE_VISUELLE.md`) — **Accueil** validé
   (04/10/2026, 6 captures du commit `6dc0707`, PR #81) et **Historique** corrigé validé (05/10/2026, 22 captures du
   commit `df0740a`, PR #82) et **sélecteur de date** d'Ajouter / Modifier validé (06/10/2026, 12 captures du commit
-  `f3961e5`, puis seuil et messages validés le 06/10/2026) ; PR #81 et #82 non fusionnées ; aucun essai sur
+  `f3961e5`, puis seuil et messages validés le 06/10/2026) ; PR #82 fusionnée, PR #81 (suivi) non fusionnée ; aucun essai sur
   téléphone physique, aucune application destinataire réelle n'a ouvert le CSV exporté.
 - Décisions du 02/10/2026 sur les Réglages : format CSV actuel (iOS : virgule, point décimal, UTF-8) accepté pour le
   lot 10, avec procédure d'import documentée dans `docs/REGLAGES.md` ; journaux de plantage **non activés**
