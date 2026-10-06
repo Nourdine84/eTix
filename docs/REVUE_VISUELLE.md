@@ -1,6 +1,7 @@
 # Parcours de revue visuelle
 
-**Validés par Nourdine : Accueil et Historique** (voir ci-dessous). Aucun autre écran n'est approuvé. Ces captures servent de base à la revue ; elles ne valident ni les choix
+**Validés par Nourdine : Accueil, Historique et sélecteur de date d'Ajouter / Modifier** (voir ci-dessous). Le reste de
+l'écran Ajouter et les autres écrans ne sont pas approuvés. Ces captures servent de base à la revue ; elles ne valident ni les choix
 visuels ni la parité avec iOS (référence provisoire : code iOS `feature/home-hero-v2`, maquettes introuvables dans les sources
 accessibles, ce qui ne signifie pas qu'elles n'ont jamais existé ni été validées).
 
@@ -10,6 +11,7 @@ accessibles, ce qui ne signifie pas qu'elles n'ont jamais existé ni été valid
 |---|---|---|---|
 | 04/10/2026 | 1. Accueil, clair et sombre | 6 captures émulateur API 34 en français, commit `6dc0707` (branche `chore/revue-accueil-captures`, PR #81 non fusionnée), run https://github.com/Nourdine84/eTix/actions/runs/37222538785 : [haut clair](preview/revue-accueil-6dc0707/api34_revue_accueil_1_haut_clair.jpg), [haut sombre](preview/revue-accueil-6dc0707/api34_revue_accueil_1_haut_sombre.jpg), [carte Budget clair](preview/revue-accueil-6dc0707/api34_revue_accueil_2_budget_clair.jpg), [carte Budget sombre](preview/revue-accueil-6dc0707/api34_revue_accueil_2_budget_sombre.jpg), [bas clair](preview/revue-accueil-6dc0707/api34_revue_accueil_3_bas_clair.jpg), [bas sombre](preview/revue-accueil-6dc0707/api34_revue_accueil_3_bas_sombre.jpg) | Ce rendu seulement (code de l'Accueil identique à `feature/android-v2` @ `aa4011c`). Ne vaut ni pour les écrans non examinés ni pour des essais sur téléphone physique. |
 | 05/10/2026 | 2. Historique corrigé, clair et sombre, y compris 320 dp police 2,0 | 22 captures émulateur API 34 en français, commit `df0740a` (branche `fix/historique-noms-filtre`, PR #82 non fusionnée), run https://github.com/Nourdine84/eTix/actions/runs/37228116871 : [dossier](preview/revue-historique-df0740a/) (liste haut / bas, recherche, fenêtre Filtres, fenêtre après défilement, filtre actif ; suffixes `clair`, `sombre`, `clair_petit`, `sombre_petit`) | Ce rendu seulement. Ne vaut ni validation sur téléphone physique ni autorisation de fusion (PR #81 et #82 non fusionnées). |
+| 06/10/2026 | 3. Ajouter / Modifier : sélecteur de date corrigé, clair et sombre, police normale et 320 dp police 2,0 | 12 captures émulateur API 34 en français, commit `f3961e5` (branche `fix/ajouter-date-lisible`, PR #83 non fusionnée), run https://github.com/Nourdine84/eTix/actions/runs/37325295766 : [dossier](preview/revue-ajouter-date-f3961e5/) (sélecteur à l'ouverture, date invalide, 29/02/2024 saisi clavier ouvert, Modifier ; suffixes `clair`, `sombre`, `_petit`, `modifier`) | Le sélecteur de date seulement : calendrier en police normale, saisie adaptée en grande police, y compris dans Modifier. Ne vaut ni pour le reste de l'écran Ajouter, ni validation sur téléphone physique, ni autorisation de fusion. |
 
 Accueil (04/10/2026) : rendu jugé suffisamment proche d'iOS, écarts actuels acceptables. Présentation conservée :
 pas de refonte de l'en-tête, de la carte Budget, du sélecteur de période ni de la navigation. Panier moyen, « Voir
@@ -40,6 +42,14 @@ indicatif de recherche coupé en grande police.
 - **Limite documentée (conservée)** : à 320 dp avec une police à 2,0, le texte indicatif de la recherche est coupé
   (« Magasin ou catégo… »). Champ de hauteur fixe sur une ligne ; la taille de police n'est pas réduite pour le faire
   tenir. Le libellé accessible (« Rechercher un magasin ou une catégorie ») reste complet.
+
+## Sélecteur de date d'Ajouter / Modifier — validé le 06/10/2026 (rendu du commit `f3961e5`)
+
+Validé : calendrier en police normale (fenêtre), saisie jj/mm/aaaa en grande police (plein écran, fermeture et OK
+fixes sous la barre d'état, saisie défilante au-dessus du clavier), clair et sombre, y compris dans Modifier.
+Vérification demandée avant fusion : seuil réel de bascule (police 1,5 et 1,8 à 320 dp), retour à la saisie depuis le
+calendrier choisi manuellement, message « Date invalide » distinct de « Format incorrect » (ajouté après cette
+validation : captures à présenter). Sélecteur des filtres de l'Historique : non modifié, décision séparée.
 
 ## Captures de référence actuelles
 

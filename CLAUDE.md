@@ -103,7 +103,8 @@ Document de reprise. À lire en entier avant toute action. Détail : `docs/SUIVI
 - Lot 9 fusionné le 02/10/2026 (PR #78, `86d9a19`) : scanner + décisions OCR Q1–Q4.
 - **Fusion ≠ validation** : revue visuelle en cours (`docs/REVUE_VISUELLE.md`) — **Accueil** validé
   (04/10/2026, 6 captures du commit `6dc0707`, PR #81) et **Historique** corrigé validé (05/10/2026, 22 captures du
-  commit `df0740a`, PR #82) ; PR #81 et #82 non fusionnées ; aucun essai sur
+  commit `df0740a`, PR #82) et **sélecteur de date** d'Ajouter / Modifier validé (06/10/2026, 12 captures du commit
+  `f3961e5`, PR #83) ; PR #81, #82 et #83 non fusionnées ; aucun essai sur
   téléphone physique, aucune application destinataire réelle n'a ouvert le CSV exporté.
 - Décisions du 02/10/2026 sur les Réglages : format CSV actuel (iOS : virgule, point décimal, UTF-8) accepté pour le
   lot 10, avec procédure d'import documentée dans `docs/REGLAGES.md` ; journaux de plantage **non activés**

@@ -359,6 +359,22 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
   sombre, petit écran police 2,0. Ni validation sur téléphone physique ni autorisation de fusion.
 - Limite connue : texte indicatif de recherche coupé en grande police (non bloquant).
 
+### Revue visuelle — sélecteur de date d'Ajouter / Modifier validé (06/10/2026)
+
+- Correction (PR #83, branche `fix/ajouter-date-lisible`, non fusionnée) : à 320 dp en grande police, la grille du
+  calendrier coupait les jours à deux chiffres et le mois. `DatePickerRules` ouvre la saisie jj/mm/aaaa quand un jour à
+  deux chiffres ne tient pas dans une colonne (seuil à 320 dp : police > 1,64), en plein écran ; `FullscreenPickerFit`
+  garde fermeture et OK sous la barre d'état et fait défiler la saisie au-dessus du clavier (défaut constaté sur
+  `d4b104b` : message d'erreur → fenêtre décalée, actions sous la barre d'état ; contrôle corrigé, bord haut inclus).
+- Commit testé `f3961e5`, run 37325295766 : 154 jobs verts ; JVM + Robolectric 242 réussis / 1 ignoré / 0 échec ;
+  revue 7 / 7 ; émulateurs API 21 / 34 / 36 47 / 47 ; petit écran 32 / 32 ; fr 7 / 7 ; système 3 / 3 ; mises à jour
+  lot 8 et 9 13 / 13 ; dates API 22 à 25 2 / 2.
+- **Validation de Nourdine** (06/10/2026) : rendu des 12 captures `docs/preview/revue-ajouter-date-f3961e5/`
+  (calendrier en police normale, saisie adaptée en grande police, clair, sombre, Modifier). Ni validation sur
+  téléphone physique ni autorisation de fusion.
+- Suite demandée avant fusion : seuil vérifié à police 1,5 / 1,8 / 2,0, retour à la saisie depuis le calendrier,
+  « Date invalide » (date inexistante) distinct de « Format incorrect » (PR #83, commits suivants).
+
 ## Écarts restants avec iOS (référence `feature/home-hero-v2`)
 
 Bilan détaillé à jour (présent / partiel / absent, émulateur, validations manquantes) : `docs/PARITE_IOS.md`.
