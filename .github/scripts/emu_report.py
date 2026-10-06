@@ -86,7 +86,7 @@ for l in seuil:
 if part:
     parts.append(part)
 for i, p in enumerate(parts[:3], 1):
-    notice(f"Sélecteur de date, seuil (mesures {i}/{min(len(parts), 3)})", p.strip())
+    notice(f"Sélecteur de date au seuil (mesures {i} sur {min(len(parts), 3)})", p.strip())
 
 # Lot 9 : mesures et constats du scanner, regroupés en une annotation (limite de 10 notices par étape)
 scan_parts = []

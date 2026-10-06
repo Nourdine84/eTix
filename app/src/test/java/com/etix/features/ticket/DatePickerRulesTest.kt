@@ -38,7 +38,18 @@ class DatePickerRulesTest {
         assertFalse(DatePickerRules.twoDigitDayDp(1.5f) > DatePickerRules.calendarColumnDp(320))
         assertTrue(DatePickerRules.prefersTextInput(320, 1.5f, moisCoupe))
         assertTrue(DatePickerRules.prefersTextInput(411, 1.0f, DatePickerRules.MONTH_LABEL_AVAILABLE_DP + 1f))
-        assertFalse(DatePickerRules.prefersTextInput(320, 1.0f, DatePickerRules.MONTH_LABEL_AVAILABLE_DP))
+    }
+
+    @Test
+    fun marge_sur_le_libelle_du_mois() {
+        // Mesuré sur émulateur à police 1,0 : « Septembre 2026 » estimé 104,4 dp (106,2 dp réels) → calendrier
+        assertFalse(DatePickerRules.prefersTextInput(320, 1.0f, 104.4f))
+        // Estimation trop proche de la place disponible : la marge fait choisir la saisie
+        val limite = DatePickerRules.MONTH_LABEL_AVAILABLE_DP - DatePickerRules.MONTH_LABEL_MARGIN_DP
+        assertFalse(DatePickerRules.prefersTextInput(320, 1.0f, limite))
+        assertTrue(DatePickerRules.prefersTextInput(320, 1.0f, limite + 0.5f))
+        // Police 1,15 : 119,1 dp estimés → saisie
+        assertTrue(DatePickerRules.prefersTextInput(320, 1.15f, 119.1f))
     }
 
     @Test

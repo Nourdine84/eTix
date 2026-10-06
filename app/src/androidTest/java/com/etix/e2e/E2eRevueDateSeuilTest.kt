@@ -129,8 +129,10 @@ class E2eRevueDateSeuilTest {
         onView(withId(com.google.android.material.R.id.month_navigation_fragment_toggle)).check { v, _ ->
             val t = v as android.widget.TextView
             val d = t.resources.displayMetrics.density
+            // Place maximale : largeur du conteneur du bouton (le bouton s'ajuste au texte), marges et icône retirées
+            val max = (t.parent as View).width - t.totalPaddingLeft - t.totalPaddingRight
             label = "${t.text} (${"%.1f".format(t.paint.measureText(t.text.toString()) / d)}dp / " +
-                "${"%.1f".format((t.width - t.totalPaddingLeft - t.totalPaddingRight) / d)}dp)"
+                "${"%.1f".format(max / d)}dp au plus)"
         }
         return label
     }
@@ -189,7 +191,7 @@ class E2eRevueDateSeuilTest {
         val expectText = DatePickerPresentation.prefersTextInput(ctx)
         log("règle : colonne ${"%.1f".format(DatePickerRules.calendarColumnDp(conf.screenWidthDp))}dp, " +
             "jour à 2 chiffres ${"%.1f".format(DatePickerRules.twoDigitDayDp(conf.fontScale))}dp, mois le plus long " +
-            "${"%.1f".format(monthDp)}dp / ${DatePickerRules.MONTH_LABEL_AVAILABLE_DP}dp → " +
+            "${"%.1f".format(monthDp)}dp + marge ${DatePickerRules.MONTH_LABEL_MARGIN_DP}dp / ${DatePickerRules.MONTH_LABEL_AVAILABLE_DP}dp → " +
             if (expectText) "saisie" else "calendrier")
 
         ctx.startActivity(Intent(ctx, MainActivityV2::class.java)

@@ -23,6 +23,12 @@ object DatePickerRules {
     const val MONTH_LABEL_AVAILABLE_DP = 114f
 
     /**
+     * Marge sur la largeur estimée du libellé du mois (dp) : sur l'émulateur, « Septembre 2026 » à police 1,0 est
+     * estimé à 104,4 dp pour 106,2 dp mesurés sur le bouton (écart de 1,7 %) ; marge d'environ deux fois l'écart.
+     */
+    const val MONTH_LABEL_MARGIN_DP = 4f
+
+    /**
      * Largeur estimée d'une colonne de jours (dp) : marges du dialogue et du calendrier retirées, 7 colonnes. Le
      * calendrier ne s'élargit pas au-delà de 320 dp d'écran (largeur fixe).
      */
@@ -36,5 +42,6 @@ object DatePickerRules {
      * libellé de mois le plus long de l'année, mesurée sur l'appareil avec la police de l'en-tête du calendrier.
      */
     fun prefersTextInput(screenWidthDp: Int, fontScale: Float, longestMonthLabelDp: Float): Boolean =
-        twoDigitDayDp(fontScale) > calendarColumnDp(screenWidthDp) || longestMonthLabelDp > MONTH_LABEL_AVAILABLE_DP
+        twoDigitDayDp(fontScale) > calendarColumnDp(screenWidthDp) ||
+            longestMonthLabelDp + MONTH_LABEL_MARGIN_DP > MONTH_LABEL_AVAILABLE_DP
 }
