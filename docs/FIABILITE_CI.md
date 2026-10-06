@@ -207,3 +207,14 @@ Rien n'a été désactivé ni supprimé.
 - Décision de Nourdine (05/10/2026) : comportement de `k01` conservé ; pas de second toucher ajouté pour rendre la
   CI verte. Une éventuelle récupération ferait l'objet d'un diagnostic distinct et signalerait explicitement son
   utilisation.
+
+## 05 et 06/10/2026 — téléchargement de l'émulateur en échec (« Error on ZipFile unknown archive »)
+
+- `sdkmanager --install emulator` échoue avant le démarrage de l'émulateur : « An error occurred while preparing SDK
+  package Android Emulator: Error on ZipFile unknown archive » ; aucun test exécuté, verdict « aucune exécution
+  prévue enregistrée ».
+- 05/10/2026 : run push 37325285533 (`f3961e5`), job `emulator-api36` ; non relancé, même job vert dans le run PR du
+  même commit.
+- 06/10/2026 : run PR 37464715741 (PR #81, `b9adc4f`), job `emulator-api34-revue` ; une seule relance ciblée
+  (2ᵉ tentative) : 12 / 12.
+- **Cause inconnue** (paquet téléchargé corrompu ou incomplet : hypothèse non démontrée). Indépendant du code testé.

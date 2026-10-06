@@ -407,6 +407,13 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
   `df0740a` (noms sur deux lignes, montant adaptatif, résumé du filtre séparé, boutons Filtres accessibles) et
   sélecteur de date de la PR #83 conservés. Branche `fix/historique-noms-filtre` conservée.
 - PR #81 : actualisée avec `8f5eafa` (`a58cc0b`, sans conflit) ; diff restant : documentation et captures seulement.
+- **PR #81 fusionnée** (06/10/2026, autorisation de Nourdine) : commit de fusion `2057dc1` (parents `8f5eafa`,
+  `b9adc4f`, sans squash ; arbre identique au résultat testé `af0f2bc`, run 37464715741 vert après une relance ciblée :
+  téléchargement de l'émulateur en échec avant tout test, cause inconnue, voir `docs/FIABILITE_CI.md`). Documentation
+  et captures seulement. Branche `chore/revue-accueil-captures` conservée.
+- CI après fusion : run 37463274050 (`8f5eafa`) et run 37467441768 (`2057dc1`), verts sans relance : JVM +
+  Robolectric 245 réussis / 1 ignoré (`OCRValidationTest`) / 0 échec ; émulateurs API 21 / 34 / 36 47 / 47 ; petit
+  écran 32 / 32 ; revue 12 / 12 ; fr 7 / 7 ; système 3 / 3 ; mises à jour lot 8 et 9 13 / 13 ; dates API 22 à 25 2 / 2.
 
 ## Écarts restants avec iOS (référence `feature/home-hero-v2`)
 
