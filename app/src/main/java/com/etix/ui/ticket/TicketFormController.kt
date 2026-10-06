@@ -242,6 +242,7 @@ class TicketFormController(
         }
         val picker = builder.build()
         if (textInput) FullscreenPickerFit.install(picker)
+        DateInputErrorText.install(picker)
         picker.addOnPositiveButtonClickListener { sel ->
             dateMillis = TicketFormRules.combineDay(sel, dateMillis)
             render()

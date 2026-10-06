@@ -5,7 +5,7 @@
 # MODE=fr : émulateur en français, tests de locale (saisie, dates, filtres inclusifs, limites de période)
 # MODE=petit : petit écran / grande police ; MODE=compat : lecteur de dates OCR seul (API 22 à 25)
 # MODE=revue : émulateur en français, captures de revue visuelle (Accueil, Historique, Ajouter ; clair / sombre ; Ajouter aussi en
-#   320 dp police 2,0 ; mêmes données fictives)
+#   320 dp police 2,0 ; sélecteur de date autour du seuil de bascule : 320 dp, police 2,0, 1,8, 1,5 ; mêmes données fictives)
 # MODE=systeme (lot 9) : ML Kit sans réseau au 1er lancement, vrais sélecteur d'image et appareil photo
 # MODE=maj (lot 9, étendu au lot 10) : mise à jour depuis une version fusionnée (BASE_LABEL : lot 8 ou lot 9, APK
 #   construits par build_maj_base.sh) vers cette version, données et thème comparés
@@ -142,6 +142,15 @@ if [ "$MODE" = "revue" ]; then
   echo "passe petit : wm size 720x1280, densité 360, police 2.0" >> "$OUT/device.txt"
   sleep 4
   run com.etix.e2e.E2eRevueAjouterTest petit
+  # Sélecteur de date autour du seuil de bascule calendrier / saisie, 320 dp : police 2,0 (déjà réglée), 1,8, 1,5
+  run com.etix.e2e.E2eRevueDateSeuilTest seuil20
+  for cfg in "seuil18 1.8" "seuil15 1.5"; do
+    set -- $cfg
+    adb shell settings put system font_scale "$2"
+    echo "passe $1 : wm size 720x1280, densité 360, police $2" >> "$OUT/device.txt"
+    sleep 4
+    run com.etix.e2e.E2eRevueDateSeuilTest "$1"
+  done
   adb shell wm size reset; adb shell wm density reset; adb shell settings put system font_scale 1.0
   collect
   exit 0
