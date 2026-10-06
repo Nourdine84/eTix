@@ -47,9 +47,31 @@ indicatif de recherche coupé en grande police.
 
 Validé : calendrier en police normale (fenêtre), saisie jj/mm/aaaa en grande police (plein écran, fermeture et OK
 fixes sous la barre d'état, saisie défilante au-dessus du clavier), clair et sombre, y compris dans Modifier.
-Vérification demandée avant fusion : seuil réel de bascule (police 1,5 et 1,8 à 320 dp), retour à la saisie depuis le
-calendrier choisi manuellement, message « Date invalide » distinct de « Format incorrect » (ajouté après cette
-validation : captures à présenter). Sélecteur des filtres de l'Historique : non modifié, décision séparée.
+Vérification demandée avant fusion (06/10/2026), PR #83 :
+
+- **Défaut trouvé et corrigé (règle)** : à 320 dp police 1,5, la règle ouvrait le calendrier ; jours lisibles mais
+  mois coupé (« Octobre 2026 » : 136 dp pour 114 dp). Cause : Material 1.12 donne au calendrier en fenêtre une largeur
+  fixe (288 dp), en-tête du mois limité à 114 dp quelle que soit la largeur de l'écran. Règle corrigée : calendrier
+  seulement si un jour à deux chiffres ET le mois le plus long de l'année (« Septembre ») tiennent ; libellé mesuré
+  sur l'appareil, marge de 4 dp (écart mesuré de 1,7 % entre estimation et bouton réel). Police jamais réduite.
+- **Seuil réel à 320 dp** : entre 1,0 et 1,15 (tailles proposées par Android 14). Police 1,0 : calendrier, mois le
+  plus long 104,4 dp estimés / 106,2 dp réels pour 114 dp, aucun libellé coupé, septembre compris. Police 1,15 :
+  119,1 dp estimés → saisie. Police 1,5 et 2,0 : saisie (jours 29,1 et 37,5 dp ; colonne 31,4 dp ; mois 164 et
+  194 dp).
+- Saisie : « Date invalide : cette date n'existe pas. » pour 31/02/2026 (date complète inexistante), « Format
+  incorrect… » de Material pour 2026/02/31 ; OK inactif ; fermeture, OK, champ et message entièrement visibles entre
+  la barre d'état et le clavier (1,0 ; 1,15 ; 1,5 ; 2,0).
+- Calendrier choisi manuellement depuis la saisie : lisible à 1,0, 1,15 et 1,5 (aucun libellé coupé mesuré ; ligne
+  des jours de la semaine légèrement rognée en haut à 1,5 sur la capture) ; **illisible à 2,0** (jours à deux chiffres
+  sur deux lignes, 74 px pour 69 px). L'icône de retour à la saisie reste entièrement visible et ramène à la saisie
+  (vérification bloquante, toutes polices). Limite conservée : présentation Material choisie par l'utilisateur ; le
+  clavier reste ouvert par-dessus ce calendrier.
+- Résultat testé : commit `c298168` (PR #83), résultat de fusion `3a14908` (parents `aa4011c` = `feature/android-v2`
+  inchangée, et `c298168`), run https://github.com/Nourdine84/eTix/actions/runs/37440831219 : 159 jobs verts ; revue
+  11 / 11 dont `E2eRevueDateSeuilTest` 4 / 4. Place maximale de l'en-tête mesurée : 114,7 dp.
+- Captures : nouvelle revue à présenter (captures `revue_date_seuil_*` du commit `37b69a8`, run 37437289122, même
+  présentation qu'en `c298168` aux quatre tailles ; message « Date invalide »). Sélecteur des
+  filtres de l'Historique : non modifié, décision séparée.
 
 ## Captures de référence actuelles
 

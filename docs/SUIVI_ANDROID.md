@@ -372,8 +372,16 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
 - **Validation de Nourdine** (06/10/2026) : rendu des 12 captures `docs/preview/revue-ajouter-date-f3961e5/`
   (calendrier en police normale, saisie adaptée en grande police, clair, sombre, Modifier). Ni validation sur
   téléphone physique ni autorisation de fusion.
-- Suite demandée avant fusion : seuil vérifié à police 1,5 / 1,8 / 2,0, retour à la saisie depuis le calendrier,
-  « Date invalide » (date inexistante) distinct de « Format incorrect » (PR #83, commits suivants).
+- Vérification avant fusion (06/10/2026) : défaut trouvé à 320 dp police 1,5 (calendrier proposé, mois coupé :
+  « Octobre 2026 » 136 dp pour 114 dp ; Material 1.12 : calendrier de largeur fixe 288 dp). Règle corrigée : mois le
+  plus long mesuré sur l'appareil (`DatePickerPresentation`), marge de 4 dp, colonne bornée à 320 dp. Seuil réel à
+  320 dp : entre police 1,0 (calendrier, « Septembre 2026 » lisible) et 1,15 (saisie). « Date invalide » distinct de
+  « Format incorrect » (`DateInputErrorText`). Calendrier choisi manuellement illisible à 2,0, retour à la saisie
+  toujours accessible (vérifié). Test `E2eRevueDateSeuilTest` (police 1,0, 1,15, 1,5, 2,0 ; mode revue).
+- Commit testé `c298168`, résultat de fusion `3a14908` (base `feature/android-v2` `aa4011c` inchangée), run 37440831219 :
+  159 jobs verts ; JVM + Robolectric 245 réussis / 1 ignoré / 0 échec ; revue 11 / 11 ; émulateurs API 21 / 34 / 36
+  47 / 47 ; petit écran 32 / 32 ; fr 7 / 7 ; système 3 / 3 ; mises à jour lot 8 et 9 13 / 13 ; dates API 22 à 25
+  2 / 2. PR #83 non fusionnée (aucune autorisation).
 
 ## Écarts restants avec iOS (référence `feature/home-hero-v2`)
 
