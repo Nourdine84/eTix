@@ -22,6 +22,9 @@ import java.util.Date
  */
 private const val OTHER_LABEL = "Autre…"
 
+/** Lignes affichées au plus pour le nom du magasin (60 caractères au plus : 5 lignes à 320 dp, police 2,0). */
+private const val STORE_MAX_LINES = 6
+
 class TicketFormController(
     private val fragment: Fragment,
     private val b: ViewTicketFormBinding,
@@ -44,6 +47,11 @@ class TicketFormController(
             override fun onTextChanged(s: CharSequence?, a: Int, c: Int, d: Int) {}
             override fun afterTextChanged(s: android.text.Editable?) = renderMarks()
         }
+        // Nom long : retour à la ligne à l'affichage (sinon le champ d'une ligne défile horizontalement et cache la fin du
+        // nom, constaté à 320 dp, police 2,0). Le type de saisie reste « une ligne » : Entrée passe au champ suivant et
+        // aucun saut de ligne n'est ajouté à la valeur. Appelé après l'inflation (le type de saisie impose une ligne).
+        b.inputStore.setHorizontallyScrolling(false)
+        b.inputStore.maxLines = STORE_MAX_LINES
         b.inputStore.addTextChangedListener(watcher)
         b.inputAmount.addTextChangedListener(watcher)
         _bound = true
