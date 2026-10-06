@@ -180,9 +180,9 @@ class E2eRevueScanTest {
     }
 
     /**
-     * Texte LISIBLE, pas seulement présent (BLOQUANT) : vue amenée à l'écran (défilement si besoin), entièrement visible
-     * entre la barre d'état et le clavier ou le bas de la zone utile (barre d'actions exclue, le parent défilant la
-     * découpe), aucune ligne tronquée par « … », aucun mot coupé en fin de ligne, tout le texte dans la hauteur de la
+     * Texte LISIBLE, pas seulement présent (BLOQUANT) : vue amenée à l'écran (défilement si besoin), zone du texte
+     * (lignes, marges intérieures exclues) entièrement visible entre la barre d'état et le clavier ou le bas de la zone
+     * utile (barre d'actions exclue, le parent défilant la découpe), aucune ligne tronquée par « … », aucun mot coupé en fin de ligne, tout le texte dans la hauteur de la
      * vue et aucun défilement interne caché (champ d'une ligne qui ne montrerait que la fin ou le début du nom).
      * [singleLine] : le libellé doit tenir sur une ligne.
      */
@@ -201,11 +201,16 @@ class E2eRevueScanTest {
             val loc = IntArray(2); v.getLocationOnScreen(loc)
             val r = android.graphics.Rect()
             val top = d[1] + bars; val bottom = d[1] + decor.height - ime
-            if (!(v.isShown && v.getGlobalVisibleRect(r) && r.height() == v.height && r.width() == v.width))
-                problems += "vue partiellement masquée (${r.height()}/${v.height}px visibles)"
-            if (loc[1] < top || loc[1] + v.height > bottom) problems += "hors zone [$top,$bottom]"
             val text = v.text.toString()
             val l = v.layout
+            // Zone du TEXTE (marges intérieures exclues : une marge rognée ne gêne pas la lecture), coordonnées fenêtre
+            val win = IntArray(2); v.getLocationInWindow(win)
+            val tTop = v.totalPaddingTop; val tBottom = v.totalPaddingTop + (l?.height ?: 0)
+            val shown = v.isShown && v.getGlobalVisibleRect(r)
+            if (!shown || r.top > win[1] + tTop || r.bottom < win[1] + tBottom ||
+                r.left > win[0] + v.totalPaddingLeft || r.right < win[0] + v.width - v.totalPaddingRight)
+                problems += "texte partiellement masqué (visible [${r.top},${r.bottom}], texte [${win[1] + tTop},${win[1] + tBottom}])"
+            if (loc[1] + tTop < top || loc[1] + tBottom > bottom) problems += "texte hors zone [$top,$bottom]"
             if (l == null) problems += "texte non mis en page" else {
                 for (i in 0 until l.lineCount) if (l.getEllipsisCount(i) > 0) problems += "ligne ${i + 1} tronquée"
                 for (i in 0 until l.lineCount - 1) {
