@@ -29,6 +29,7 @@ import com.etix.e2e.E2e.shot
 import com.etix.e2e.E2e.waitFor
 import com.etix.features.ticket.DatePickerRules
 import com.etix.ui.main.MainActivityV2
+import com.etix.ui.ticket.DatePickerPresentation
 import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -41,12 +42,12 @@ import java.io.File
 import java.util.Locale
 
 /**
- * Sélecteur de date autour du seuil de bascule calendrier / saisie (DatePickerRules), à 320 dp : passes « seuil15 »,
- * « seuil18 » et « seuil20 » (police 1,5, 1,8 et 2,0, tailles proposées par Android 14 de part et d'autre du seuil
- * 1,64). Thème Système (clair sur l'émulateur), écran Ajouter, mêmes données fictives (E2eRevueAccueilTest), rien
+ * Sélecteur de date autour du seuil de bascule calendrier / saisie (DatePickerRules), à 320 dp : passes « seuil10 »,
+ * « seuil115 », « seuil15 » et « seuil20 » (police 1,0, 1,15, 1,5 et 2,0, tailles proposées par Android 14 ; seuil
+ * attendu entre 1,0 et 1,15, fixé par le libellé du mois le plus long). Thème Système (clair sur l'émulateur), écran Ajouter, mêmes données fictives (E2eRevueAccueilTest), rien
  * d'enregistré. BLOQUANT :
- * - présentation à l'ouverture conforme à la règle, calendrier lisible (jours, jours de la semaine, mois) ou format
- *   indiqué en saisie ;
+ * - présentation à l'ouverture conforme à la règle, calendrier lisible (jours, jours de la semaine, mois, y compris le
+ *   mois le plus long « Septembre ») ou format indiqué en saisie ;
  * - en saisie : 31/02/2026 → « Date invalide », 2026/02/31 → « Format incorrect », OK inactif ; actions, champ et
  *   message entièrement visibles entre la barre d'état et le clavier ;
  * - bascule manuelle vers le calendrier puis retour : l'icône de bascule reste entièrement visible et ramène à la
@@ -122,6 +123,18 @@ class E2eRevueDateSeuilTest {
         return problems.distinct()
     }
 
+    /** Libellé du mois affiché dans l'en-tête du calendrier, avec sa largeur réelle et la place disponible (dp). */
+    private fun monthLabel(): String {
+        var label = ""
+        onView(withId(com.google.android.material.R.id.month_navigation_fragment_toggle)).check { v, _ ->
+            val t = v as android.widget.TextView
+            val d = t.resources.displayMetrics.density
+            label = "${t.text} (${"%.1f".format(t.paint.measureText(t.text.toString()) / d)}dp / " +
+                "${"%.1f".format((t.width - t.totalPaddingLeft - t.totalPaddingRight) / d)}dp)"
+        }
+        return label
+    }
+
     /** Zone utile de l'écran (bas de la barre d'état, haut du clavier ou bas de l'écran), mesurée sur l'activité. */
     private fun usableZone(): Pair<Int, Int> {
         var z = 0 to 0
@@ -167,14 +180,16 @@ class E2eRevueDateSeuilTest {
 
     @Test fun d01_bascule_calendrier_saisie_autour_du_seuil() {
         assertEquals("Émulateur attendu en français", "fr", Locale.getDefault().language)
-        assertTrue("Passe seuil15, seuil18 ou seuil20 attendue", passe.startsWith("seuil"))
+        assertTrue("Passe seuil… attendue", passe.startsWith("seuil"))
         val before = allTickets(); val budgetsBefore = BudgetStore(ctx).load()
         assertEquals("Données de la revue de l'Accueil attendues (11 tickets fictifs)", 11, before.size)
         val conf = ctx.resources.configuration
         assertEquals("Largeur de la passe", 320, conf.screenWidthDp)
-        val expectText = DatePickerRules.prefersTextInput(conf.screenWidthDp, conf.fontScale)
+        val monthDp = DatePickerPresentation.longestMonthLabelDp(ctx)
+        val expectText = DatePickerPresentation.prefersTextInput(ctx)
         log("règle : colonne ${"%.1f".format(DatePickerRules.calendarColumnDp(conf.screenWidthDp))}dp, " +
-            "jour à 2 chiffres ${"%.1f".format(DatePickerRules.twoDigitDayDp(conf.fontScale))}dp → " +
+            "jour à 2 chiffres ${"%.1f".format(DatePickerRules.twoDigitDayDp(conf.fontScale))}dp, mois le plus long " +
+            "${"%.1f".format(monthDp)}dp / ${DatePickerRules.MONTH_LABEL_AVAILABLE_DP}dp → " +
             if (expectText) "saisie" else "calendrier")
 
         ctx.startActivity(Intent(ctx, MainActivityV2::class.java)
@@ -198,10 +213,23 @@ class E2eRevueDateSeuilTest {
             log("ouverture : saisie (jj/mm/aaaa)")
         } else {
             val p = calendarProblems()
-            log("ouverture : calendrier, libellés coupés : ${if (p.isEmpty()) "aucun" else p.take(6).joinToString()}")
+            log("ouverture : calendrier ${monthLabel()}, libellés coupés : ${if (p.isEmpty()) "aucun" else p.take(6).joinToString()}")
             assertEquals("Calendrier lisible ($passe)", emptyList<String>(), p.take(10))
         }
         shot("revue_date_seuil_1_ouverture_$passe")
+        if (!expectText) {
+            // Mois le plus long en français : « Septembre » (navigation par les flèches, sans rien choisir)
+            for (i in 0 until 12) {
+                if (monthLabel().startsWith("Septembre")) break
+                onView(withId(com.google.android.material.R.id.month_navigation_previous)).perform(click())
+                SystemClock.sleep(400)
+            }
+            assertTrue("Mois de septembre affiché ($passe)", monthLabel().startsWith("Septembre"))
+            val p = calendarProblems()
+            log("calendrier ${monthLabel()} (mois le plus long), libellés coupés : ${if (p.isEmpty()) "aucun" else p.take(6).joinToString()}")
+            assertEquals("Calendrier lisible, mois le plus long ($passe)", emptyList<String>(), p.take(10))
+            shot("revue_date_seuil_1b_mois_le_plus_long_$passe")
+        }
 
         // 2. Saisie : messages distincts, actions et message accessibles clavier ouvert
         if (!expectText) pressToggle()

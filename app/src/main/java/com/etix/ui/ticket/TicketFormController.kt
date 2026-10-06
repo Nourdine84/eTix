@@ -227,8 +227,7 @@ class TicketFormController(
      * et Modifier.
      */
     private fun pickDate() {
-        val conf = fragment.resources.configuration
-        val textInput = DatePickerRules.prefersTextInput(conf.screenWidthDp, conf.fontScale)
+        val textInput = DatePickerPresentation.prefersTextInput(fragment.requireContext())
         val builder = MaterialDatePicker.Builder.datePicker()
             .setTitleText(if (textInput) DatePickerRules.TITLE_TEXT_INPUT else DatePickerRules.TITLE)
             .setSelection(TicketFormRules.toPickerSelection(dateMillis))
