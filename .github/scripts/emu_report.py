@@ -73,8 +73,20 @@ if avant or apres:
          f"com.etix avant: {avant}\ncom.etix après: {apres}\nidentique: {avant == apres and bool(avant)}")
 
 mes = read(f"{out}/shots/mesures_clavier.txt").strip()
+# Sélecteur de date autour du seuil (mode revue) : annotation à part, découpée (3 800 caractères au plus chacune)
+seuil = [l for l in mes.splitlines() if l.startswith("seuil ")]
+mes = "\n".join(l for l in mes.splitlines() if not l.startswith("seuil "))
 if mes:
     notice("Clavier petit écran (mesures)", mes)
+part, parts = "", []
+for l in seuil:
+    if len(esc(part + l + "\n")) > 3800:
+        parts.append(part); part = ""
+    part += l + "\n"
+if part:
+    parts.append(part)
+for i, p in enumerate(parts[:3], 1):
+    notice(f"Sélecteur de date, seuil (mesures {i}/{min(len(parts), 3)})", p.strip())
 
 # Lot 9 : mesures et constats du scanner, regroupés en une annotation (limite de 10 notices par étape)
 scan_parts = []
