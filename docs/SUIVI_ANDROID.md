@@ -381,7 +381,19 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
 - Commit testé `c298168`, résultat de fusion `3a14908` (base `feature/android-v2` `aa4011c` inchangée), run 37440831219 :
   159 jobs verts ; JVM + Robolectric 245 réussis / 1 ignoré / 0 échec ; revue 11 / 11 ; émulateurs API 21 / 34 / 36
   47 / 47 ; petit écran 32 / 32 ; fr 7 / 7 ; système 3 / 3 ; mises à jour lot 8 et 9 13 / 13 ; dates API 22 à 25
-  2 / 2. PR #83 non fusionnée (aucune autorisation).
+  2 / 2.
+- **Validation de Nourdine** (06/10/2026) : calendrier en police normale, saisie par défaut quand la règle de
+  lisibilité détecte un manque de place (seuil mesuré sur l'appareil, pas une règle « police > 1,0 »), distinction
+  « Date invalide » / « Format incorrect ». Limite acceptée : calendrier choisi manuellement illisible à police 2,0,
+  retour à la saisie accessible. Essais sur téléphone physique à faire.
+- **Fusion** (06/10/2026, autorisation de Nourdine) : PR #83 → `feature/android-v2`, commit de fusion `55ecc9a`
+  (parents `aa4011c`, `c298168` ; arbre identique au résultat testé `3a14908`). CI après fusion : run 37444633842,
+  25 jobs (15 réussis, 10 aperçus non lancés sans label), aucune relance ni incident ; JVM + Robolectric 245 réussis /
+  1 ignoré (`OCRValidationTest`) / 0 échec ; émulateurs API 21 / 34 / 36 47 / 47 ; petit écran 32 / 32 ; revue
+  11 / 11 ; fr 7 / 7 ; système 3 / 3 ; mises à jour lot 8 et 9 13 / 13 ; dates API 22 à 25 2 / 2.
+- Incident CI pendant la PR (cause : téléchargement du paquet émulateur illisible, « Error on ZipFile unknown
+  archive », job `emulator-api36` du run push 37325285533, commit `f3961e5`, aucun test exécuté) : non relancé, même
+  job vert dans le run PR du même commit.
 
 ## Écarts restants avec iOS (référence `feature/home-hero-v2`)
 

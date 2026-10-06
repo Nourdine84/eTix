@@ -73,6 +73,21 @@ Vérification demandée avant fusion (06/10/2026), PR #83 :
   présentation qu'en `c298168` aux quatre tailles ; message « Date invalide »). Sélecteur des
   filtres de l'Historique : non modifié, décision séparée.
 
+### Sélecteur de date — validation du seuil et fusion (06/10/2026)
+
+- **Validé par Nourdine** (rendu des captures `captures-date-seuil-pr83`, commit `37b69a8` ; même présentation en
+  `c298168`) : calendrier en police normale ; saisie jj/mm/aaaa par défaut lorsque la règle de lisibilité détecte un
+  manque de place ; distinction « Date invalide » / « Format incorrect ».
+- Le seuil dépend des mesures faites sur l'appareil (largeur du libellé du mois le plus long, colonne des jours) :
+  ce n'est **pas** une règle universelle « toute police supérieure à 1,0 ». Sur l'émulateur API 34 à 320 dp, il se
+  situe entre les polices 1,0 et 1,15.
+- **Limite connue acceptée** pour cette intégration de développement : le calendrier choisi manuellement reste
+  illisible à police 2,0 ; le retour à la saisie reste accessible (vérifié).
+- Essais sur téléphone physique : restent à faire.
+- PR #83 fusionnée dans `feature/android-v2` (commit de fusion `55ecc9a`, CI après fusion : run
+  https://github.com/Nourdine84/eTix/actions/runs/37444633842, verte sans relance). Ne vaut pas validation du reste
+  de l'écran Ajouter. PR #81 et #82 restent séparées, non fusionnées.
+
 ## Captures de référence actuelles
 
 - **Code capturé** : identique à `feature/android-v2` au commit `f102cfe` (lots 1 à 10). Captures produites par le
