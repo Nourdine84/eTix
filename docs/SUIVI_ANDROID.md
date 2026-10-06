@@ -12,7 +12,7 @@ Document de reprise entre sessions. Concis : état, décisions, prochain lot.
 | `Nourdine84/etix-android` | Squelette Gradle sans module `app` — **pas** le dépôt de dev |
 | Copie locale Mac `~/AndroidStudioProjects/eTix` | Sur `dev` (19/12/2025), n'a pas `feature/android-v2` |
 | Référence iOS | `Nourdine84/etix-ios` — `feature/home-hero-v2` (19/08/2026) ; `main` diverge (21 commits propres) |
-| Maquettes validées | `eTix_V2_Maquettes_Completes_Validees_FINAL` (citées dans `Theme.swift` iOS) — **introuvables** (3 dépôts, projet, dossiers Mac connectés). Référence provisoire : code iOS. |
+| Maquettes validées | `eTix_V2_Maquettes_Completes_Validees_FINAL` (citées dans `Theme.swift` iOS) — **introuvables dans les sources accessibles** (3 dépôts, projet, dossiers Mac connectés), ce qui ne signifie pas qu'elles n'ont jamais existé ni été validées. Référence provisoire : code iOS. |
 
 ## Stack
 
@@ -333,6 +333,80 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
 - Limites : aucune revue visuelle par Nourdine, aucun essai sur téléphone physique, aucune application destinataire
   réelle n'a ouvert le fichier (sur l'émulateur API 21 de la CI, aucune application ne reçoit `text/csv`). La fusion
   ne valide ni les choix visuels ni les décisions produit ouvertes.
+
+### Revue visuelle — Accueil validé (04/10/2026)
+
+- Captures dédiées (aucun changement de l'app) : test `E2eRevueAccueilTest`, job `emulator-api34-revue` (émulateur
+  API 34 en français, app neuve, 11 tickets et 3 budgets fictifs injectés en base, période « Ce mois », Clair puis
+  Sombre, haut / carte Budget / bas). Commit `6dc0707`, PR #81 (brouillon, non fusionnée), run 37222538785 :
+  141 jobs verts, verdict revue 2 / 2.
+- **Validation de Nourdine** : Accueil clair et sombre tel que montré par les 6 captures
+  (`docs/preview/revue-accueil-6dc0707/`, détail dans `docs/REVUE_VISUELLE.md`). Portée : ce rendu seulement, ni les
+  écrans non examinés, ni les essais sur téléphone physique.
+- À vérifier séparément : seuils et couleurs de budget Accueil / Catégories ; écart dépenses totales / dépenses des
+  catégories budgétées.
+
+### Revue visuelle — Historique validé (05/10/2026)
+
+- Corrections (PR #82, branche `fix/historique-noms-filtre`, non fusionnée) : noms de magasins sur deux lignes sans mot
+  coupé, montant sous la date si la place manque (`TicketCardRow`), résumé du filtre actif sur sa propre ligne ;
+  fenêtre Filtres inchangée (« Réinitialiser » accessible par défilement à 320 dp police 2,0, vérification bloquante
+  d'Appliquer, Fermer et Réinitialiser).
+- Commit testé `df0740a`, run 37228116871 : 146 jobs verts ; JVM + Robolectric 239 réussis / 1 ignoré / 0 échec ;
+  émulateurs API 21 / 34 / 36 47 / 47 ; petit écran 32 / 32 ; fr 7 / 7 ; système 3 / 3 ; mises à jour lot 8 et 9
+  13 / 13 ; dates API 22 à 25 2 / 2 ; revue 4 / 4.
+- **Validation de Nourdine** (05/10/2026) : rendu des 22 captures `docs/preview/revue-historique-df0740a/`, clair,
+  sombre, petit écran police 2,0. Ni validation sur téléphone physique ni autorisation de fusion.
+- Limite connue : texte indicatif de recherche coupé en grande police (non bloquant).
+
+### Revue visuelle — sélecteur de date d'Ajouter / Modifier validé (06/10/2026)
+
+- Correction (PR #83, branche `fix/ajouter-date-lisible`, non fusionnée) : à 320 dp en grande police, la grille du
+  calendrier coupait les jours à deux chiffres et le mois. `DatePickerRules` ouvre la saisie jj/mm/aaaa quand un jour à
+  deux chiffres ne tient pas dans une colonne (seuil à 320 dp : police > 1,64), en plein écran ; `FullscreenPickerFit`
+  garde fermeture et OK sous la barre d'état et fait défiler la saisie au-dessus du clavier (défaut constaté sur
+  `d4b104b` : message d'erreur → fenêtre décalée, actions sous la barre d'état ; contrôle corrigé, bord haut inclus).
+- Commit testé `f3961e5`, run 37325295766 : 154 jobs verts ; JVM + Robolectric 242 réussis / 1 ignoré / 0 échec ;
+  revue 7 / 7 ; émulateurs API 21 / 34 / 36 47 / 47 ; petit écran 32 / 32 ; fr 7 / 7 ; système 3 / 3 ; mises à jour
+  lot 8 et 9 13 / 13 ; dates API 22 à 25 2 / 2.
+- **Validation de Nourdine** (06/10/2026) : rendu des 12 captures `docs/preview/revue-ajouter-date-f3961e5/`
+  (calendrier en police normale, saisie adaptée en grande police, clair, sombre, Modifier). Ni validation sur
+  téléphone physique ni autorisation de fusion.
+- Vérification avant fusion (06/10/2026) : défaut trouvé à 320 dp police 1,5 (calendrier proposé, mois coupé :
+  « Octobre 2026 » 136 dp pour 114 dp ; Material 1.12 : calendrier de largeur fixe 288 dp). Règle corrigée : mois le
+  plus long mesuré sur l'appareil (`DatePickerPresentation`), marge de 4 dp, colonne bornée à 320 dp. Seuil réel à
+  320 dp : entre police 1,0 (calendrier, « Septembre 2026 » lisible) et 1,15 (saisie). « Date invalide » distinct de
+  « Format incorrect » (`DateInputErrorText`). Calendrier choisi manuellement illisible à 2,0, retour à la saisie
+  toujours accessible (vérifié). Test `E2eRevueDateSeuilTest` (police 1,0, 1,15, 1,5, 2,0 ; mode revue).
+- Commit testé `c298168`, résultat de fusion `3a14908` (base `feature/android-v2` `aa4011c` inchangée), run 37440831219 :
+  159 jobs verts ; JVM + Robolectric 245 réussis / 1 ignoré / 0 échec ; revue 11 / 11 ; émulateurs API 21 / 34 / 36
+  47 / 47 ; petit écran 32 / 32 ; fr 7 / 7 ; système 3 / 3 ; mises à jour lot 8 et 9 13 / 13 ; dates API 22 à 25
+  2 / 2.
+- **Validation de Nourdine** (06/10/2026) : calendrier en police normale, saisie par défaut quand la règle de
+  lisibilité détecte un manque de place (seuil mesuré sur l'appareil, pas une règle « police > 1,0 »), distinction
+  « Date invalide » / « Format incorrect ». Limite acceptée : calendrier choisi manuellement illisible à police 2,0,
+  retour à la saisie accessible. Essais sur téléphone physique à faire.
+- **Fusion** (06/10/2026, autorisation de Nourdine) : PR #83 → `feature/android-v2`, commit de fusion `55ecc9a`
+  (parents `aa4011c`, `c298168` ; arbre identique au résultat testé `3a14908`). CI après fusion : run 37444633842,
+  25 jobs (15 réussis, 10 aperçus non lancés sans label), aucune relance ni incident ; JVM + Robolectric 245 réussis /
+  1 ignoré (`OCRValidationTest`) / 0 échec ; émulateurs API 21 / 34 / 36 47 / 47 ; petit écran 32 / 32 ; revue
+  11 / 11 ; fr 7 / 7 ; système 3 / 3 ; mises à jour lot 8 et 9 13 / 13 ; dates API 22 à 25 2 / 2.
+- Incident CI pendant la PR (cause : téléchargement du paquet émulateur illisible, « Error on ZipFile unknown
+  archive », job `emulator-api36` du run push 37325285533, commit `f3961e5`, aucun test exécuté) : non relancé, même
+  job vert dans le run PR du même commit.
+
+### Intégrations du 06/10/2026 (PR #82 fusionnée, PR #81 actualisée)
+
+- PR #82 et #81 actualisées par commit de fusion avec `feature/android-v2` @ `55ecc9a` (après la PR #83) :
+  `8c20d6c` (#82 : script de revue combiné, test de revue de l'Historique de #82 conservé) et `ec66665` (#81 : tests et
+  script de revue repris de la version fusionnée, ancien parcours du sélecteur non réintroduit). CI : run 37446715744
+  (#82) 162 jobs verts sans relance ; run 37446781112 (#81) vert après une relance ciblée (k01, voir
+  `docs/FIABILITE_CI.md`, 3ᵉ occurrence, cause inconnue).
+- **PR #82 fusionnée** (06/10/2026, autorisation de Nourdine) : commit de fusion `8f5eafa` (parents `55ecc9a`,
+  `8c20d6c`, sans squash ; arbre identique au résultat testé `d4b3949`). Corrections de l'Historique validées en
+  `df0740a` (noms sur deux lignes, montant adaptatif, résumé du filtre séparé, boutons Filtres accessibles) et
+  sélecteur de date de la PR #83 conservés. Branche `fix/historique-noms-filtre` conservée.
+- PR #81 : actualisée avec `8f5eafa` (`a58cc0b`, sans conflit) ; diff restant : documentation et captures seulement.
 
 ## Écarts restants avec iOS (référence `feature/home-hero-v2`)
 

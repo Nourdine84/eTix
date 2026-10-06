@@ -10,8 +10,8 @@ document.
   `emulator-compat-dates (24)`, installation bloquée avant les tests, cause inconnue). Lot 9 : `86d9a19`, run
   https://github.com/Nourdine84/eTix/actions/runs/36999579628.
 - **iOS** : `Nourdine84/etix-ios`, branche `feature/home-hero-v2`, code source lu le 02/10/2026 (`Views/`,
-  `Intelligence/`, `Utils/`, `eTixWidget/`). Les maquettes « validées » sont introuvables : **le code iOS reste la
-  référence provisoire** ; aucune conformité à un design validé n'est affirmée.
+  `Intelligence/`, `Utils/`, `eTixWidget/`). Les maquettes « validées » sont introuvables dans les sources accessibles (ce qui ne
+  signifie pas qu'elles n'ont jamais existé ni été validées) : **le code iOS reste la référence provisoire** ; aucune conformité à un design validé n'est affirmée.
 - Journal des lots et décisions : `docs/SUIVI_ANDROID.md` ; scanner : `docs/SCANNER.md` ; Réglages :
   `docs/REGLAGES.md` ; résultats émulateur : `docs/VALIDATION_EMULATEUR.md`.
 
