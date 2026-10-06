@@ -12,6 +12,7 @@ import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.intent.Intents
+import androidx.test.espresso.matcher.ViewMatchers.isDescendantOfA
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withHint
 import androidx.test.espresso.matcher.ViewMatchers.withId
@@ -100,7 +101,9 @@ class E2eRevueScanTest {
     private fun openScan() {
         onView(withId(R.id.menu_add)).perform(click())
         waitFor(withId(R.id.inputStore))
-        onView(allOf(withId(R.id.btnScanTicket), isDisplayed())).perform(click())
+        // Bouton de la page « Ajouter » (l'Accueil porte le même identifiant), ramené à l'écran : après « Annuler le scan »
+        // le formulaire peut rester défilé
+        onView(allOf(withId(R.id.btnScanTicket), isDescendantOfA(withId(R.id.scrollViewAdd)))).perform(scrollTo(), click())
         waitFor(withId(R.id.btnTakePhoto))
         SystemClock.sleep(600)                          // mise en page compacte éventuelle (petit écran)
     }
@@ -164,10 +167,22 @@ class E2eRevueScanTest {
 
     private fun waitPrefill() = waitFor(allOf(withId(R.id.scanBanner), isDisplayed()), 60_000)
 
+    /** Formulaire vidé (champ magasin vide), sans exiger qu'il soit à l'écran (grande police : il peut être plus bas). */
+    private fun waitEmptyForm(label: String) {
+        val end = SystemClock.uptimeMillis() + 10_000
+        var text: String? = null
+        while (SystemClock.uptimeMillis() < end) {
+            instr.runOnMainSync { text = resumed().findViewById<android.widget.TextView>(R.id.inputStore)?.text?.toString() }
+            if (text == "") return
+            SystemClock.sleep(200)
+        }
+        throw AssertionError("Formulaire non vidé ($label) : magasin « $text »")
+    }
+
     private fun discardScan(s: String) {
         E2e.closeKeyboard()
         onView(withId(R.id.btnDiscardScan)).perform(scrollTo(), click())
-        waitFor(allOf(withId(R.id.inputStore), withText("")))
+        waitEmptyForm("$s, Annuler le scan")
         log("$s « Annuler le scan » : formulaire vidé")
     }
 
@@ -255,7 +270,8 @@ class E2eRevueScanTest {
         for (id in listOf(R.id.btnRetry, R.id.btnManualEntry)) assertReachable(id, "$s erreur")
         ScanServices.reader = MlKitTextReader
         tap(R.id.btnManualEntry)
-        waitFor(allOf(withId(R.id.inputStore), withText("")))
+        waitFor(withId(R.id.bottomNav))
+        waitEmptyForm("$s, Saisir manuellement")
         log("$s « Saisir manuellement » : formulaire vide, aucun ticket")
 
         assertEquals("Aucun ticket créé ni modifié ($s)", before, tickets())
