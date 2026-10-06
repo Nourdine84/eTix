@@ -8,6 +8,7 @@ import androidx.fragment.app.Fragment
 import com.etix.R
 import com.etix.databinding.ViewTicketFormBinding
 import com.etix.features.ocr.scan.ScanConfidence
+import com.etix.features.ticket.DatePickerRules
 import com.etix.features.ticket.TicketFormRules
 import com.etix.model.Ticket
 import com.google.android.material.datepicker.MaterialDatePicker
@@ -220,11 +221,27 @@ class TicketFormController(
         b.rowCategory.contentDescription = "Catégorie : ${b.tvCategoryValue.text}"
     }
 
+    /**
+     * Calendrier si les jours y restent lisibles à la police choisie ; sinon ouverture directe en saisie jj/mm/aaaa
+     * (format indiqué dans le titre), en plein écran, sans réduire la police (DatePickerRules). Partagé par Ajouter
+     * et Modifier.
+     */
     private fun pickDate() {
-        val picker = MaterialDatePicker.Builder.datePicker()
-            .setTitleText("Date du ticket")
+        val textInput = DatePickerPresentation.prefersTextInput(fragment.requireContext())
+        val builder = MaterialDatePicker.Builder.datePicker()
+            .setTitleText(if (textInput) DatePickerRules.TITLE_TEXT_INPUT else DatePickerRules.TITLE)
             .setSelection(TicketFormRules.toPickerSelection(dateMillis))
-            .build()
+            .setInputMode(if (textInput) MaterialDatePicker.INPUT_MODE_TEXT else MaterialDatePicker.INPUT_MODE_CALENDAR)
+        if (textInput) {
+            // Plein écran : fermeture et validation en haut, jamais sous le clavier (le message d'erreur d'une date
+            // invalide agrandit le contenu ; en fenêtre, OK et Annuler passaient sous le clavier à police 2,0).
+            // En-tête maintenu sous la barre d'état et saisie défilante : FullscreenPickerFit.
+            builder.setTheme(com.google.android.material.R.style.ThemeOverlay_Material3_MaterialCalendar_Fullscreen)
+                .setPositiveButtonText("OK")
+        }
+        val picker = builder.build()
+        if (textInput) FullscreenPickerFit.install(picker)
+        DateInputErrorText.install(picker)
         picker.addOnPositiveButtonClickListener { sel ->
             dateMillis = TicketFormRules.combineDay(sel, dateMillis)
             render()
