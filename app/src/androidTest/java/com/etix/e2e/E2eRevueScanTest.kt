@@ -100,7 +100,7 @@ class E2eRevueScanTest {
 
     private fun openScan() {
         onView(withId(R.id.menu_add)).perform(click())
-        waitFor(withId(R.id.inputStore))
+        waitFor(withId(R.id.scrollViewAdd))             // page Ajouter (le champ magasin peut être hors écran en grande police)
         // Bouton de la page « Ajouter » (l'Accueil porte le même identifiant), ramené à l'écran : après « Annuler le scan »
         // le formulaire peut rester défilé
         onView(allOf(withId(R.id.btnScanTicket), isDescendantOfA(withId(R.id.scrollViewAdd)))).perform(scrollTo(), click())
