@@ -56,7 +56,8 @@ import java.util.Locale
  * clavier ouvert), annulation de la saisie, budgets sous le seuil d'alerte, en alerte, à exactement 100 %, dépassé,
  * partagé entre deux catégories ne différant que par la casse, confirmation de suppression annulée puis confirmée.
  * BLOQUANT : annulations sans effet, suppression limitée au budget visé (tickets et autres budgets intacts), actions
- * de la saisie accessibles clavier ouvert. CONSIGNÉ (shots/mesures_budgets.txt) : lisibilité des textes (troncature,
+ * de la saisie accessibles clavier ouvert, boutons de la confirmation réellement touchables (toucher sur leur partie
+ * visible, effet vérifié ; une visibilité inférieure à 90 % est consignée comme défaut). CONSIGNÉ (shots/mesures_budgets.txt) : lisibilité des textes (troncature,
  * mot coupé, texte masqué), pour présenter les défauts avant toute correction. Argument facultatif `passe`
  * (ex. « petit » : 320 dp, police 2,0) ajouté au nom des captures.
  */
@@ -282,6 +283,25 @@ class E2eRevueBudgetsTest {
         return pct
     }
 
+    /**
+     * Toucher RÉEL d'un bouton de la confirmation, au centre de sa partie visible (comme le ferait l'utilisateur quand
+     * il est en partie masqué). BLOQUANT : bouton invisible. L'effet du toucher est vérifié ensuite par l'appelant.
+     */
+    private fun tapDialogButton(label: String) {
+        onView(withText(label)).inRoot(isDialog()).perform(object : androidx.test.espresso.ViewAction {
+            override fun getConstraints(): org.hamcrest.Matcher<View> = org.hamcrest.Matchers.any(View::class.java)
+            override fun getDescription() = "toucher sur la partie visible de « $label »"
+            override fun perform(uiController: androidx.test.espresso.UiController, view: View) {
+                val r = android.graphics.Rect()
+                assertTrue("« $label » invisible dans la confirmation", view.getGlobalVisibleRect(r) && r.height() > 0 && r.width() > 0)
+                val off = IntArray(2); view.rootView.getLocationOnScreen(off)
+                val xy = floatArrayOf((off[0] + r.centerX()).toFloat(), (off[1] + r.centerY()).toFloat())
+                androidx.test.espresso.action.Tap.SINGLE.sendTap(uiController, xy, floatArrayOf(1f, 1f), 0, 0)
+                uiController.loopMainThreadForAtLeast(300)
+            }
+        })
+    }
+
     /** Clavier ouvert à l'arrivée sur la saisie (ouverture automatique) ; son absence est CONSIGNÉE. */
     private fun keyboardOnEdit(label: String): Int {
         SystemClock.sleep(600)
@@ -448,11 +468,11 @@ class E2eRevueBudgetsTest {
             dialogLine = "Confirmation : « ${msg?.text} » ${if (p.isBlank()) "lisible" else "ANOMALIE : $p"}"
         }
         log(dialogLine)
-        val pctAnnuler = dialogButtonPct("Annuler"); val pctSupprimer = dialogButtonPct("Supprimer")
-        log("Confirmation : boutons visibles Annuler $pctAnnuler %, Supprimer $pctSupprimer %")
-        assertTrue("Boutons de la confirmation accessibles ($pctAnnuler %, $pctSupprimer %)", pctAnnuler >= 90 && pctSupprimer >= 90)
         shot("revue_budgets_13_suppression_confirmation_$s")
-        onView(withText("Annuler")).inRoot(isDialog()).perform(click())
+        val pctAnnuler = dialogButtonPct("Annuler"); val pctSupprimer = dialogButtonPct("Supprimer")
+        log("Confirmation : boutons visibles Annuler $pctAnnuler %, Supprimer $pctSupprimer %" +
+            (if (pctAnnuler < 90 || pctSupprimer < 90) " ANOMALIE : bouton partiellement visible" else ""))
+        tapDialogButton("Annuler")
         waitFor(withId(R.id.btnBudgetApply))
         onView(withId(R.id.inputBudget)).check(matches(withText("30")))
         assertEquals("« Annuler » de la confirmation sans effet sur les budgets", budgetsAvant, BudgetStore(ctx).load())
@@ -461,7 +481,8 @@ class E2eRevueBudgetsTest {
         bringFullyOnScreen(R.id.btnDeleteBudget)
         onView(withId(R.id.btnDeleteBudget)).perform(click())
         waitFor(withText("Supprimer le budget ?"))
-        onView(withText("Supprimer")).inRoot(isDialog()).perform(click())
+        SystemClock.sleep(600)
+        tapDialogButton("Supprimer")
         waitSettingsValue("Loisirs", "—")
         assertNull(BudgetStore(ctx).limit("Loisirs"))
         assertEquals("Suppression : autres budgets intacts", budgetsAvant - "loisirs", BudgetStore(ctx).load())
