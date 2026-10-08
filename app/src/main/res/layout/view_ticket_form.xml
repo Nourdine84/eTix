@@ -23,10 +23,13 @@
             <TextView style="@style/V2.FieldLabel" android:layout_width="0dp" android:layout_weight="1" android:labelFor="@id/inputStore" android:text="MAGASIN" />
             <TextView android:id="@+id/badgeStore" style="@style/V2.ScanBadge" />
         </LinearLayout>
+        <!-- Nom affiché sur plusieurs lignes si nécessaire (TicketFormController : retour à la ligne visuel seulement,
+             la touche Entrée passe au champ suivant, aucun saut de ligne dans la valeur) -->
         <EditText
             android:id="@+id/inputStore"
             style="@style/V2.FieldInput"
             android:hint="Nom du magasin"
+            android:imeOptions="actionNext"
             android:importantForAutofill="no"
             android:inputType="textCapWords"
             android:maxLength="60" />
@@ -92,12 +95,13 @@
             android:minHeight="48dp"
             android:orientation="vertical">
 
-            <LinearLayout
+            <!-- Libellé et indication sur une ligne si la place suffit, sinon l'indication passe dessous (grande
+                 police : « CATÉGORIE » ne doit jamais être coupé en milieu de mot) -->
+            <com.etix.ui.ticket.LabelBadgeRow
+                android:id="@+id/rowCategoryLabel"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal">
-                <TextView style="@style/V2.FieldLabel" android:layout_width="0dp" android:layout_weight="1" android:text="CATÉGORIE" />
+                android:layout_height="wrap_content">
+                <TextView android:id="@+id/tvCategoryLabel" style="@style/V2.FieldLabel" android:text="CATÉGORIE" />
                 <!-- iOS : « Suggéré par l'OCR » quand la catégorie vient du scan -->
                 <TextView
                     android:id="@+id/tvCategorySuggested"
@@ -107,7 +111,7 @@
                     android:textColor="@color/v2_primary_75"
                     android:textSize="11sp"
                     android:visibility="gone" />
-            </LinearLayout>
+            </com.etix.ui.ticket.LabelBadgeRow>
 
             <LinearLayout
                 android:layout_width="match_parent"
