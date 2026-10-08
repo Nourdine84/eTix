@@ -119,10 +119,15 @@ Document de reprise. À lire en entier avant toute action. Détail : `docs/SUIVI
 - **PR #81 fusionnée** (06/10/2026) : revue visuelle (validations, captures, suivi). `feature/android-v2` : tête
   **`2057dc1`** (commit de fusion, parents `8f5eafa` et `b9adc4f`, arbre identique au résultat testé `af0f2bc`). CI
   après fusion : run 37467441768 verte sans relance. Branche `chore/revue-accueil-captures` conservée.
+- **PR #85 fusionnée** (08/10/2026) : scanner et formulaire prérempli lisibles en grande police (libellé Catégorie,
+  nom du magasin sur plusieurs lignes, textes accessibles par défilement). `feature/android-v2` : tête **`48440d4`**
+  (commit de fusion, parents `2057dc1` et `674631a`, arbre identique au résultat testé `853035c`). CI après fusion :
+  run 37797432187 verte sans relance. Branche `fix/scanner-lisibilite` conservée.
 - **Fusion ≠ validation** : revue visuelle en cours (`docs/REVUE_VISUELLE.md`) — **Accueil** validé
   (04/10/2026, 6 captures du commit `6dc0707`, PR #81) et **Historique** corrigé validé (05/10/2026, 22 captures du
   commit `df0740a`, PR #82) et **sélecteur de date** d'Ajouter / Modifier validé (06/10/2026, 12 captures du commit
-  `f3961e5`, puis seuil et messages validés le 06/10/2026) ; PR #81, #82 et #83 fusionnées ; aucun essai sur
+  `f3961e5`, puis seuil et messages validés le 06/10/2026) et **scanner** corrigé validé (08/10/2026, captures du commit
+  `674631a`) ; PR #81, #82, #83 et #85 fusionnées ; aucun essai sur
   téléphone physique, aucune application destinataire réelle n'a ouvert le CSV exporté.
 - Décisions du 02/10/2026 sur les Réglages : format CSV actuel (iOS : virgule, point décimal, UTF-8) accepté pour le
   lot 10, avec procédure d'import documentée dans `docs/REGLAGES.md` ; journaux de plantage **non activés**

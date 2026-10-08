@@ -1,7 +1,7 @@
 # Parcours de revue visuelle
 
-**Validés par Nourdine : Accueil, Historique et sélecteur de date d'Ajouter / Modifier** (voir ci-dessous). Le reste de
-l'écran Ajouter et les autres écrans ne sont pas approuvés. Ces captures servent de base à la revue ; elles ne valident ni les choix
+**Validés par Nourdine : Accueil, Historique, sélecteur de date d'Ajouter / Modifier, scanner et formulaire prérempli**
+(voir ci-dessous). Le reste de l'écran Ajouter et les autres écrans ne sont pas approuvés. Ces captures servent de base à la revue ; elles ne valident ni les choix
 visuels ni la parité avec iOS (référence provisoire : code iOS `feature/home-hero-v2`, maquettes introuvables dans les sources
 accessibles, ce qui ne signifie pas qu'elles n'ont jamais existé ni été validées).
 
@@ -12,6 +12,7 @@ accessibles, ce qui ne signifie pas qu'elles n'ont jamais existé ni été valid
 | 04/10/2026 | 1. Accueil, clair et sombre | 6 captures émulateur API 34 en français, commit `6dc0707` (branche `chore/revue-accueil-captures`, PR #81 non fusionnée), run https://github.com/Nourdine84/eTix/actions/runs/37222538785 : [haut clair](preview/revue-accueil-6dc0707/api34_revue_accueil_1_haut_clair.jpg), [haut sombre](preview/revue-accueil-6dc0707/api34_revue_accueil_1_haut_sombre.jpg), [carte Budget clair](preview/revue-accueil-6dc0707/api34_revue_accueil_2_budget_clair.jpg), [carte Budget sombre](preview/revue-accueil-6dc0707/api34_revue_accueil_2_budget_sombre.jpg), [bas clair](preview/revue-accueil-6dc0707/api34_revue_accueil_3_bas_clair.jpg), [bas sombre](preview/revue-accueil-6dc0707/api34_revue_accueil_3_bas_sombre.jpg) | Ce rendu seulement (code de l'Accueil identique à `feature/android-v2` @ `aa4011c`). Ne vaut ni pour les écrans non examinés ni pour des essais sur téléphone physique. |
 | 05/10/2026 | 2. Historique corrigé, clair et sombre, y compris 320 dp police 2,0 | 22 captures émulateur API 34 en français, commit `df0740a` (branche `fix/historique-noms-filtre`, PR #82 non fusionnée), run https://github.com/Nourdine84/eTix/actions/runs/37228116871 : [dossier](preview/revue-historique-df0740a/) (liste haut / bas, recherche, fenêtre Filtres, fenêtre après défilement, filtre actif ; suffixes `clair`, `sombre`, `clair_petit`, `sombre_petit`) | Ce rendu seulement. Ne vaut ni validation sur téléphone physique ni autorisation de fusion (PR #81 et #82 non fusionnées). |
 | 06/10/2026 | 3. Ajouter / Modifier : sélecteur de date corrigé, clair et sombre, police normale et 320 dp police 2,0 | 12 captures émulateur API 34 en français, commit `f3961e5` (branche `fix/ajouter-date-lisible`, PR #83 non fusionnée), run https://github.com/Nourdine84/eTix/actions/runs/37325295766 : [dossier](preview/revue-ajouter-date-f3961e5/) (sélecteur à l'ouverture, date invalide, 29/02/2024 saisi clavier ouvert, Modifier ; suffixes `clair`, `sombre`, `_petit`, `modifier`) | Le sélecteur de date seulement : calendrier en police normale, saisie adaptée en grande police, y compris dans Modifier. Ne vaut ni pour le reste de l'écran Ajouter, ni validation sur téléphone physique, ni autorisation de fusion. |
+| 08/10/2026 | 4. Scanner et formulaire prérempli corrigés, clair et sombre, police normale et 320 dp police 2,0 | Captures émulateur API 34 en français, commit `674631a` (branche `fix/scanner-lisibilite`, PR #85), run https://github.com/Nourdine84/eTix/actions/runs/37490728004 : [dossier](preview/revue-scanner-674631a/) (choix, lecture, résultat complet, catégorie, à vérifier / non lu, nom complété, date non lue, rien détecté, erreur, textes défilés, clavier ouvert, Modifier nom long ; suffixes `clair`, `sombre`, `_petit`) | Rendu de ces captures seulement : libellé Catégorie, indication OCR, noms longs, messages accessibles par défilement. Ne vaut pas validation sur téléphone physique. |
 
 Accueil (04/10/2026) : rendu jugé suffisamment proche d'iOS, écarts actuels acceptables. Présentation conservée :
 pas de refonte de l'en-tête, de la carte Budget, du sélecteur de période ni de la navigation. Panier moyen, « Voir
@@ -87,6 +88,22 @@ Vérification demandée avant fusion (06/10/2026), PR #83 :
 - PR #83 fusionnée dans `feature/android-v2` (commit de fusion `55ecc9a`, CI après fusion : run
   https://github.com/Nourdine84/eTix/actions/runs/37444633842, verte sans relance). Ne vaut pas validation du reste
   de l'écran Ajouter. PR #81 et #82 restent séparées, non fusionnées.
+
+## Scanner et formulaire prérempli — validé le 08/10/2026 (rendu du commit `674631a`)
+
+- Revue initiale : captures du commit `edf085c` (PR #84, run 37473518429), mêmes images fictives ; trois défauts
+  constatés en grande police : « CATÉGORIE » coupé (« CAT / ÉGO / RIE »), nom du magasin tronqué sur une ligne,
+  textes de l'introduction et des messages d'échec coupés par le bord de la zone défilante.
+- Corrections (PR #85, fusionnée) : « Suggéré par l'OCR » sous le libellé quand la place manque (`LabelBadgeRow`) ;
+  nom du magasin affiché sur plusieurs lignes, sans saut de ligne dans la valeur (Ajouter et Modifier) ; dernière
+  ligne des textes accessible par défilement (vérification bloquante, disposition inchangée).
+- **Validation de Nourdine** (08/10/2026) : libellé Catégorie lisible, badge OCR adapté, noms longs affichés
+  entièrement, messages accessibles par défilement — sur les captures examinées seulement.
+- Limites conservées : en petit écran, textes de l'introduction et des messages d'échec coupés par le bord de la zone
+  défilante avant défilement ; valeur de la catégorie dépassant de 2 dp sous sa ligne (marge intérieure seule rognée,
+  écart préexistant) ; soulignement du correcteur orthographique du clavier sur les noms ; sélecteur d'image simulé et
+  images générées (pas de vraie photo) ; « Prendre une photo » non déclenché dans la revue ; **aucun essai sur
+  téléphone physique**.
 
 ## Captures de référence actuelles
 

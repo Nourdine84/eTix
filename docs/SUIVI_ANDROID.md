@@ -415,6 +415,24 @@ CI : `.github/workflows/android-ci.yml` (push sur `dev`, `feature/**`, `fix/**`,
   Robolectric 245 réussis / 1 ignoré (`OCRValidationTest`) / 0 échec ; émulateurs API 21 / 34 / 36 47 / 47 ; petit
   écran 32 / 32 ; revue 12 / 12 ; fr 7 / 7 ; système 3 / 3 ; mises à jour lot 8 et 9 13 / 13 ; dates API 22 à 25 2 / 2.
 
+### Scanner et formulaire prérempli : corrections validées et fusionnées (PR #85, 08/10/2026)
+
+- Revue : PR #84 (`chore/revue-scanner`), test `E2eRevueScanTest` (émulateur API 34 en français, clair et sombre,
+  police normale et 320 dp police 2,0 ; réel : écrans, ML Kit, analyse, formulaire ; simulé : sélecteur d'image, images
+  générées, lecture retenue pour la capture, erreur de lecture). Captures de `edf085c`.
+- Corrections (PR #85, `fix/scanner-lisibilite`) : `LabelBadgeRow` (indication OCR sous « CATÉGORIE » si la place
+  manque), nom du magasin sur plusieurs lignes sans saut de ligne dans la valeur, contrôles bloquants de lisibilité
+  (zone du texte visible au-dessus du clavier et de la barre, aucune ligne tronquée ni mot coupé, aucun défilement
+  interne caché) ; Modifier vérifié (nom long, sortie sans enregistrer).
+- **Validation de Nourdine** (08/10/2026) sur les captures de `674631a` (`docs/preview/revue-scanner-674631a/`).
+- **Fusion** (08/10/2026, autorisation de Nourdine) : commit de fusion `48440d4` (parents `2057dc1`, `674631a`, sans
+  squash ; arbre identique au résultat testé `853035c`, run 37490728004, 180 jobs verts). Branche
+  `fix/scanner-lisibilite` conservée.
+- CI après fusion : run 37797432187, verte sans relance : JVM + Robolectric 245 réussis / 1 ignoré
+  (`OCRValidationTest`) / 0 échec ; revue 16 / 16 ; émulateurs API 21 / 34 / 36 47 / 47 ; petit écran 32 / 32 ; fr 7 / 7 ;
+  système 3 / 3 ; mises à jour lot 8 et 9 13 / 13 ; dates API 22 à 25 2 / 2.
+- Limites : voir `docs/REVUE_VISUELLE.md` ; aucun essai sur téléphone physique.
+
 ## Écarts restants avec iOS (référence `feature/home-hero-v2`)
 
 Bilan détaillé à jour (présent / partiel / absent, émulateur, validations manquantes) : `docs/PARITE_IOS.md`.
