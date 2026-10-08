@@ -4,8 +4,8 @@
 # MODE=standard (défaut) : parcours complet + mise à jour A→B + isolation QA + persistance + lot 4 + Catégories
 # MODE=fr : émulateur en français, tests de locale (saisie, dates, filtres inclusifs, limites de période)
 # MODE=petit : petit écran / grande police ; MODE=compat : lecteur de dates OCR seul (API 22 à 25)
-# MODE=revue : émulateur en français, captures de revue visuelle (Accueil, Historique, Ajouter, scanner ; clair / sombre ;
-#   Historique, Ajouter et scanner aussi en 320 dp police 2,0 ; sélecteur de date autour du seuil de bascule : 320 dp, police 2,0, 1,5, 1,15, 1,0 ;
+# MODE=revue : émulateur en français, captures de revue visuelle (Accueil, Historique, Ajouter, scanner, Catégories et
+#   budgets ; clair / sombre ; Historique, Ajouter, scanner, Catégories et budgets aussi en 320 dp police 2,0 ; sélecteur de date autour du seuil de bascule : 320 dp, police 2,0, 1,5, 1,15, 1,0 ;
 #   mêmes données fictives)
 # MODE=systeme (lot 9) : ML Kit sans réseau au 1er lancement, vrais sélecteur d'image et appareil photo
 # MODE=maj (lot 9, étendu au lot 10) : mise à jour depuis une version fusionnée (BASE_LABEL : lot 8 ou lot 9, APK
@@ -139,6 +139,7 @@ if [ "$MODE" = "revue" ]; then
   run com.etix.e2e.E2eRevueHistoriqueTest   # mêmes données (créées par la classe précédente)
   run com.etix.e2e.E2eRevueAjouterTest      # écran Ajouter, mêmes données, formulaire non enregistré
   run com.etix.e2e.E2eRevueScanTest         # scanner et formulaire prérempli, mêmes images, rien d'enregistré
+  run com.etix.e2e.E2eRevueBudgetsTest      # Catégories et budgets : données fictives isolées, données de la revue rétablies
   # Historique puis Ajouter sur petit écran et grande police : 320 dp (720x1280, densité 360), police 2,0 (émulateur jetable)
   adb shell wm size 720x1280; adb shell wm density 360; adb shell settings put system font_scale 2.0
   echo "passe petit : wm size 720x1280, densité 360, police 2.0" >> "$OUT/device.txt"
@@ -146,6 +147,7 @@ if [ "$MODE" = "revue" ]; then
   run com.etix.e2e.E2eRevueHistoriqueTest petit
   run com.etix.e2e.E2eRevueAjouterTest petit
   run com.etix.e2e.E2eRevueScanTest petit
+  run com.etix.e2e.E2eRevueBudgetsTest petit
   # Sélecteur de date autour du seuil de bascule calendrier / saisie, 320 dp : police 2,0 (déjà réglée), 1,5, 1,15, 1,0
   run com.etix.e2e.E2eRevueDateSeuilTest seuil20
   for cfg in "seuil15 1.5" "seuil115 1.15" "seuil10 1.0"; do
