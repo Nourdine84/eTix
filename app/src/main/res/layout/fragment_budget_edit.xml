@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Saisie d'un budget — iOS BudgetEditSheet : barre haute « Annuler » / catégorie / « Appliquer » (jamais masquée
-     par le clavier), en-tête « Budget mensuel — catégorie », champ « Ex : 300 », « Supprimer le budget » si existant.
+     par le clavier ; barre d'onglets masquée pendant la saisie, comme la feuille iOS), en-tête « Budget mensuel — catégorie », champ « Ex : 300 », « Supprimer le budget » si existant.
      Remplace la fenêtre de dialogue du 1er essai : sur 320 dp / police 1,3 et à police 2,0, le clavier recouvrait
      ses boutons (constaté sur émulateur, run 36642473284). -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/v2_bg_grouped"
@@ -12,12 +13,13 @@
     android:focusable="true"
     android:orientation="vertical">
 
-    <LinearLayout
+    <!-- Barre haute : « Annuler » et « Appliquer » toujours entiers et accessibles ; titre (catégorie) seulement s'il
+         tient entier sur une ligne entre eux, sinon nom complet affiché en tête de la zone défilante (TitleBarRow). -->
+    <com.etix.ui.common.TitleBarRow
+        android:id="@+id/budgetEditBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
         android:minHeight="56dp"
-        android:orientation="horizontal"
         android:paddingStart="4dp"
         android:paddingEnd="4dp">
 
@@ -33,18 +35,13 @@
 
         <TextView
             android:id="@+id/tvBudgetEditTitle"
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:ellipsize="end"
             android:gravity="center"
             android:maxLines="1"
             android:textColor="@color/v2_text_primary"
             android:textSize="17sp"
-            android:textStyle="bold"
-            app:autoSizeMaxTextSize="17sp"
-            app:autoSizeMinTextSize="10sp"
-            app:autoSizeTextType="uniform" />
+            android:textStyle="bold" />
 
         <Button
             android:id="@+id/btnBudgetApply"
@@ -57,14 +54,16 @@
             android:textColor="@color/v2_primary"
             android:textSize="16sp"
             android:textStyle="bold" />
-    </LinearLayout>
+    </com.etix.ui.common.TitleBarRow>
 
     <ScrollView
+        android:id="@+id/budgetEditScroll"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
 
         <LinearLayout
+            android:id="@+id/budgetEditContent"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
@@ -72,6 +71,22 @@
             android:paddingTop="16dp"
             android:paddingEnd="24dp"
             android:paddingBottom="24dp">
+
+            <!-- Nom complet de la catégorie quand il ne tient pas dans la barre haute (à la ligne entre les mots) -->
+            <TextView
+                android:id="@+id/tvBudgetEditName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp"
+                android:accessibilityHeading="true"
+                android:hyphenationFrequency="none"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textColor="@color/v2_text_primary"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:targetApi="p" />
 
             <TextView
                 android:id="@+id/tvBudgetEditHeader"

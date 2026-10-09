@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Légende de l'anneau : nom complet (à la ligne entre les mots, jamais tronqué), pourcentage à droite, ou sous le nom
+     quand un mot ne tiendrait pas à côté (TrailingValueRow). -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center_vertical"
@@ -12,22 +15,26 @@
         android:layout_width="10dp"
         android:layout_height="10dp" />
 
-    <TextView
-        android:id="@+id/legendName"
+    <com.etix.ui.common.TrailingValueRow
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_weight="1"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:textColor="@color/v2_text_primary"
-        android:textSize="12sp" />
+        android:layout_weight="1">
 
-    <TextView
-        android:id="@+id/legendPercent"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:textColor="@color/v2_text_secondary"
-        android:textSize="12sp" />
+        <TextView
+            android:id="@+id/legendName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hyphenationFrequency="none"
+            android:textColor="@color/v2_text_primary"
+            android:textSize="12sp"
+            tools:targetApi="m" />
+
+        <TextView
+            android:id="@+id/legendPercent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/v2_text_secondary"
+            android:textSize="12sp" />
+    </com.etix.ui.common.TrailingValueRow>
 </LinearLayout>

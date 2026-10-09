@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Ligne du réglage des budgets : nom complet (à la ligne entre les mots, jamais coupé en milieu de mot), budget à
+     droite, ou sous le nom quand un mot ne tiendrait pas à côté (TrailingValueRow), puis chevron. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?attr/selectableItemBackground"
@@ -14,21 +17,28 @@
     android:paddingEnd="16dp"
     android:paddingBottom="12dp">
 
-    <TextView
-        android:id="@+id/tvBudgetCategory"
+    <com.etix.ui.common.TrailingValueRow
+        android:id="@+id/rowBudgetSetting"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:textColor="@color/v2_text_primary"
-        android:textSize="17sp" />
+        android:layout_weight="1">
 
-    <TextView
-        android:id="@+id/tvBudgetValue"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
-        android:textColor="@color/v2_text_secondary"
-        android:textSize="15sp" />
+        <TextView
+            android:id="@+id/tvBudgetCategory"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hyphenationFrequency="none"
+            android:textColor="@color/v2_text_primary"
+            android:textSize="17sp"
+            tools:targetApi="m" />
+
+        <TextView
+            android:id="@+id/tvBudgetValue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/v2_text_secondary"
+            android:textSize="15sp" />
+    </com.etix.ui.common.TrailingValueRow>
 
     <ImageView
         android:layout_width="12dp"

@@ -3,6 +3,7 @@
      lot 7 : barre de budget (Ce mois seulement), libellé Attention / Dépassé, « dépensé / budget » -->
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="12dp"
@@ -19,27 +20,27 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-    <LinearLayout
+    <!-- Nom complet (à la ligne entre les mots, jamais tronqué) et part en % : le pourcentage passe sous le nom
+         quand un mot ne tiendrait pas à côté (TrailingValueRow) -->
+    <com.etix.ui.common.TrailingValueRow
+        android:id="@+id/rowCategoryHeader"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:layout_height="wrap_content">
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:orientation="vertical">
 
             <TextView
                 android:id="@+id/tvCategoryName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:ellipsize="end"
-                android:maxLines="1"
+                android:hyphenationFrequency="none"
                 android:textColor="@color/v2_text_primary"
                 android:textSize="17sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                tools:targetApi="m" />
 
             <LinearLayout
                 android:layout_width="wrap_content"
@@ -69,11 +70,10 @@
             android:id="@+id/tvCategoryPercent"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
             android:textColor="@color/v2_primary"
             android:textSize="15sp"
             android:textStyle="bold" />
-    </LinearLayout>
+    </com.etix.ui.common.TrailingValueRow>
 
     <!-- Budget (lot 7) -->
     <LinearLayout

@@ -476,3 +476,21 @@ Recommandation technique inchangée : A (ou B) pour la parité iOS.
 | 13 | Réglages : « Supprimer tous les tickets » désactivé et signalé indisponible (lots 3 et 10). Implémentation (avec confirmation, parité iOS) = décision produit | P3 |
 | 14 | Thème sombre : corrigé au lot 3 sur les écrans principaux ; écrans V1 restants (fiches, popups) à vérifier sur téléphone | P3 |
 | 12 | Signature QA : clé durable via secrets — **en attente de votre action** (`docs/SIGNATURE_QA.md`) ; tant qu'elle manque, aucun APK QA n'est publié | P1 |
+
+## Catégories et budgets : corrections (09/10/2026, en attente de validation du rendu)
+
+- Revue (PR #86, brouillon, test seulement) : captures du commit `69dd75a`, run 37810470159 (revue 18 / 18 ; une
+  relance ciblée de `emulator-api36-petit` après un échec de téléchargement de l'émulateur « Error on ZipFile unknown
+  archive », aucun test exécuté ; au run précédent 37807614203, ce job avait ses 32 tests réussis mais le verdict a
+  échoué sur un plantage de `com.google.android.settings.intelligence`, application système de l'émulateur).
+- Corrections autorisées par Nourdine le 09/10/2026 (branche `fix/categories-budgets-lisibilite`, issue de
+  `feature/android-v2` `48440d4`, test de revue intégré par un commit de fusion) : confirmation de suppression,
+  noms complets (lignes, légende, réglage), saisie (barre d'onglets masquée, titre, haut non rogné), sélecteur de
+  période, « Budget atteint » à 100 % pile dans Catégories (décision produit, écart volontaire avec iOS). Détail :
+  `docs/BUDGETS.md` (B7 à B11). Aucun changement de stockage, de tri, de palette ni des règles OCR.
+- Tests : `BudgetRulesTest` (montants juste sous, égaux, juste au-dessus, sommes, budget partagé ; l'attente
+  « Dépassé — 100% » à égalité exacte suit la nouvelle décision) ; `Lot7ScreenshotTest` (boutons de la nouvelle
+  confirmation) ; `E2eRevueBudgetsTest` en clair et sombre, taille normale, 320 dp police 2,0 et 320 dp police 1,5
+  (passe « moyen » ajoutée), contrôles bloquants (boutons de confirmation entièrement visibles, vrai toucher et effet,
+  annulations sans effet, suppression limitée au budget visé, barre d'onglets, lisibilité, haut non rogné).
+- Résultats CI et captures avant / après : à consigner après le run de la PR.

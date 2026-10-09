@@ -45,6 +45,9 @@ import java.io.File
 import java.util.Calendar
 import java.util.Locale
 
+/** Cas « montants exacts » : budget, libellé et montants attendus, nom de la capture. */
+private data class Quad(val limit: Double, val status: String, val amounts: String, val name: String)
+
 /**
  * Revue visuelle de Catégories et des budgets mensuels (captures seulement, aucun changement de l'app), émulateur en
  * français, clair puis sombre. Données FICTIVES ISOLÉES : les tickets et budgets présents (ceux de la revue de
@@ -55,11 +58,15 @@ import java.util.Locale
  * budget (montant invalide, validation par la touche du clavier), modification (préremplissage, « Appliquer » touché
  * clavier ouvert), annulation de la saisie, budgets sous le seuil d'alerte, en alerte, à exactement 100 %, dépassé,
  * partagé entre deux catégories ne différant que par la casse, confirmation de suppression annulée puis confirmée.
+ * Montants juste sous le budget, exactement égaux et juste au-dessus (« Budget atteint » seulement à égalité exacte,
+ * décision du 09/10/2026), y compris quand le pourcentage arrondi affiche 100 %.
  * BLOQUANT : annulations sans effet, suppression limitée au budget visé (tickets et autres budgets intacts), actions
- * de la saisie accessibles clavier ouvert, boutons de la confirmation réellement touchables (toucher sur leur partie
- * visible, effet vérifié ; une visibilité inférieure à 90 % est consignée comme défaut). CONSIGNÉ (shots/mesures_budgets.txt) : lisibilité des textes (troncature,
- * mot coupé, texte masqué), pour présenter les défauts avant toute correction. Argument facultatif `passe`
- * (ex. « petit » : 320 dp, police 2,0) ajouté au nom des captures.
+ * de la saisie accessibles clavier ouvert, barre d'onglets masquée pendant la saisie et rétablie à la sortie, boutons
+ * de la confirmation ENTIÈREMENT visibles puis réellement touchés (effet vérifié), fin du message accessible.
+ * Mesuré (shots/mesures_budgets.txt) puis BLOQUANT après toutes les captures : lisibilité des textes (troncature, mot
+ * coupé, texte masqué), haut de la saisie non rogné, message d'erreur visible. Captures prises avant les assertions.
+ * Argument facultatif `passe` (« petit » : 320 dp, police 2,0 ; « moyen » : 320 dp, police 1,5) ajouté au nom des
+ * captures.
  */
 @RunWith(AndroidJUnit4::class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -115,6 +122,9 @@ class E2eRevueBudgetsTest {
     }
 
     private var suffixNow = ""
+
+    /** Anomalies de lisibilité ou d'accès constatées : BLOQUANTES, vérifiées après toutes les captures. */
+    private val anomalies = mutableListOf<String>()
 
     private fun startMain() {
         ctx.startActivity(Intent(ctx, MainActivityV2::class.java)
@@ -199,7 +209,7 @@ class E2eRevueBudgetsTest {
         return (d[1] + bars) to (d[1] + decor.height - maxOf(ime, nav))
     }
 
-    /** Lisibilité de textes identifiés (CONSIGNÉE, non bloquante) ; renvoie le nombre d'anomalies. */
+    /** Lisibilité de textes identifiés (consignée ; anomalies BLOQUANTES en fin de test) ; renvoie leur nombre. */
     private fun readability(label: String, vararg ids: Int): Int {
         var count = 0
         instr.runOnMainSync {
@@ -210,6 +220,7 @@ class E2eRevueBudgetsTest {
                 if (v.visibility != View.VISIBLE) continue
                 val p = textProblems(v, top, bottom)
                 count += p.size
+                if (p.isNotEmpty()) anomalies += "$suffixNow $label : ${act.resources.getResourceEntryName(id)} « ${v.text} » : ${p.joinToString(" ; ")}"
                 log("$label : ${act.resources.getResourceEntryName(id)} « ${v.text.toString().replace('\n', '⏎')} » " +
                     "${v.layout?.lineCount ?: 0} ligne(s), texte ${"%.1f".format(Locale.ROOT, v.textSize / act.resources.displayMetrics.density)} dp" +
                     (if (p.isEmpty()) " lisible" else " ANOMALIE : ${p.joinToString(" ; ")}"))
@@ -218,7 +229,10 @@ class E2eRevueBudgetsTest {
         return count
     }
 
-    /** Textes des lignes visibles de Catégories et du réglage (CONSIGNÉ) : tous les textes portant l'un des [textIds]. */
+    /**
+     * Textes de Catégories et du réglage entièrement à l'écran (un texte en bord d'écran n'est pas jugé) : tous ceux
+     * portant l'un des [textIds] (consigné ; anomalies BLOQUANTES en fin de test).
+     */
     private fun rowsReadability(label: String, containerId: Int, textIds: List<Int>) {
         instr.runOnMainSync {
             val act = resumed()
@@ -226,20 +240,71 @@ class E2eRevueBudgetsTest {
             val c = act.findViewById<android.view.ViewGroup>(containerId) ?: return@runOnMainSync
             val lines = mutableListOf<String>()
             fun walk(v: View) {
-                if (v is TextView && v.id in textIds && v.isShown && !v.text.isNullOrEmpty()) {
+                val vr = android.graphics.Rect()
+                if (v is TextView && v.id in textIds && v.isShown && !v.text.isNullOrEmpty() &&
+                    v.getGlobalVisibleRect(vr) && vr.height() == v.height && vr.width() == v.width) {
                     val p = textProblems(v, top, bottom)
                     if (p.isNotEmpty()) lines += "${act.resources.getResourceEntryName(v.id)} « ${v.text} » : ${p.joinToString(" ; ")}"
                 }
                 if (v is android.view.ViewGroup) for (i in 0 until v.childCount) walk(v.getChildAt(i))
             }
-            for (i in 0 until c.childCount) {
-                val row = c.getChildAt(i)
-                val rr = android.graphics.Rect()
-                if (!row.getGlobalVisibleRect(rr) || rr.height() < row.height) continue // ligne en bord d'écran
-                walk(row)
-            }
+            for (i in 0 until c.childCount) walk(c.getChildAt(i))
+            anomalies += lines.map { "$suffixNow $label : $it" }
             log("$label : " + (if (lines.isEmpty()) "lignes entièrement visibles lisibles" else "ANOMALIE : " + lines.joinToString(" | ")))
         }
+    }
+
+    private fun bottomNavShown(): Boolean {
+        var shown = false
+        instr.runOnMainSync { shown = resumed().findViewById<View>(R.id.bottomNav).isShown }
+        return shown
+    }
+
+    /** Textes du haut de la saisie : entièrement visibles ou entièrement sortis de la vue, jamais coupés (anomalie). */
+    private fun noTopCut(label: String) {
+        instr.runOnMainSync {
+            val act = resumed()
+            for (id in listOf(R.id.tvBudgetEditName, R.id.tvBudgetEditHeader)) {
+                val v = act.findViewById<View>(id) ?: continue
+                if (v.visibility != View.VISIBLE) continue
+                val r = android.graphics.Rect()
+                val visible = v.getGlobalVisibleRect(r)
+                val line = "$label : ${act.resources.getResourceEntryName(id)} visible ${if (visible) r.height() else 0}/${v.height}px"
+                if (visible && r.height() < v.height) {
+                    anomalies += "$suffixNow $line (rogné)"; log("$line ANOMALIE : rogné")
+                } else log(line)
+            }
+        }
+    }
+
+    /** Message d'erreur sous le champ : lisible entre la barre d'état et le clavier (anomalie sinon). */
+    private fun errorVisible(label: String, message: String) {
+        instr.runOnMainSync {
+            val act = resumed()
+            val (top, bottom) = zone(act)
+            var found: TextView? = null
+            fun walk(v: View) {
+                if (found != null) return
+                if (v is TextView && v.text?.toString() == message && v.isShown) found = v
+                if (v is android.view.ViewGroup) for (i in 0 until v.childCount) walk(v.getChildAt(i))
+            }
+            walk(act.window.decorView)
+            val p = found?.let { textProblems(it, top, bottom) } ?: listOf("absent")
+            if (p.isNotEmpty()) anomalies += "$suffixNow $label : « $message » : ${p.joinToString(" ; ")}"
+            log("$label : « $message » " + (if (p.isEmpty()) "lisible" else "ANOMALIE : ${p.joinToString(" ; ")}"))
+        }
+    }
+
+    /** Bouton de la confirmation ENTIÈREMENT visible (100 %) sur l'écran. */
+    private fun dialogButtonFull(label: String): Boolean {
+        var ok = false
+        onView(withText(label)).inRoot(isDialog()).check { v, _ ->
+            val r = android.graphics.Rect()
+            val dm = v.resources.displayMetrics
+            ok = v.isShown && v.getGlobalVisibleRect(r) && r.width() == v.width && r.height() == v.height &&
+                IntArray(2).also { v.getLocationOnScreen(it) }.let { it[1] >= 0 && it[1] + v.height <= dm.heightPixels }
+        }
+        return ok
     }
 
     /** Vue amenée à l'écran par son parent défilant (vue entière, pas seulement 90 %). */
@@ -380,20 +445,27 @@ class E2eRevueBudgetsTest {
         // 3) Création : saisie vide, montant invalide (« Appliquer » inactif), validation par la touche du clavier
         openEdit(longAbo)
         keyboardOnEdit("Création")
+        shot("revue_budgets_05_creation_vide_$s")
+        assertTrue("Barre d'onglets masquée pendant la saisie ($s)", !bottomNavShown())
         onView(withId(R.id.btnDeleteBudget)).check(matches(not(androidx.test.espresso.matcher.ViewMatchers.isDisplayed())))
-        readability("Création", R.id.tvBudgetEditTitle, R.id.tvBudgetEditHeader, R.id.btnBudgetCancel, R.id.btnBudgetApply)
+        readability("Création", R.id.tvBudgetEditTitle, R.id.tvBudgetEditName, R.id.tvBudgetEditHeader,
+            R.id.btnBudgetCancel, R.id.btnBudgetApply)
+        noTopCut("Création")
         assertReachable(R.id.btnBudgetCancel, "Création clavier ouvert")
         assertReachable(R.id.btnBudgetApply, "Création clavier ouvert")
-        shot("revue_budgets_05_creation_vide_$s")
         onView(withId(R.id.inputBudget)).perform(replaceText("0"))
-        onView(withId(R.id.btnBudgetApply)).check(matches(not(isEnabled())))
-        SystemClock.sleep(300)
+        SystemClock.sleep(500)
         shot("revue_budgets_06_creation_invalide_$s")
+        onView(withId(R.id.btnBudgetApply)).check(matches(not(isEnabled())))
+        errorVisible("Création, montant invalide", "Montant invalide")
+        noTopCut("Création, montant invalide")
+        assertReachable(R.id.inputBudget, "Création, montant invalide, clavier ouvert")
         onView(withId(R.id.inputBudget)).perform(replaceText("25"))
         onView(withId(R.id.btnBudgetApply)).check(matches(isEnabled()))
         shot("revue_budgets_07_creation_saisie_$s")
         onView(withId(R.id.inputBudget)).perform(pressImeActionButton())   // touche « OK » du clavier
         waitSettingsValue(longAbo, "25 €")
+        assertTrue("Barre d'onglets rétablie à la sortie de la saisie ($s)", bottomNavShown())
         assertEquals(mapOf(longAbo.lowercase(Locale.ROOT) to 25.0), BudgetStore(ctx).load())
         assertEquals("Création : tickets intacts", tickets, allTickets())
 
@@ -414,9 +486,10 @@ class E2eRevueBudgetsTest {
         openEdit(longAlim)
         onView(withId(R.id.inputBudget)).check(matches(withText("200")))
         keyboardOnEdit("Modification")
-        readability("Modification", R.id.tvBudgetEditTitle, R.id.tvBudgetEditHeader, R.id.btnBudgetCancel,
-            R.id.btnBudgetApply, R.id.btnDeleteBudget)
         shot("revue_budgets_08_modification_preremplie_$s")
+        readability("Modification", R.id.tvBudgetEditTitle, R.id.tvBudgetEditName, R.id.tvBudgetEditHeader,
+            R.id.btnBudgetCancel, R.id.btnBudgetApply)
+        noTopCut("Modification")
         onView(withId(R.id.inputBudget)).perform(replaceText("180,50"))
         SystemClock.sleep(300)
         shot("revue_budgets_09_modification_saisie_$s")
@@ -433,17 +506,33 @@ class E2eRevueBudgetsTest {
         shot("revue_budgets_11_reglage_rempli_bas_$s")
         pressBack()
 
-        // 5) Catégories : sous le seuil, alerte, 100 % pile, dépassé, partagé (casse)
+        // 5) Catégories : sous le seuil, alerte, 100 % pile (« Budget atteint »), dépassé, partagé (casse)
+        captureCategoryPages("12_categories_etats")
         BudgetE2e.row(withText(longAlim), withText("100 € / 180,50 €"))
         BudgetE2e.row(withText("Restaurant"), withText("Attention — 84%"), withText("42 € / 50 €"))
-        BudgetE2e.row(withText("Carburant"), withText("Dépassé — 100%"), withText("60 € / 60 €"))
+        BudgetE2e.row(withText("Carburant"), withText("Budget atteint"), withText("60 € / 60 €"))
         BudgetE2e.row(withText("Loisirs"), withText("Dépassé — 150%"), withText("45 € / 30 €"))
         BudgetE2e.row(withText("Courses"), withText("Dépassé — 125%"), withText("50 € / 40 €"),
             withText("Budget partagé avec « courses » · consommation cumulée"))
         BudgetE2e.row(withText("courses"), withText("Dépassé — 125%"),
             withText("Budget partagé avec « Courses » · consommation cumulée"))
         BudgetE2e.row(withText(longAbo), withText("12,99 € / 25 €"))
-        captureCategoryPages("12_categories_etats")
+        // Montants exacts au centime (décision du 09/10/2026) : juste sous le budget (« 100% » une fois arrondi),
+        // exactement égal, juste au-dessus (« 100% » une fois arrondi). Budget de « Carburant » (fictif) modifié puis rétabli.
+        for ((limit, status, amounts, name) in listOf(
+            Quad(60.01, "Attention — 100%", "60 € / 60,01 €", "12b_carburant_juste_sous"),
+            Quad(60.0, "Budget atteint", "60 € / 60 €", "12c_carburant_egal"),
+            Quad(59.99, "Dépassé — 100%", "60 € / 59,99 €", "12d_carburant_juste_dessus"))) {
+            BudgetStore(ctx).set("Carburant", limit)
+            SystemClock.sleep(1200)
+            BudgetE2e.row(withText("Carburant"))
+            SystemClock.sleep(300)
+            shot("revue_budgets_${name}_$s")
+            log("Carburant 60 € pour un budget de $limit € : attendu « $status », « $amounts »")
+            BudgetE2e.row(withText("Carburant"), withText(status), withText(amounts))
+        }
+        BudgetStore(ctx).set("Carburant", 60.0)
+        SystemClock.sleep(800)
 
         // 6) Suppression : confirmation, « Annuler » sans effet, puis « Supprimer » (seul ce budget)
         openSettings()
@@ -459,19 +548,35 @@ class E2eRevueBudgetsTest {
         onView(withId(R.id.btnDeleteBudget)).perform(click())
         waitFor(withText("Supprimer le budget ?"))
         SystemClock.sleep(600)
-        var dialogLine = ""
-        onView(withText("Supprimer le budget ?")).inRoot(isDialog()).check { v, _ ->
-            val root = v.rootView
-            val msg = root.findViewById<TextView>(android.R.id.message)
-            val p = msg?.let { m -> val r = android.graphics.Rect(); val ok = m.getGlobalVisibleRect(r) && r.height() == m.height
-                (if (ok) "" else "message partiellement visible ") + (if ((0 until (m.layout?.lineCount ?: 0)).any { m.layout.getEllipsisCount(it) > 0 }) "message tronqué" else "") } ?: "message absent"
-            dialogLine = "Confirmation : « ${msg?.text} » ${if (p.isBlank()) "lisible" else "ANOMALIE : $p"}"
-        }
-        log(dialogLine)
         shot("revue_budgets_13_suppression_confirmation_$s")
+        // Message : entier ou accessible par défilement jusqu'à sa dernière ligne
+        var msgLine = ""; var msgEnd = false; var scrolled = false
+        onView(withId(R.id.confirmScroll)).inRoot(isDialog()).perform(object : androidx.test.espresso.ViewAction {
+            override fun getConstraints(): org.hamcrest.Matcher<View> = org.hamcrest.Matchers.any(View::class.java)
+            override fun getDescription() = "défilement du message de confirmation jusqu'à la fin"
+            override fun perform(uiController: androidx.test.espresso.UiController, view: View) {
+                val sv = view as android.widget.ScrollView
+                scrolled = sv.canScrollVertically(1)
+                sv.fullScroll(View.FOCUS_DOWN); uiController.loopMainThreadForAtLeast(300)
+                val m = sv.findViewById<TextView>(R.id.confirmMessage)
+                val r = android.graphics.Rect(); val loc = IntArray(2); m.getLocationOnScreen(loc)
+                val off = IntArray(2); m.rootView.getLocationOnScreen(off)
+                msgEnd = m.getGlobalVisibleRect(r) && off[1] + r.bottom >= loc[1] + m.height &&
+                    (0 until (m.layout?.lineCount ?: 0)).none { m.layout.getEllipsisCount(it) > 0 }
+                msgLine = "Confirmation : « ${m.text} » ${if (scrolled) "défilant" else "entier"}, fin " +
+                    (if (msgEnd) "visible" else "INACCESSIBLE")
+            }
+        })
+        log(msgLine)
+        if (scrolled) shot("revue_budgets_13b_suppression_message_fin_$s")
+        val fullAnnuler = dialogButtonFull("Annuler"); val fullSupprimer = dialogButtonFull("Supprimer")
         val pctAnnuler = dialogButtonPct("Annuler"); val pctSupprimer = dialogButtonPct("Supprimer")
-        log("Confirmation : boutons visibles Annuler $pctAnnuler %, Supprimer $pctSupprimer %" +
-            (if (pctAnnuler < 90 || pctSupprimer < 90) " ANOMALIE : bouton partiellement visible" else ""))
+        log("Confirmation : boutons visibles Annuler $pctAnnuler % (entier : $fullAnnuler), Supprimer $pctSupprimer % (entier : $fullSupprimer)")
+        // BLOQUANT : les deux boutons ENTIÈREMENT visibles (un bouton partiellement visible n'est pas conforme),
+        // fin du message accessible ; puis vrai toucher et effet vérifié
+        assertTrue("Confirmation ($s) : « Annuler » entièrement visible ($pctAnnuler %)", fullAnnuler)
+        assertTrue("Confirmation ($s) : « Supprimer » entièrement visible ($pctSupprimer %)", fullSupprimer)
+        assertTrue("Confirmation ($s) : fin du message accessible ($msgLine)", msgEnd)
         tapDialogButton("Annuler")
         waitFor(withId(R.id.btnBudgetApply))
         onView(withId(R.id.inputBudget)).check(matches(withText("30")))
@@ -482,6 +587,7 @@ class E2eRevueBudgetsTest {
         onView(withId(R.id.btnDeleteBudget)).perform(click())
         waitFor(withText("Supprimer le budget ?"))
         SystemClock.sleep(600)
+        assertTrue("Confirmation ($s) : « Supprimer » entièrement visible", dialogButtonFull("Supprimer"))
         tapDialogButton("Supprimer")
         waitSettingsValue("Loisirs", "—")
         assertNull(BudgetStore(ctx).limit("Loisirs"))
@@ -501,6 +607,9 @@ class E2eRevueBudgetsTest {
             captureTheme("Clair", "clair")
             captureTheme("Sombre", "sombre")
             chooseTheme("Système")
+            log("bilan : ${if (anomalies.isEmpty()) "aucune anomalie" else "ANOMALIE : ${anomalies.size} anomalie(s)"}")
+            assertEquals("Catégories et budgets : textes lisibles, rien de rogné, message d'erreur visible",
+                emptyList<String>(), anomalies)
         } finally {
             replaceTickets(savedTickets); setBudgets(savedBudgets)
         }

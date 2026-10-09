@@ -47,7 +47,8 @@ Document de reprise. À lire en entier avant toute action. Détail : `docs/SUIVI
   enseigne) ; catégories de référence iOS (ESSO → Carburant), **sans reclasser aucun ticket existant** ; dates
   numériques jour/mois/année ; dates vérifiées dans les tests.
 - Budgets : suppression d'un budget avec confirmation ; budgets de catégories ne différant que par la casse =
-  un seul budget, consommation cumulée, compté une fois dans les totaux. « Budget atteint » à 100 % pile.
+  un seul budget, consommation cumulée, compté une fois dans les totaux. « Budget atteint » à 100 % pile, sur
+  l'Accueil comme dans Catégories (09/10/2026) : montants exacts comparés au centime, « Dépassé » seulement au-delà.
 - **Ouvertes** : catégorie par défaut « Autre » (iOS : vide) ; saisie « ,20 » ; points visuels à valider
   (« Budget atteint » en rouge, abréviations à 3 lettres de la Tendance, retrait de 4 dp des barres, écran du
   scanner, badges, bandeau, barre basse).

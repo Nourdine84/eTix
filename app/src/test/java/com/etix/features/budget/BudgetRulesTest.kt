@@ -51,7 +51,10 @@ class BudgetRulesTest {
         assertEquals("Attention — 83%", BudgetRules.statusLabel(warn))
 
         val exact = BudgetLine(limit = 50.0, spent = 50.0)
-        assertEquals("Dépassé — 100%", BudgetRules.statusLabel(exact)) // iOS : ≥ 100 % = dépassé
+        // Décision du 09/10/2026 (écart volontaire avec iOS, qui affiche « Dépassé — 100% ») : budget atteint
+        assertEquals("Budget atteint", BudgetRules.statusLabel(exact))
+        assertEquals(BudgetStatus.EXCEEDED, exact.status) // état (couleur) inchangé à 100 %
+        assertEquals("Budget 50 €, reste 0 €", BudgetRules.accessibilityText(exact))
         assertEquals(0.0, exact.remaining, 0.0)
 
         val over = BudgetLine(limit = 15.5, spent = 20.0)
@@ -61,6 +64,42 @@ class BudgetRulesTest {
         assertEquals(1.0, BudgetRules.progress(over), 0.0)
         assertEquals("20 € / 15,50 €", BudgetRules.progressLabel(over))
         assertEquals("Budget 15,50 €, dépassé de 4,50 €", BudgetRules.accessibilityText(over))
+    }
+
+    /** Montants exacts au centime, pas le pourcentage arrondi (décision du 09/10/2026). */
+    @Test fun budget_atteint_compare_les_montants_exacts() {
+        val sous = BudgetLine(limit = 60.0, spent = 59.99)        // 99,98 % : « 100% » une fois arrondi
+        assertEquals(BudgetStatus.WARNING, sous.status)
+        assertEquals("Attention — 100%", BudgetRules.statusLabel(sous))
+        assertEquals("Budget 60 €, reste 0,01 €", BudgetRules.accessibilityText(sous))
+
+        val egal = BudgetLine(limit = 60.0, spent = 60.0)
+        assertEquals("Budget atteint", BudgetRules.statusLabel(egal))
+
+        val dessus = BudgetLine(limit = 60.0, spent = 60.01)      // 100,02 % : « 100% » une fois arrondi
+        assertEquals(BudgetStatus.EXCEEDED, dessus.status)
+        assertEquals("Dépassé — 100%", BudgetRules.statusLabel(dessus))
+        assertEquals("Budget 60 €, dépassé de 0,01 €", BudgetRules.accessibilityText(dessus))
+
+        // Restes d'arrondi des sommes : 0,1 + 0,2 € dépensés pour 0,30 € de budget = atteint (ni 99 %, ni dépassé)
+        val somme = BudgetLine(limit = 0.3, spent = 0.1 + 0.2)
+        assertTrue(somme.ratio > 1.0)
+        assertEquals("Budget atteint", BudgetRules.statusLabel(somme))
+        val sommeSous = BudgetLine(limit = 0.3, spent = 0.29999999999)
+        assertEquals("Budget atteint", BudgetRules.statusLabel(sommeSous))
+
+        // Seuil d'alerte (80 %) inchangé
+        assertNull(BudgetRules.statusLabel(BudgetLine(limit = 100.0, spent = 79.99)))
+        assertEquals("Attention — 80%", BudgetRules.statusLabel(BudgetLine(limit = 100.0, spent = 80.0)))
+    }
+
+    /** Budget partagé (casse) : consommation cumulée comparée au budget, au centime. */
+    @Test fun budget_partage_atteint_et_depasse() {
+        val atteint = BudgetRules.rowBudgets(listOf("Courses" to 30.0, "courses" to 10.0), mapOf("courses" to 40.0), true)
+        assertEquals("Budget atteint", BudgetRules.statusLabel(atteint.getValue("Courses").line))
+        assertEquals("Budget atteint", BudgetRules.statusLabel(atteint.getValue("courses").line))
+        val depasse = BudgetRules.rowBudgets(listOf("Courses" to 30.0, "courses" to 10.01), mapOf("courses" to 40.0), true)
+        assertEquals("Dépassé — 100%", BudgetRules.statusLabel(depasse.getValue("Courses").line))
     }
 
     @Test fun affichage_des_montants() {
