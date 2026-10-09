@@ -82,7 +82,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:paddingStart="40dp"
-        android:paddingTop="8dp"
+        android:paddingTop="4dp"
         android:paddingEnd="40dp"
         android:textAllCaps="true"
         android:textColor="@color/v2_text_secondary"
@@ -101,7 +101,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingStart="24dp"
-            android:paddingTop="8dp"
+            android:paddingTop="0dp"
             android:paddingEnd="24dp"
             android:paddingBottom="24dp">
 
@@ -110,7 +110,7 @@
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:hint="Ex : 300"
                 app:boxBackgroundColor="@color/v2_surface_grouped"
                 app:suffixText="€">
