@@ -27,7 +27,14 @@ data class BudgetLine(val limit: Double, val spent: Double) {
     /** Montant restant ; négatif = dépassement (iOS l'expose dans BudgetSummaryEngine.remaining). */
     val remaining: Double get() = limit - spent
     val overrun: Double get() = (spent - limit).coerceAtLeast(0.0)
-    val status: BudgetStatus get() = BudgetRules.status(ratio)
+    /**
+     * Dépenses moins budget, au centime (montants exacts, pas le pourcentage arrondi) : évite les restes d'arrondi
+     * des sommes (0,1 + 0,2 = 0,3 pile) et distingue 59,99 € / 60 € (sous le budget, « 100% » une fois arrondi).
+     */
+    val overCents: Long get() = Math.round(spent * 100) - Math.round(limit * 100)
+    /** Dépenses égales au budget au centime près. */
+    val isReached: Boolean get() = overCents == 0L
+    val status: BudgetStatus get() = BudgetRules.status(this)
 }
 
 /**
@@ -53,12 +60,29 @@ object BudgetRules {
         else -> BudgetStatus.OK
     }
 
-    /** iOS statusLabel : « Attention — 85% » / « Dépassé — 112% » ; aucun libellé si correct. */
+    /**
+     * État d'une ligne : 100 % et plus décidés au centime ([BudgetLine.overCents]), seuil d'alerte de 80 % inchangé.
+     * Dépenses égales au budget : état EXCEEDED conservé (couleur rouge, comme sur iOS et sur la carte de l'Accueil),
+     * seul le libellé change ([statusLabel]).
+     */
+    fun status(line: BudgetLine): BudgetStatus =
+        if (line.overCents >= 0) BudgetStatus.EXCEEDED else status(line.ratio).let { if (it == BudgetStatus.EXCEEDED) BudgetStatus.WARNING else it }
+
+    /**
+     * iOS statusLabel : « Attention — 85% » / « Dépassé — 112% » ; aucun libellé si correct. Écart volontaire avec iOS
+     * (décision du 09/10/2026, comme la carte de l'Accueil) : « Budget atteint » quand les dépenses égalent exactement le
+     * budget ; « Dépassé » seulement s'il est réellement dépassé (≥ 1 centime). Le pourcentage reste arrondi (%.0f) :
+     * 59,99 € / 60 € affiche « Attention — 100% », 60,01 € / 60 € « Dépassé — 100% ».
+     */
     fun statusLabel(line: BudgetLine): String? = when (line.status) {
         BudgetStatus.OK -> null
         BudgetStatus.WARNING -> String.format(Locale.FRANCE, "Attention — %.0f%%", line.ratio * 100)
-        BudgetStatus.EXCEEDED -> String.format(Locale.FRANCE, "Dépassé — %.0f%%", line.ratio * 100)
+        BudgetStatus.EXCEEDED -> if (line.isReached) REACHED_LABEL
+            else String.format(Locale.FRANCE, "Dépassé — %.0f%%", line.ratio * 100)
     }
+
+    /** Libellé de l'Accueil et de Catégories quand les dépenses égalent exactement le budget. */
+    const val REACHED_LABEL = "Budget atteint"
 
     /**
      * Montant affiché (liste, barre, champ prérempli). iOS arrondit à l'euro (« %.0f ») : un budget de 12,50 €
@@ -74,9 +98,9 @@ object BudgetRules {
     fun progressLabel(line: BudgetLine): String = "${formatEuro(line.spent)} / ${formatEuro(line.limit)}"
 
     /** Texte d'accessibilité : restant ou dépassement explicites (non affichés visuellement sur iOS). */
-    fun accessibilityText(line: BudgetLine): String = if (line.remaining >= 0)
-        "Budget ${formatEuro(line.limit)}, reste ${formatEuro(line.remaining)}"
-    else "Budget ${formatEuro(line.limit)}, dépassé de ${formatEuro(line.overrun)}"
+    fun accessibilityText(line: BudgetLine): String = if (line.overCents <= 0)
+        "Budget ${formatEuro(line.limit)}, reste ${formatEuro(-line.overCents / 100.0)}"
+    else "Budget ${formatEuro(line.limit)}, dépassé de ${formatEuro(line.overCents / 100.0)}"
 
     /** Barre : progression bornée à [0, 1] (iOS min(ratio, 1)). */
     fun progress(line: BudgetLine): Double = line.ratio.coerceIn(0.0, 1.0)

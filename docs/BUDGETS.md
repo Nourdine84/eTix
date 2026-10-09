@@ -15,7 +15,7 @@ Référence : `Nourdine84/etix-ios` branche `feature/home-hero-v2` (`988eaf4`) �
 | Enregistrer | limite > 0 enregistrée ; nil ou ≤ 0 → budget retiré | Identique |
 | Période | Barre affichée seulement sur « Ce mois » (`range == .month`) ; dépenses = total de la catégorie sur le mois courant [1er 00:00, 1er du mois suivant[ | Identique (mêmes bornes que l'écran Catégories) |
 | Dépenses | Total de la ligne (catégorie **exacte**) | Identique |
-| États de ligne | < 80 % : barre verte, pas de libellé ; 80–100 % : orange « Attention — xx% » ; ≥ 100 % : rouge « Dépassé — xx% » | Identique (100 % pile = dépassé) |
+| États de ligne | < 80 % : barre verte, pas de libellé ; 80–100 % : orange « Attention — xx% » ; ≥ 100 % : rouge « Dépassé — xx% » | Seuils et couleurs identiques ; **libellé à 100 % pile : « Budget atteint »** (écart volontaire, B7 ci-dessous) |
 | Barre | Capsule 4 pt, remplissage borné à 100 % ; « dépensé / budget » à droite | Identique |
 | Restant / dépassement | Non affiché sur la ligne (seulement dans la carte Accueil) | Non affiché visuellement ; **lu par TalkBack** (« reste 60 € » / « dépassé de 4,50 € ») |
 | Invitation | « Définir des budgets mensuels » en fin de liste tant qu'**aucun** budget n'existe | Identique |
@@ -80,6 +80,16 @@ Référence iOS : `BudgetSummaryEngine.swift`, `BudgetSummaryCardView.swift`, `H
 | B4 | L'état « tendu » dépend du total global : une catégorie à 125 % ne rend pas l'Accueil « tendu » si le global reste < 80 % | Reproduit (règle iOS) |
 | B5 | « et N autres → » n'est pas cliquable sur iOS | Identique (non cliquable) |
 | B6 | Animations d'entrée de l'Accueil iOS | Non portées |
+
+## Catégories : « Budget atteint » et lisibilité (décisions du 09/10/2026)
+
+| # | Sujet | iOS (code `988eaf4`) | Android |
+|---|---|---|---|
+| B7 | Libellé à 100 % pile dans Catégories | « Dépassé — 100% » dès que total / budget ≥ 1 | **Écart volontaire (décision de Nourdine)**, comme la carte de l'Accueil (B3) : « Budget atteint » quand les dépenses égalent exactement le budget ; « Dépassé — xx% » seulement s'il est réellement dépassé. Comparaison des **montants exacts au centime** (`BudgetLine.overCents`), pas du pourcentage arrondi : 59,99 € / 60 € → « Attention — 100% » ; 60 € / 60 € → « Budget atteint » ; 60,01 € / 60 € → « Dépassé — 100% » ; 0,1 + 0,2 € pour 0,30 € → « Budget atteint ». Couleur rouge et barre pleine inchangées à 100 %, seuil d'alerte de 80 % inchangé, budgets partagés comparés sur la consommation cumulée. Tests : `BudgetRulesTest.budget_atteint_compare_les_montants_exacts`, `budget_partage_atteint_et_depasse`, émulateur `E2eRevueBudgetsTest` (captures `12b` à `12d`) |
+| B8 | Noms longs (lignes, légende de l'anneau, réglage) | Aucune limite de lignes : le nom passe à la ligne (déduit du code, aucune capture iOS) | Nom complet, à la ligne entre les mots, jamais tronqué ni coupé en milieu de mot ; montant ou pourcentage placé **sous** le nom quand un mot ne tiendrait pas à côté (`TrailingValueRow`) ; police jamais réduite |
+| B9 | Confirmation de suppression (écart A9) | Aucune | Fenêtre à contenu propre (`DeleteBudgetDialog`) : titre et message défilants, « Annuler » et « Supprimer » toujours entiers (côte à côte, ou empilés comme dans Material s'ils ne tiennent pas). Avant : à 320 dp, police 2,0, « Annuler » visible à 47 % et message coupé |
+| B10 | Saisie d'un budget | Feuille au-dessus des onglets, titre = catégorie (barre de navigation) | Barre d'onglets masquée pendant la saisie et rétablie à la sortie ; nom de la catégorie affiché **une seule fois** (iOS : titre + en-tête « Budget mensuel — nom » ; Android : en-tête court « Budget mensuel », 09/10/2026) : dans la barre haute s'il y tient entier sur une ligne, sinon dans une zone fixe sous la barre, toujours visible clavier ouvert (« Annuler » / « Appliquer » toujours entiers) ; plus de réduction automatique de la police du titre (10 dp constatés) ; à l'ouverture du clavier, le haut de la zone n'est plus rogné (en entier, ou entièrement sorti de la vue) |
+| B11 | Sélecteur de période de Catégories | Sélecteur segmenté du système | Libellés toujours entiers, même taille pour les trois, police jamais réduite : côte à côte s'ils tiennent, sinon empilés (un par ligne). Avant : « Cette ann… » et trois tailles différentes à 320 dp, police 2,0 |
 
 ## Écarts restants
 

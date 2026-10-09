@@ -1260,6 +1260,29 @@ jobs:
         if: always()
         run: python3 .github/scripts/emu_report.py emu-out "API 34 fr-FR revue"
 
+      # Catégories et budgets : mesures de lisibilité et d'accès (étape à part : 10 annotations au plus par étape)
+      - name: Mesures Catégories et budgets
+        if: always()
+        run: |
+          F=emu-out/shots/mesures_budgets.txt
+          if [ -f "$F" ]; then
+            cat "$F"
+            python3 - "$F" <<'PY'
+          import sys
+          lines = open(sys.argv[1], errors="replace").read().splitlines()
+          esc = lambda s: s.replace("%", "%25").replace("\r", "").replace("\n", "%0A")
+          anomalies = [l for l in lines if "ANOMALIE" in l or "accessible=false" in l]
+          parts, part = [], ""
+          for l in anomalies or ["aucune anomalie consignée (%d mesures)" % len(lines)]:
+              if len(esc(part + l + "\n")) > 3800:
+                  parts.append(part); part = ""
+              part += l + "\n"
+          parts.append(part)
+          for i, p in enumerate(parts[:8], 1):
+              print(f"::notice title=Catégories et budgets - anomalies {i} sur {min(len(parts), 8)} (API 34 fr-FR revue)::{esc(p.strip())}")
+          PY
+          fi
+
       - name: Emit failure shot 1
         if: always()
         run: |

@@ -160,6 +160,15 @@ Pour chaque écran : comparer à iOS, puis noter **conforme / à corriger / déc
   `preview/lot9/l9_02_scan_autorisation_light.jpg` (étape supprimée), `preview/lot9/l9_04_*` (badge « Vérifié »
   remplacé) et toute capture des Réglages V1.
 
+## Catégories et budgets — corrections en attente de validation (09/10/2026)
+
+Revue du 08/10/2026 (PR #86, captures du commit `69dd75a`, run 37810470159) : défauts constatés sur émulateur
+(confirmation de suppression à 320 dp / police 2,0 avec « Annuler » visible à 47 % et message coupé ; noms coupés en
+milieu de mot dans le réglage ; noms tronqués dans les lignes et la légende ; titre de la saisie réduit à 10 dp puis
+tronqué ; barre d'onglets au-dessus du clavier ; haut de la saisie rogné ; « Cette ann… » ; « Dépassé — 100% » à
+100 % pile). Corrections autorisées par Nourdine le 09/10/2026 sur `fix/categories-budgets-lisibilite` (règles :
+`docs/BUDGETS.md`, B7 à B11). **Rendu non validé** : à examiner sur les captures avant / après de la PR de correction.
+
 ## Après la revue
 
 Consigner pour chaque écran la décision de Nourdine dans `docs/SUIVI_ANDROID.md` (ou une issue). Les essais sur

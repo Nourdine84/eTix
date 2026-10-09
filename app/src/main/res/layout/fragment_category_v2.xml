@@ -46,7 +46,8 @@
             app:tint="@color/v2_primary" />
     </LinearLayout>
 
-    <com.google.android.material.button.MaterialButtonToggleGroup
+    <!-- Côte à côte tant que chaque libellé tient en entier ; sinon empilés (AdaptiveToggleGroup), police jamais réduite -->
+    <com.etix.ui.common.AdaptiveToggleGroup
         android:id="@+id/togglePeriodCategory"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -67,10 +68,7 @@
             android:paddingStart="4dp"
             android:paddingEnd="4dp"
             android:text="Aujourd’hui"
-            android:textSize="13sp"
-            app:autoSizeMaxTextSize="13sp"
-            app:autoSizeMinTextSize="8sp"
-            app:autoSizeTextType="uniform" />
+            android:textSize="13sp" />
 
         <Button
             android:id="@+id/btnCatMonth"
@@ -82,10 +80,7 @@
             android:paddingStart="4dp"
             android:paddingEnd="4dp"
             android:text="Ce mois"
-            android:textSize="13sp"
-            app:autoSizeMaxTextSize="13sp"
-            app:autoSizeMinTextSize="8sp"
-            app:autoSizeTextType="uniform" />
+            android:textSize="13sp" />
 
         <Button
             android:id="@+id/btnCatYear"
@@ -97,11 +92,8 @@
             android:paddingStart="4dp"
             android:paddingEnd="4dp"
             android:text="Cette année"
-            android:textSize="13sp"
-            app:autoSizeMaxTextSize="13sp"
-            app:autoSizeMinTextSize="8sp"
-            app:autoSizeTextType="uniform" />
-    </com.google.android.material.button.MaterialButtonToggleGroup>
+            android:textSize="13sp" />
+    </com.etix.ui.common.AdaptiveToggleGroup>
 
     <FrameLayout
         android:layout_width="match_parent"

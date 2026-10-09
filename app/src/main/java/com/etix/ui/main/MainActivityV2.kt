@@ -177,9 +177,11 @@ class MainActivityV2 : AppCompatActivity() {
     private fun syncOverlayVisibility() {
         val count = supportFragmentManager.backStackEntryCount
         overlay.visibility = if (count > 0) View.VISIBLE else View.GONE
-        // Lot 9 : le parcours de scan occupe tout l'écran, sans barre d'onglets (iOS : fullScreenCover)
+        // Lot 9 : le parcours de scan occupe tout l'écran, sans barre d'onglets (iOS : fullScreenCover).
+        // Saisie d'un budget : barre d'onglets masquée aussi (iOS : feuille au-dessus des onglets), sinon elle restait
+        // au-dessus du clavier et réduisait fortement la zone de saisie (320 dp, police 2,0) ; rétablie à la sortie.
         val top = if (count > 0) supportFragmentManager.getBackStackEntryAt(count - 1).name else null
-        bottomNav.visibility = if (top == BACKSTACK_SCAN) View.GONE else View.VISIBLE
+        bottomNav.visibility = if (top == BACKSTACK_SCAN || top == BACKSTACK_BUDGET_EDIT) View.GONE else View.VISIBLE
     }
 
     companion object {

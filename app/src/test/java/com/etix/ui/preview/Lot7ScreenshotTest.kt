@@ -68,7 +68,8 @@ class Lot7ScreenshotTest {
         val a = Robolectric.buildActivity(MainActivityV2::class.java).setup().get().also { idle() }
         a.findViewById<BottomNavigationView>(R.id.bottomNav).selectedItemId = R.id.menu_category
         idle()
-        waitFor { (a.findViewById<RecyclerView>(R.id.recyclerViewCategories)?.childCount ?: 0) > 1 }
+        // Données chargées (anneau + lignes) ; en grande police, seul l'anneau peut être à l'écran (sélecteur empilé)
+        waitFor { (a.findViewById<RecyclerView>(R.id.recyclerViewCategories)?.adapter?.itemCount ?: 0) > 1 }
         return a
     }
 
@@ -170,14 +171,15 @@ class Lot7ScreenshotTest {
         del.performClick(); idle()
         val c1 = org.robolectric.shadows.ShadowDialog.getLatestDialog() as androidx.appcompat.app.AlertDialog
         assertTrue(c1.isShowing)
-        c1.getButton(android.content.DialogInterface.BUTTON_NEGATIVE).performClick(); idle()
+        c1.findViewById<View>(R.id.btnConfirmCancel)!!.performClick(); idle()
+        assertFalse("Confirmation fermée par « Annuler »", c1.isShowing)
         assertEquals(12.5, BudgetStore(ctx).limit("Loisirs")!!, 0.0)
         assertTrue("Toujours sur l'écran de saisie", o2.findViewById<View>(R.id.btnBudgetApply).isShown)
 
         // 2) « Supprimer » : seul le budget « Loisirs » disparaît
         del.performClick(); idle()
         val c2 = org.robolectric.shadows.ShadowDialog.getLatestDialog() as androidx.appcompat.app.AlertDialog
-        c2.getButton(android.content.DialogInterface.BUTTON_POSITIVE).performClick(); idle()
+        c2.findViewById<View>(R.id.btnConfirmDelete)!!.performClick(); idle()
         assertEquals(null, BudgetStore(ctx).limit("Loisirs"))
         assertEquals(50.0, BudgetStore(ctx).limit("Transport")!!, 0.0)
         assertEquals(ticketsAvant, runBlocking { dao.getAllFlow().first() }.sortedBy { it.id }) // aucun ticket touché
