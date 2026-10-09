@@ -305,6 +305,43 @@ class E2eRevueBudgetsTest {
         }
     }
 
+    /**
+     * Contexte de la catégorie pendant la saisie, clavier ouvert, SANS défiler : le nom complet est visible soit comme
+     * titre de la barre haute, soit dans la zone fixe sous la barre (anomalie BLOQUANTE sinon). Le nom n'est affiché
+     * qu'une fois et l'en-tête de la zone défilante se limite à « Budget mensuel ».
+     */
+    private fun categoryContext(label: String) {
+        instr.runOnMainSync {
+            val act = resumed()
+            val (top, bottom) = zone(act)
+            val title = act.findViewById<TextView>(R.id.tvBudgetEditTitle)
+            val name = act.findViewById<TextView>(R.id.tvBudgetEditName)
+            val header = act.findViewById<TextView>(R.id.tvBudgetEditHeader)
+            val shown = listOf(title, name).filter { it.visibility == View.VISIBLE && it.text.isNotEmpty() }
+            val ok = shown.size == 1 && textProblems(shown[0], top, bottom).isEmpty()
+            val line = "$label : contexte « ${shown.joinToString { it.text }} » " +
+                "(${shown.joinToString { act.resources.getResourceEntryName(it.id) }}), en-tête « ${header.text} »"
+            if (!ok) anomalies += "$suffixNow $line : nom absent, répété ou illisible sans défiler"
+            if (header.text.toString() != "Budget mensuel") anomalies += "$suffixNow $label : en-tête « ${header.text} » au lieu de « Budget mensuel »"
+            log(line + if (ok) " visible" else " ANOMALIE")
+        }
+    }
+
+    /** Vue entièrement visible entre la barre d'état et le clavier, SANS défiler (anomalie BLOQUANTE sinon). */
+    private fun visibleWithoutScroll(id: Int, label: String) {
+        instr.runOnMainSync {
+            val act = resumed()
+            val (top, bottom) = zone(act)
+            val v = act.findViewById<View>(id)
+            val loc = IntArray(2); v.getLocationOnScreen(loc)
+            val r = android.graphics.Rect()
+            val ok = v.isShown && v.getGlobalVisibleRect(r) && r.height() == v.height && loc[1] >= top && loc[1] + v.height <= bottom
+            val line = "$label : [${loc[1]},${loc[1] + v.height}] zone [$top,$bottom] sans défiler=$ok"
+            if (!ok) anomalies += "$suffixNow $line"
+            log(line + if (ok) "" else " ANOMALIE")
+        }
+    }
+
     /** Message d'erreur sous le champ : lisible entre la barre d'état et le clavier (anomalie sinon). */
     private fun errorVisible(label: String, message: String) {
         instr.runOnMainSync {
@@ -476,7 +513,9 @@ class E2eRevueBudgetsTest {
         shot("revue_budgets_05_creation_vide_$s")
         assertTrue("Barre d'onglets masquée pendant la saisie ($s)", !bottomNavShown())
         onView(withId(R.id.btnDeleteBudget)).check(matches(not(androidx.test.espresso.matcher.ViewMatchers.isDisplayed())))
-        readability("Création", R.id.tvBudgetEditTitle, R.id.btnBudgetCancel, R.id.btnBudgetApply)
+        // Contexte de la catégorie visible clavier ouvert, sans défiler : titre de la barre ou nom dans la zone fixe
+        readability("Création", R.id.tvBudgetEditTitle, R.id.tvBudgetEditName, R.id.btnBudgetCancel, R.id.btnBudgetApply)
+        categoryContext("Création")
         noTopCut("Création")
         assertReachable(R.id.btnBudgetCancel, "Création clavier ouvert")
         assertReachable(R.id.btnBudgetApply, "Création clavier ouvert")
@@ -485,6 +524,9 @@ class E2eRevueBudgetsTest {
         shot("revue_budgets_06_creation_invalide_$s")
         onView(withId(R.id.btnBudgetApply)).check(matches(not(isEnabled())))
         errorVisible("Création, montant invalide", "Montant invalide")
+        readability("Création, montant invalide", R.id.tvBudgetEditTitle, R.id.tvBudgetEditName)
+        categoryContext("Création, montant invalide")
+        visibleWithoutScroll(R.id.budgetInputLayout, "Création, champ et message d'erreur")
         noTopCut("Création, montant invalide")
         assertReachable(R.id.budgetInputLayout, "Création, champ et message d'erreur, clavier ouvert")
         readableByScroll("Création", R.id.tvBudgetEditName, R.id.tvBudgetEditHeader)
@@ -515,7 +557,9 @@ class E2eRevueBudgetsTest {
         onView(withId(R.id.inputBudget)).check(matches(withText("200")))
         keyboardOnEdit("Modification")
         shot("revue_budgets_08_modification_preremplie_$s")
-        readability("Modification", R.id.tvBudgetEditTitle, R.id.btnBudgetCancel, R.id.btnBudgetApply)
+        readability("Modification", R.id.tvBudgetEditTitle, R.id.tvBudgetEditName, R.id.btnBudgetCancel, R.id.btnBudgetApply)
+        categoryContext("Modification")
+        visibleWithoutScroll(R.id.budgetInputLayout, "Modification, champ")
         noTopCut("Modification")
         readableByScroll("Modification", R.id.tvBudgetEditName, R.id.tvBudgetEditHeader)
         onView(withId(R.id.inputBudget)).perform(replaceText("180,50"))

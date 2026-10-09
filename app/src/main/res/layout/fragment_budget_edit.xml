@@ -14,7 +14,7 @@
     android:orientation="vertical">
 
     <!-- Barre haute : « Annuler » et « Appliquer » toujours entiers et accessibles ; titre (catégorie) seulement s'il
-         tient entier sur une ligne entre eux, sinon nom complet affiché en tête de la zone défilante (TitleBarRow). -->
+         tient entier sur une ligne entre eux, sinon nom complet dans la zone fixe juste dessous (TitleBarRow). -->
     <com.etix.ui.common.TitleBarRow
         android:id="@+id/budgetEditBar"
         android:layout_width="match_parent"
@@ -56,6 +56,25 @@
             android:textStyle="bold" />
     </com.etix.ui.common.TitleBarRow>
 
+    <!-- Nom complet de la catégorie quand il ne tient pas dans la barre haute : zone FIXE sous la barre (hors de la zone
+         défilante), toujours visible pendant la saisie, clavier ouvert, à la taille de police choisie (à la ligne entre
+         les mots). Le nom n'est affiché qu'une fois : ici ou dans la barre. -->
+    <TextView
+        android:id="@+id/tvBudgetEditName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:accessibilityHeading="true"
+        android:hyphenationFrequency="none"
+        android:paddingStart="40dp"
+        android:paddingTop="4dp"
+        android:paddingEnd="40dp"
+        android:paddingBottom="4dp"
+        android:textColor="@color/v2_text_primary"
+        android:textSize="17sp"
+        android:textStyle="bold"
+        android:visibility="gone"
+        tools:targetApi="p" />
+
     <!-- Défilements automatiques (clavier, curseur, erreur) arrêtés à une limite de bloc : aucun texte rogné en haut -->
     <com.etix.ui.common.CleanTopScrollView
         android:id="@+id/budgetEditScroll"
@@ -69,25 +88,9 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingStart="24dp"
-            android:paddingTop="16dp"
+            android:paddingTop="8dp"
             android:paddingEnd="24dp"
             android:paddingBottom="24dp">
-
-            <!-- Nom complet de la catégorie quand il ne tient pas dans la barre haute (à la ligne entre les mots) -->
-            <TextView
-                android:id="@+id/tvBudgetEditName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="12dp"
-                android:accessibilityHeading="true"
-                android:hyphenationFrequency="none"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:textColor="@color/v2_text_primary"
-                android:textSize="17sp"
-                android:textStyle="bold"
-                android:visibility="gone"
-                tools:targetApi="p" />
 
             <TextView
                 android:id="@+id/tvBudgetEditHeader"

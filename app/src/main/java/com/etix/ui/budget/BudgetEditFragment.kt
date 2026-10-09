@@ -41,9 +41,10 @@ class BudgetEditFragment : Fragment() {
         val current = store.limit(category)
         binding.tvBudgetEditTitle.text = category
         binding.tvBudgetEditName.text = category
-        binding.tvBudgetEditHeader.text = "Budget mensuel — $category"
-        // Nom trop long pour la barre haute (à la taille de police choisie) : affiché en entier en tête de la zone
-        // défilante ; « Annuler » et « Appliquer » restent entiers dans la barre.
+        // Nom affiché une seule fois (iOS : titre + « Budget mensuel — nom ») : en-tête court « Budget mensuel »
+        binding.tvBudgetEditHeader.text = "Budget mensuel"
+        // Nom trop long pour la barre haute (à la taille de police choisie) : affiché en entier dans une zone fixe sous la
+        // barre, toujours visible clavier ouvert ; « Annuler » et « Appliquer » restent entiers dans la barre.
         binding.budgetEditBar.onTitleFitChanged = { fits ->
             _binding?.let {
                 it.tvBudgetEditTitle.visibility = if (fits) View.VISIBLE else View.INVISIBLE
