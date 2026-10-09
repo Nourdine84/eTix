@@ -75,6 +75,19 @@
         android:visibility="gone"
         tools:targetApi="p" />
 
+    <!-- Libellé court de la saisie, fixe lui aussi : la zone défilante commence par le champ, aucun texte ne peut y être
+         coupé au-dessus de lui (clavier ouvert, message d'erreur, police 2,0) -->
+    <TextView
+        android:id="@+id/tvBudgetEditHeader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="40dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="40dp"
+        android:textAllCaps="true"
+        android:textColor="@color/v2_text_secondary"
+        android:textSize="12sp" />
+
     <!-- Défilements automatiques (clavier, curseur, erreur) arrêtés à une limite de bloc : aucun texte rogné en haut -->
     <com.etix.ui.common.CleanTopScrollView
         android:id="@+id/budgetEditScroll"
@@ -91,16 +104,6 @@
             android:paddingTop="8dp"
             android:paddingEnd="24dp"
             android:paddingBottom="24dp">
-
-            <TextView
-                android:id="@+id/tvBudgetEditHeader"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:textAllCaps="true"
-                android:textColor="@color/v2_text_secondary"
-                android:textSize="12sp" />
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/budgetInputLayout"
