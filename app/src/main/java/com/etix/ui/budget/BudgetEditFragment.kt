@@ -118,7 +118,10 @@ class BudgetEditFragment : Fragment() {
         val fieldBottom = b.budgetEditContent.top + field.bottom
         val above = (field.layoutParams as? ViewGroup.MarginLayoutParams)?.topMargin ?: 0
         val target = if (fieldBottom <= scroll.height) 0 else fieldTop - above
-        scroll.scrollTo(0, target.coerceAtLeast(0))
+        // smoothScrollTo remplace un défilement animé en cours (curseur, focus) : calculé avant l'apparition du nom en
+        // tête de zone, il se terminait après ce replacement et laissait le nom ou l'en-tête coupés (320 dp, police 1,5
+        // et 2,0, run 37903079864)
+        scroll.smoothScrollTo(0, target.coerceAtLeast(0))
     }
 
     private fun close() {
