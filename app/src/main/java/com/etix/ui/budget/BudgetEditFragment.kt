@@ -113,14 +113,21 @@ class BudgetEditFragment : Fragment() {
         val b = _binding ?: return
         if (!b.inputBudget.hasFocus()) return
         val scroll = b.budgetEditScroll
+        val content = b.budgetEditContent
         val field = b.budgetInputLayout
-        val fieldTop = b.budgetEditContent.top + field.top
-        val fieldBottom = b.budgetEditContent.top + field.bottom
+        val fieldTop = content.top + field.top
+        val fieldBottom = content.top + field.bottom
         val above = (field.layoutParams as? ViewGroup.MarginLayoutParams)?.topMargin ?: 0
         val target = if (fieldBottom <= scroll.height) 0 else fieldTop - above
-        // smoothScrollTo remplace un défilement animé en cours (curseur, focus) : calculé avant l'apparition du nom en
-        // tête de zone, il se terminait après ce replacement et laissait le nom ou l'en-tête coupés (320 dp, police 1,5
-        // et 2,0, run 37903079864)
+        // Contenu sous le champ trop court pour amener le champ en haut (défilement bloqué au maximum, nom coupé :
+        // 320 dp, police 1,5 et 2,0, run 37907769754) : hauteur minimale temporaire, retirée quand tout tient
+        val minHeight = if (target > 0) target + scroll.height - content.top else 0
+        if (content.minimumHeight != minHeight) {
+            content.minimumHeight = minHeight
+            scroll.post { _binding?.budgetEditScroll?.smoothScrollTo(0, target) }
+            return
+        }
+        // smoothScrollTo remplace un défilement animé en cours (curseur, focus)
         scroll.smoothScrollTo(0, target.coerceAtLeast(0))
     }
 

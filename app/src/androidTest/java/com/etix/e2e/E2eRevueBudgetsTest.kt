@@ -290,6 +290,21 @@ class E2eRevueBudgetsTest {
         }
     }
 
+    /**
+     * Textes du haut de la saisie, clavier ouvert : ils peuvent être entièrement sortis de la vue au-dessus du champ
+     * ([noTopCut] vérifie qu'ils ne sont jamais coupés) ; chacun est alors amené à l'écran par défilement, comme le
+     * ferait l'utilisateur, puis doit être lisible en entier (anomalie sinon).
+     */
+    private fun readableByScroll(label: String, vararg ids: Int) {
+        for (id in ids) {
+            var visible = false
+            instr.runOnMainSync { visible = resumed().findViewById<View>(id)?.visibility == View.VISIBLE }
+            if (!visible) continue
+            bringFullyOnScreen(id)
+            readability("$label, après défilement", id)
+        }
+    }
+
     /** Message d'erreur sous le champ : lisible entre la barre d'état et le clavier (anomalie sinon). */
     private fun errorVisible(label: String, message: String) {
         instr.runOnMainSync {
@@ -461,8 +476,7 @@ class E2eRevueBudgetsTest {
         shot("revue_budgets_05_creation_vide_$s")
         assertTrue("Barre d'onglets masquée pendant la saisie ($s)", !bottomNavShown())
         onView(withId(R.id.btnDeleteBudget)).check(matches(not(androidx.test.espresso.matcher.ViewMatchers.isDisplayed())))
-        readability("Création", R.id.tvBudgetEditTitle, R.id.tvBudgetEditName, R.id.tvBudgetEditHeader,
-            R.id.btnBudgetCancel, R.id.btnBudgetApply)
+        readability("Création", R.id.tvBudgetEditTitle, R.id.btnBudgetCancel, R.id.btnBudgetApply)
         noTopCut("Création")
         assertReachable(R.id.btnBudgetCancel, "Création clavier ouvert")
         assertReachable(R.id.btnBudgetApply, "Création clavier ouvert")
@@ -473,6 +487,7 @@ class E2eRevueBudgetsTest {
         errorVisible("Création, montant invalide", "Montant invalide")
         noTopCut("Création, montant invalide")
         assertReachable(R.id.budgetInputLayout, "Création, champ et message d'erreur, clavier ouvert")
+        readableByScroll("Création", R.id.tvBudgetEditName, R.id.tvBudgetEditHeader)
         onView(withId(R.id.inputBudget)).perform(replaceText("25"))
         onView(withId(R.id.btnBudgetApply)).check(matches(isEnabled()))
         shot("revue_budgets_07_creation_saisie_$s")
@@ -500,9 +515,9 @@ class E2eRevueBudgetsTest {
         onView(withId(R.id.inputBudget)).check(matches(withText("200")))
         keyboardOnEdit("Modification")
         shot("revue_budgets_08_modification_preremplie_$s")
-        readability("Modification", R.id.tvBudgetEditTitle, R.id.tvBudgetEditName, R.id.tvBudgetEditHeader,
-            R.id.btnBudgetCancel, R.id.btnBudgetApply)
+        readability("Modification", R.id.tvBudgetEditTitle, R.id.btnBudgetCancel, R.id.btnBudgetApply)
         noTopCut("Modification")
+        readableByScroll("Modification", R.id.tvBudgetEditName, R.id.tvBudgetEditHeader)
         onView(withId(R.id.inputBudget)).perform(replaceText("180,50"))
         SystemClock.sleep(300)
         shot("revue_budgets_09_modification_saisie_$s")
