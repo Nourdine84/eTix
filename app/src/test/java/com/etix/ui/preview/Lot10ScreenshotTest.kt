@@ -208,7 +208,7 @@ class Lot10ScreenshotTest {
         assertEquals(info.versionName, a.findViewById<TextView>(R.id.textVersion).text.toString())
         @Suppress("DEPRECATION")
         assertEquals(info.versionCode.toString(), a.findViewById<TextView>(R.id.textBuild).text.toString())
-        assertTrue("version du lot 10 : ${info.versionName}", info.versionName.startsWith("1.10.0-lot10"))
+        assertTrue("version livrable 1.10.1-tel1 : ${info.versionName}", info.versionName.startsWith("1.10.1-tel1"))
         assertFalse("suppression globale désactivée", a.findViewById<View>(R.id.btnClearAll).isEnabled)
         assertTrue(a.findViewById<View>(R.id.btnExportAllCsv).isEnabled)
         checkRows(a)

@@ -223,7 +223,7 @@ class E2eReglagesTest {
         onView(withId(R.id.textVersion)).perform(scrollTo()).check(matches(withText(info.versionName)))
         @Suppress("DEPRECATION")
         onView(withId(R.id.textBuild)).check(matches(withText(info.versionCode.toString())))
-        assertTrue("version 1.10.0-lot10 attendue : ${info.versionName}", info.versionName.startsWith("1.10.0-lot10"))
+        assertTrue("version 1.10.1-tel1 attendue : ${info.versionName}", info.versionName.startsWith("1.10.1-tel1"))
         onView(withId(R.id.btnClearAll)).perform(scrollTo()).check(matches(not(isEnabled())))
         onView(withId(R.id.btnClearAll)).perform(click())
         ReglagesE2e.log("version ${info.versionName}, build ${info.versionCode}, $n tickets")
