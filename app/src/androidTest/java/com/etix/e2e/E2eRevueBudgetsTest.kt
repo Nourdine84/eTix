@@ -459,7 +459,7 @@ class E2eRevueBudgetsTest {
         onView(withId(R.id.btnBudgetApply)).check(matches(not(isEnabled())))
         errorVisible("Création, montant invalide", "Montant invalide")
         noTopCut("Création, montant invalide")
-        assertReachable(R.id.inputBudget, "Création, montant invalide, clavier ouvert")
+        assertReachable(R.id.budgetInputLayout, "Création, champ et message d'erreur, clavier ouvert")
         onView(withId(R.id.inputBudget)).perform(replaceText("25"))
         onView(withId(R.id.btnBudgetApply)).check(matches(isEnabled()))
         shot("revue_budgets_07_creation_saisie_$s")

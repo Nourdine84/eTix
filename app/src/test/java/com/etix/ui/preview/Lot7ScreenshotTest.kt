@@ -68,7 +68,8 @@ class Lot7ScreenshotTest {
         val a = Robolectric.buildActivity(MainActivityV2::class.java).setup().get().also { idle() }
         a.findViewById<BottomNavigationView>(R.id.bottomNav).selectedItemId = R.id.menu_category
         idle()
-        waitFor { (a.findViewById<RecyclerView>(R.id.recyclerViewCategories)?.childCount ?: 0) > 1 }
+        // Données chargées (anneau + lignes) ; en grande police, seul l'anneau peut être à l'écran (sélecteur empilé)
+        waitFor { (a.findViewById<RecyclerView>(R.id.recyclerViewCategories)?.adapter?.itemCount ?: 0) > 1 }
         return a
     }
 

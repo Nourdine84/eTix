@@ -56,7 +56,8 @@
             android:textStyle="bold" />
     </com.etix.ui.common.TitleBarRow>
 
-    <ScrollView
+    <!-- Défilements automatiques (clavier, curseur, erreur) arrêtés à une limite de bloc : aucun texte rogné en haut -->
+    <com.etix.ui.common.CleanTopScrollView
         android:id="@+id/budgetEditScroll"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -131,5 +132,5 @@
                 android:textColor="@color/v2_negative"
                 android:visibility="gone" />
         </LinearLayout>
-    </ScrollView>
+    </com.etix.ui.common.CleanTopScrollView>
 </LinearLayout>
