@@ -264,6 +264,19 @@ class E2eRevueBudgetsTest {
     private fun noTopCut(label: String) {
         instr.runOnMainSync {
             val act = resumed()
+            // Diagnostic (consigné) : état de la zone défilante de la saisie
+            val sv = act.findViewById<android.view.ViewGroup>(R.id.budgetEditScroll)
+            val content = act.findViewById<android.view.ViewGroup>(R.id.budgetEditContent)
+            if (sv != null && content != null) {
+                val parts = (0 until content.childCount).map { content.getChildAt(it) }.joinToString(" ") {
+                    "${if (it.id != View.NO_ID) act.resources.getResourceEntryName(it.id) else it.javaClass.simpleName}" +
+                        "[${it.top},${it.bottom}]${if (it.visibility != View.VISIBLE) "(${it.visibility})" else ""}"
+                }
+                val loc = IntArray(2); sv.getLocationOnScreen(loc)
+                log("$label diagnostic : ${sv.javaClass.simpleName} scrollY=${sv.scrollY} hauteur=${sv.height} écran=${loc[1]} " +
+                    "contenu=${content.height} padding=${content.paddingTop} focus=${act.currentFocus?.let { f ->
+                        if (f.id != View.NO_ID) act.resources.getResourceEntryName(f.id) else f.javaClass.simpleName }} : $parts")
+            }
             for (id in listOf(R.id.tvBudgetEditName, R.id.tvBudgetEditHeader)) {
                 val v = act.findViewById<View>(id) ?: continue
                 if (v.visibility != View.VISIBLE) continue
