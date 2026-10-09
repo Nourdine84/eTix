@@ -31,12 +31,11 @@ class CleanTopScrollView @JvmOverloads constructor(context: Context, attrs: Attr
             val bottom = content.top + c.bottom
             // Bloc au-dessus de la zone à montrer, coupé par le bord haut
             if (top < y && y < bottom && bottom <= rect.top) {
-                val snapped = when {
-                    rect.bottom <= bottom + h -> bottom      // bloc entièrement sorti, zone à montrer entière
-                    rect.bottom <= top + h -> top            // bloc entièrement visible, zone à montrer entière
-                    else -> y
-                }
-                return snapped.coerceIn(0, maxY) - scrollY
+                // Bloc entièrement sorti, sinon bloc entièrement visible : position atteignable (≤ défilement maximal) où
+                // la zone à montrer reste entière. Sans le contrôle de l'atteignable, « sorti » était ramené au maximum
+                // et recoupait le bloc (320 dp, police 2,0, message d'erreur affiché : run 37916561712).
+                val snapped = listOf(bottom, top).firstOrNull { it in 0..maxY && rect.top >= it && rect.bottom <= it + h } ?: y
+                return snapped - scrollY
             }
         }
         return y - scrollY
